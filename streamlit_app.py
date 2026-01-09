@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (BARRA ULTRA-FINA & AJUSTES FINAIS)
+# 2. ESTILO VISUAL (RESPONSIVIDADE + REFINAMENTO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -35,32 +35,27 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         
-        /* 1. LAYOUT GERAL */
+        /* 1. LAYOUT & RESPONSIVIDADE */
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        /* 2. BARRA DE PROGRESSO (ULTRA-FINA 3px) */
+        /* 2. BARRA DE PROGRESSO (ULTRA-FINA) */
         .minimal-track {
-            width: 100%; height: 3px; /* Mais fina ainda */
-            background-color: #EDF2F7; border-radius: 1.5px;
+            width: 100%; height: 3px; background-color: #EDF2F7; border-radius: 1.5px;
             position: relative; margin: 12px 0 45px 0;
         }
         .minimal-fill {
-            height: 100%; 
-            background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
-            border-radius: 1.5px;
-            transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            height: 100%; background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
+            border-radius: 1.5px; transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
         }
         .minimal-cursor-icon {
-            position: absolute; top: -17px;
-            font-size: 1.5rem; color: #FF6B6B;
+            position: absolute; top: -17px; font-size: 1.5rem; color: #FF6B6B;
             transition: left 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             transform: translateX(-50%); z-index: 10;
-            background: white; border-radius: 50%;
-            width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            border: 2px solid white;
+            background: white; border-radius: 50%; width: 30px; height: 30px; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
         /* 3. HEADER */
@@ -69,30 +64,27 @@ def aplicar_estilo_visual():
             border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px;
             display: flex; align-items: center; gap: 25px;
         }
-        .header-unified span { 
-            color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;
-        }
+        .header-unified span { color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
         /* 4. ABAS PÍLULA */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
-            height: 38px; border-radius: 19px !important; 
-            background-color: white; border: 1px solid #E2E8F0;
-            color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px;
+            height: 38px; border-radius: 19px !important; background-color: white; 
+            border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px;
             transition: all 0.2s ease;
         }
         .stTabs [aria-selected="true"] {
             background-color: #FF6B6B !important; color: white !important; 
-            border-color: #FF6B6B !important;
-            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+            border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* 5. CARDS RICOS */
+        /* 5. CARDS RESPONSIVOS (FIX) */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
             background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            height: 280px; display: flex; flex-direction: column; justify-content: flex-start;
+            min-height: 260px; /* Muda de height fixo para min-height */
+            display: flex; flex-direction: column; justify-content: flex-start;
             position: relative; overflow: hidden;
         }
         .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); border-color: #BEE3F8;}
@@ -100,8 +92,7 @@ def aplicar_estilo_visual():
         .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
         
         .icon-container {
-            width: 50px; height: 50px; border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center;
+            width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
             font-size: 1.8rem; margin-bottom: 10px;
         }
         .ic-blue { background-color: #EBF8FF; color: #3182CE; }
@@ -181,12 +172,12 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    # Ícones vetoriais dinâmicos (5 estágios)
-    if p == 0: icon_class = "ri-map-pin-user-line" # Início
-    elif p < 30: icon_class = "ri-walk-line" # Caminhando
-    elif p < 60: icon_class = "ri-run-line" # Correndo
-    elif p < 100: icon_class = "ri-speed-line" # Acelerando
-    else: icon_class = "ri-trophy-line" # Chegada/Troféu
+    # Ícones Dinâmicos (Movimento)
+    if p == 0: icon_class = "ri-map-pin-user-line"
+    elif p < 30: icon_class = "ri-walk-line"
+    elif p < 60: icon_class = "ri-run-line"
+    elif p < 100: icon_class = "ri-speed-line"
+    else: icon_class = "ri-trophy-line"
     
     st.markdown(f"""
     <div class="minimal-track">
@@ -244,7 +235,7 @@ def excluir_aluno(nome_arq):
     except: return False
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL
+# 6. INTELIGÊNCIA ARTIFICIAL (PEDAGOGIA 3.0)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -253,7 +244,7 @@ def gerar_saudacao_ia(api_key):
         client = OpenAI(api_key=api_key)
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}], temperature=0.9)
         return res.choices[0].message.content
-    except: return "A inclusão é um ato de amor e competência."
+    except: return "A inclusão transforma vidas."
 
 @st.cache_data(ttl=3600)
 def gerar_noticia_ia(api_key):
@@ -271,23 +262,38 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
+        # PROMPT ENGENHARIA PEDAGÓGICA (VYGOTSKY & BLOOM)
         prompt_sys = """
-        Você é um Consultor Pedagógico Especialista em Educação Inclusiva (Tom: Acolhedor, Técnico e Prático).
-        ESTRUTURA DA RESPOSTA (Markdown Limpo):
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
-        2. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos adaptados.
-        3. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar o interesse ({hiperfoco}) para engajar?
-        4. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas.
-        """.format(hiperfoco=dados['hiperfoco'])
+        Você é um Consultor Pedagógico Sênior Especialista em Educação Inclusiva e Neurociência.
+        Sua abordagem deve ser baseada na ZDP (Vygotsky) e Taxonomia de Bloom.
+        
+        DIRETRIZES:
+        1. NÃO foque apenas na dificuldade. Foque no que o aluno JÁ SABE e como expandir isso.
+        2. CONECTE o Hiperfoco ({hiperfoco}) diretamente às habilidades da BNCC da série ({serie}).
+        3. Use linguagem clara, encorajadora e técnica.
+        
+        ESTRUTURA DA RESPOSTA (Markdown):
+        ## 🌟 Perfil de Aprendizagem
+        (Resumo biopsicossocial breve)
+        
+        ## 🎯 Objetivos de Aprendizagem (BNCC & Bloom)
+        (Liste 3 objetivos usando verbos ativos. Ex: "Identificar...", "Construir...")
+        
+        ## 💡 Estratégias de Ensino (A Ponte do Hiperfoco)
+        (Como usar "{hiperfoco}" para ensinar os conteúdos da série?)
+        
+        ## 🧩 Adaptações de Acesso e Avaliação
+        (O que mudar no ambiente físico e nas provas?)
+        """.format(hiperfoco=dados['hiperfoco'], serie=dados['serie'])
         
         prompt_user = f"""
-        ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
+        ALUNO: {dados['nome']}
         DIAGNÓSTICO: {dados['diagnostico']}
         FAMÍLIA: {familia} | CONTEXTO: {dados['familia']}
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
-        BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        EVIDÊNCIAS: {evid}
+        BARREIRAS SELECIONADAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
+        EVIDÊNCIAS DE SALA: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -295,67 +301,88 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF
+# 7. GERADOR PDF PREMIUM (VISUAL EDITORIAL)
 # ==============================================================================
-class PDF_V3(FPDF):
+class PDF_Premium(FPDF):
     def header(self):
-        self.set_draw_color(0, 78, 146); self.set_line_width(0.4)
-        self.rect(5, 5, 200, 287)
-        logo = finding_logo()
-        if logo: self.image(logo, 10, 10, 30); x_offset = 45 
-        else: x_offset = 12
-        self.set_xy(x_offset, 16); self.set_font('Arial', 'B', 16); self.set_text_color(0, 78, 146)
-        self.cell(0, 8, 'PLANO DE ENSINO INDIVIDUALIZADO', 0, 1, 'L')
-        self.set_xy(x_offset, 23); self.set_font('Arial', 'I', 10); self.set_text_color(100)
-        self.cell(0, 5, 'Documento Oficial de Planejamento Pedagógico', 0, 1, 'L'); self.ln(20)
+        # Faixa Lateral Colorida
+        self.set_fill_color(0, 78, 146) # Azul Brand
+        self.rect(0, 0, 8, 297, 'F')
+        
+        # Logo e Título
+        self.set_xy(15, 15)
+        self.set_font('Arial', 'B', 18)
+        self.set_text_color(0, 78, 146)
+        self.cell(0, 10, 'PLANO DE ENSINO INDIVIDUALIZADO', 0, 1)
+        
+        self.set_xy(15, 24)
+        self.set_font('Arial', 'I', 10)
+        self.set_text_color(100)
+        self.cell(0, 5, 'Documento Oficial de Planejamento Pedagógico | Confidencial', 0, 1)
+        
+        # Linha divisória
+        self.set_draw_color(200, 200, 200)
+        self.line(15, 32, 200, 32)
+        self.ln(15)
+
     def footer(self):
-        self.set_y(-15); self.set_font('Arial', 'I', 8); self.set_text_color(128)
-        self.cell(0, 10, f'Gerado via PEI 360º | Página {self.page_no()}', 0, 0, 'C')
-    def section_title(self, label):
-        self.ln(8); self.set_fill_color(240, 248, 255); self.set_text_color(0, 78, 146)
-        self.set_font('Arial', 'B', 11); self.cell(0, 8, f"  {label}", 0, 1, 'L', fill=True); self.ln(4)
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.set_text_color(128)
+        self.cell(0, 10, f'Gerado via PEI 360º | Página {self.page_no()}', 0, 0, 'R')
+
+    def chapter_box(self, title, content):
+        self.ln(5)
+        # Fundo do Título
+        self.set_fill_color(240, 248, 255)
+        self.set_text_color(0, 78, 146)
+        self.set_font('Arial', 'B', 11)
+        self.cell(0, 8, f"  {title}", 0, 1, 'L', fill=True)
+        self.ln(4)
+        
+        # Conteúdo
+        self.set_text_color(0)
+        self.set_font('Arial', '', 10)
+        self.multi_cell(0, 6, content)
+        self.ln(2)
 
 def gerar_pdf_final(dados, tem_anexo):
-    pdf = PDF_V3(); pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
-    pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
-    pdf.set_font("Arial", size=10); pdf.set_text_color(0)
+    pdf = PDF_Premium()
+    pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
     
-    med_str = "; ".join([f"{m['nome']} ({m['posologia']})" for m in dados['lista_medicamentos']]) if dados['lista_medicamentos'] else "Não informado."
-    fam_str = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado."
+    # 1. Identificação (Formatada)
+    info_basica = f"Nome: {dados['nome']}\nNascimento: {str(dados['nasc'])}\nSérie/Turma: {dados['serie']} - {dados['turma']}\nDiagnóstico: {dados['diagnostico']}"
+    pdf.chapter_box("1. IDENTIFICAÇÃO DO ESTUDANTE", info_basica)
     
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nome:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nome'], 0, 1)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nascimento:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, str(dados['nasc']), 0, 1)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Série/Turma:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, f"{dados['serie']} - {dados['turma']}", 0, 1)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Diagnóstico:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, dados['diagnostico']); pdf.ln(2)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Medicação:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, med_str); pdf.ln(2)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Família:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, fam_str)
+    # 2. Saúde e Família
+    meds = "; ".join([f"{m['nome']} ({m['posologia']})" for m in dados['lista_medicamentos']]) if dados['lista_medicamentos'] else "Sem medicação informada."
+    fam = ", ".join(dados['composicao_familiar_tags'])
+    pdf.chapter_box("2. CONTEXTO SAÚDE & FAMÍLIA", f"Medicação: {meds}\nFamília: {fam}\nContexto: {dados['familia']}")
 
-    evid = [k.replace('?', '') for k, v in dados['checklist_evidencias'].items() if v]
-    if evid:
-        pdf.section_title("2. PONTOS DE ATENÇÃO")
-        pdf.set_font("Arial", size=10); pdf.multi_cell(0, 6, limpar_texto_pdf('; '.join(evid) + '.'))
+    # 3. Potencialidades (Destaque)
+    pdf.set_fill_color(230, 255, 230) # Verde claro
+    pdf.rect(10, pdf.get_y(), 190, 15, 'F')
+    pdf.set_xy(12, pdf.get_y() + 4)
+    pdf.set_font('Arial', 'B', 10)
+    pdf.set_text_color(0, 100, 0)
+    pdf.cell(0, 6, f"HIPERFOCO & POTÊNCIAS: {dados['hiperfoco']} | {', '.join(dados['potencias'])}", 0, 1)
+    pdf.ln(8)
 
+    # 4. Barreiras e Suporte
     if any(dados['barreiras_selecionadas'].values()):
-        pdf.section_title("3. MAPEAMENTO DE SUPORTE")
+        barreiras_txt = ""
         for c, i in dados['barreiras_selecionadas'].items():
             if i:
-                pdf.set_font("Arial", 'B', 10); pdf.cell(0, 6, f"{c}:", 0, 1)
-                pdf.set_font("Arial", size=10)
+                barreiras_txt += f"\n[{c}]: "
                 for x in i:
                     niv = dados['niveis_suporte'].get(f"{c}_{x}", "Monitorado")
-                    pdf.cell(5); pdf.cell(0, 6, f"- {x}: Suporte {niv}", 0, 1)
-                pdf.ln(2)
+                    barreiras_txt += f"{x} ({niv}); "
+        pdf.chapter_box("4. MAPEAMENTO DE BARREIRAS E NÍVEL DE SUPORTE", barreiras_txt)
 
+    # 5. IA Sugestão
     if dados['ia_sugestao']:
-        pdf.ln(5); pdf.set_text_color(0); pdf.set_font("Arial", '', 10)
-        for linha in dados['ia_sugestao'].split('\n'):
-            l = limpar_texto_pdf(linha)
-            if re.match(r'^[1-6]\.', l.strip()) and l.strip().isupper():
-                pdf.ln(4); pdf.set_fill_color(240, 248, 255); pdf.set_text_color(0, 78, 146); pdf.set_font('Arial', 'B', 11)
-                pdf.cell(0, 8, f"  {l}", 0, 1, 'L', fill=True); pdf.set_text_color(0); pdf.set_font("Arial", size=10)
-            elif l.strip().endswith(':') and len(l) < 70:
-                pdf.ln(2); pdf.set_font("Arial", 'B', 10); pdf.multi_cell(0, 6, l); pdf.set_font("Arial", size=10)
-            else: pdf.multi_cell(0, 6, l)
+        texto_ia = limpar_texto_pdf(dados['ia_sugestao'])
+        pdf.chapter_box("5. PLANEJAMENTO PEDAGÓGICO ESTRATÉGICO", texto_ia)
             
     return pdf.output(dest='S').encode('latin-1', 'replace')
 
@@ -379,7 +406,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v27.0 Final Polish II</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v28.0 Pedagogical Masterpiece</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -402,10 +429,10 @@ with tab0: # INÍCIO
             noticia = gerar_noticia_ia(api_key)
         
         st.markdown(f"""
-        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 20px; box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);">
-            <div style="display:flex; gap:15px; align-items:center;">
-                <i class="ri-sparkling-fill" style="font-size: 2rem; color: #FCD34D;"></i>
-                <div><h3 style="color:white; margin:0; font-size: 1.3rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.9;">{saudacao}</p></div>
+        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);">
+            <div style="display:flex; gap:20px; align-items:center;">
+                <div style="background:rgba(255,255,255,0.2); padding:12px; border-radius:50%;"><i class="ri-sparkling-2-fill" style="font-size: 2rem; color: #FFD700;"></i></div>
+                <div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -418,11 +445,10 @@ with tab0: # INÍCIO
     with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Conecte o currículo oficial às adaptações necessárias para uma educação equitativa.</p></div></a>""", unsafe_allow_html=True)
 
     if api_key:
-        # Removido o emoji 💡 do título h4
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v27.0:** Textos Ricos, Barra Ultra-fina e Ícones Dinâmicos.")
+    st.caption("🚀 **Novidades v28.0:** Cards Responsivos, PDF Editorial e IA Vygotskyana.")
 
 with tab1: # ESTUDANTE
     render_progresso()
