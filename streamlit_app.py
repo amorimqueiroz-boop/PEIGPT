@@ -26,20 +26,46 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CARDS RETANGULARES + DASHBOARD)
+# 2. ESTILO VISUAL (AZUL MARINHO + CORAL)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-        :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 12px; }
+        
+        /* PALETA DE CORES */
+        :root { 
+            --brand-blue: #0F52BA; /* Azul Marinho (Ação) */
+            --brand-coral: #FF6B6B; /* Coral (Navegação) */
+            --card-radius: 16px; 
+        }
         
         /* LAYOUT */
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        /* BARRA DE PROGRESSO */
+        /* HEADER */
+        .header-unified {
+            background-color: white; padding: 25px 40px; border-radius: 16px;
+            border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px;
+            display: flex; align-items: center; gap: 25px;
+        }
+        .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
+
+        /* ABAS PÍLULA (VERMELHO CORAL) */
+        .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
+        .stTabs [data-baseweb="tab"] {
+            height: 38px; border-radius: 19px !important; background-color: white; 
+            border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px;
+            transition: all 0.2s ease;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: var(--brand-coral) !important; color: white !important; 
+            border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        }
+
+        /* BARRA DE PROGRESSO (VERMELHO CORAL) */
         .minimal-track {
             width: 100%; height: 3px; background-color: #EDF2F7; border-radius: 1.5px;
             position: relative; margin: 12px 0 45px 0;
@@ -57,68 +83,42 @@ def aplicar_estilo_visual():
             box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
-        /* HEADER */
-        .header-unified {
-            background-color: white; padding: 20px 40px; border-radius: 16px;
-            border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px;
-            display: flex; align-items: center; gap: 25px;
-        }
-        .header-unified span { color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
-
-        /* ABAS PÍLULA */
-        .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
-        .stTabs [data-baseweb="tab"] {
-            height: 38px; border-radius: 19px !important; background-color: white; 
-            border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px;
-            transition: all 0.2s ease;
-        }
-        .stTabs [aria-selected="true"] {
-            background-color: #FF6B6B !important; color: white !important; 
-            border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
-        }
-
-        /* CARDS RETANGULARES (HORIZONTAL) - OTIMIZADOS */
-        a.rich-card-link { text-decoration: none; color: inherit; display: block; }
+        /* CARDS CLÁSSICOS (VOLTA AO MODELO QUE FUNCIONA) */
+        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
-            background-color: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            min-height: 120px; /* Mais baixo */
-            display: flex; align-items: center; gap: 20px; /* Ícone ao lado do texto */
+            background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
+            height: 240px; display: flex; flex-direction: column; justify-content: center; text-align: left;
             position: relative; overflow: hidden;
         }
-        .rich-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.06); border-color: #BEE3F8;}
-        
-        .rich-content { display: flex; flex-direction: column; justify-content: center; text-align: left; }
-        .rich-card h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: #2D3748; font-weight: 800; }
-        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
-        
-        .icon-container {
-            min-width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem;
-        }
-        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
-        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
-        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
-        .ic-green { background-color: #F0FFF4; color: #38A169; }
+        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
+        .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
+        .rich-icon { font-size: 2.5rem; color: var(--brand-coral); margin-bottom: 15px; }
 
-        /* DASHBOARD ELEMENTS */
+        /* DASHBOARD METRICS CARDS */
         .dash-highlight {
             background-color: #F7FAFC; padding: 20px; border-radius: 12px; border: 1px solid #EDF2F7;
             text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;
         }
         .dash-title { font-size: 0.8rem; text-transform: uppercase; color: #718096; font-weight: 700; margin-bottom: 8px; }
-        .dash-data { font-size: 1.2rem; color: #2D3748; font-weight: 800; }
+        .dash-data { font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
         .dash-tag { 
             background: #DEF7EC; color: #03543F; padding: 5px 15px; border-radius: 20px; 
             font-weight: 700; display: inline-block; font-size: 1rem; border: 1px solid #BCF0DA;
         }
 
-        /* INPUTS E BOTÕES */
+        /* INPUTS E BOTÕES (AZUL MARINHO) */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
-            border-radius: 10px !important; border-color: #E2E8F0 !important; 
+            border-radius: 12px !important; border-color: #E2E8F0 !important; 
         }
+        /* Força a cor azul nos botões principais */
         div[data-testid="column"] .stButton button { 
-            border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; 
+            border-radius: 12px !important; font-weight: 800 !important; height: 50px !important; 
+            background-color: var(--brand-blue) !important; color: white !important; border: none !important;
+        }
+        div[data-testid="column"] .stButton button:hover {
+            background-color: #0A3D8F !important;
         }
         
         .stToggle { margin-top: 10px; }
@@ -247,7 +247,7 @@ def excluir_aluno(nome_arq):
     except: return False
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (BNCC AVANÇADA & MEDICAÇÃO)
+# 6. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -274,10 +274,9 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
-        # CORREÇÃO DEFINITIVA DO ERRO DE MEDICAÇÃO
+        # Correção segura da medicação
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
-            # .get('obs', '') evita o KeyError
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
         prompt_sys = """
@@ -337,7 +336,6 @@ def gerar_pdf_final(dados, tem_anexo):
     pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
     pdf.set_font("Arial", size=10); pdf.set_text_color(0)
     
-    # Tratamento seguro para medicação e evitar erros
     med_list = []
     if dados['lista_medicamentos']:
         for m in dados['lista_medicamentos']:
@@ -405,7 +403,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v33.0 Dash Master</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v34.0 Blue Pro</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -443,27 +441,12 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # CARDS HORIZONTAIS RETANGULARES (OTIMIZADOS)
-    c1, c2 = st.columns(2)
-    with c1: 
-        st.markdown("""<a href="https://diversa.org.br" target="_blank" class="rich-card-link"><div class="rich-card">
-            <div class="icon-container ic-blue"><i class="ri-book-open-line"></i></div>
-            <div class="rich-content"><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div>
-        </div></a>""", unsafe_allow_html=True)
-        st.markdown("""<a href="https://institutoneurosaber.com.br" target="_blank" class="rich-card-link" style="margin-top:15px;"><div class="rich-card">
-            <div class="icon-container ic-pink"><i class="ri-brain-line"></i></div>
-            <div class="rich-content"><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div>
-        </div></a>""", unsafe_allow_html=True)
-        
-    with c2: 
-        st.markdown("""<a href="https://planalto.gov.br" target="_blank" class="rich-card-link"><div class="rich-card">
-            <div class="icon-container ic-gold"><i class="ri-scales-3-line"></i></div>
-            <div class="rich-content"><h3>Legislação</h3><p>Lei Brasileira de Inclusão (LBI) e Decretos.</p></div>
-        </div></a>""", unsafe_allow_html=True)
-        st.markdown("""<a href="http://basenacionalcomum.mec.gov.br" target="_blank" class="rich-card-link" style="margin-top:15px;"><div class="rich-card">
-            <div class="icon-container ic-green"><i class="ri-compass-3-line"></i></div>
-            <div class="rich-content"><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div>
-        </div></a>""", unsafe_allow_html=True)
+    # CARDS VERTICAIS CLÁSSICOS (RESTAURADOS)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><i class="ri-book-open-line rich-icon"></i><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><i class="ri-scales-3-line rich-icon"></i><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><i class="ri-brain-line rich-icon"></i><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
+    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><i class="ri-compass-3-line rich-icon"></i><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
 
     if api_key:
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
@@ -546,7 +529,7 @@ with tab4: # MAPEAMENTO
     st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
     
     with st.container(border=True):
-        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
+        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#0F52BA'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco (Interesse Intenso)", st.session_state.dados['hiperfoco'], placeholder="Ex: Minecraft, Dinossauros, Desenho...")
         p_val = [p for p in st.session_state.dados.get('potencias', []) if p in LISTA_POTENCIAS]
@@ -638,11 +621,11 @@ with tab7: # IA
         else:
             st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
 
-with tab8: # DASHBOARD COMPLETO (RENOVADO)
+with tab8: # DASHBOARD COMPLETO (RENOVADO E AZUL)
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     
     if st.session_state.dados['nome']:
-        # LAYOUT DO DASHBOARD: 3 COLUNAS VISUAIS
+        # DASHBOARD VISUAL (NATIVO E ROBUSTO)
         st.markdown("#### 📊 Painel Geral do Aluno")
         
         c_main1, c_main2, c_main3 = st.columns([1, 1, 1])
@@ -673,13 +656,12 @@ with tab8: # DASHBOARD COMPLETO (RENOVADO)
 
         st.divider()
         
-        # DNA DO SUPORTE (BARRAS NATIVAS)
+        # DNA DO SUPORTE (BARRAS NATIVAS AZUIS)
         st.markdown("##### 🧬 DNA de Suporte (Nível de Ajuda Necessária)")
         dna_c1, dna_c2 = st.columns(2)
         
         areas = list(LISTAS_BARREIRAS.keys())
         for i, area in enumerate(areas):
-            # Lógica simples: Conta quantos itens selecionados e multiplica por 20% (max 100%)
             qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
             val = min(qtd * 20, 100)
             
