@@ -11,7 +11,6 @@ import json
 import os
 import re
 import glob
-import random
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -27,110 +26,73 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CSS IOS STYLE & HUMANIZED)
+# 2. ESTILO VISUAL (RESTAURADO DA VERSÃO ESTÁVEL V20 + AJUSTES)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
+        :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         
-        /* VARIÁVEIS DE COR */
-        :root {
-            --primary: #0F52BA;
-            --secondary: #3B82F6;
-            --accent: #F59E0B;
-            --bg-icon: #EFF6FF; /* Fundo azul bem claro para ícones */
-            --text-dark: #1E293B;
-            --text-light: #64748B;
-        }
-
-        html, body, [class*="css"] {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: var(--text-dark);
-        }
-
-        /* 1. HEADER LIMPO (SÓ SUBTÍTULO) */
-        .header-unified {
-            background-color: white; 
-            padding: 20px 40px; 
-            border-radius: 16px;
-            border: 1px solid #E2E8F0; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
-            margin-bottom: 25px;
-            display: flex; 
-            align-items: center; 
-            gap: 25px;
-        }
-        .header-unified span { 
-            color: var(--primary); 
-            font-size: 1.4rem; 
-            font-weight: 700; 
-            letter-spacing: -0.02em;
-        }
-
-        /* 2. ÍCONES ESTILO IOS (DENTRO DE FORMAS) */
-        .icon-shape {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.1);
-        }
-        .icon-shape i {
-            font-size: 1.5rem;
-            color: var(--primary);
-        }
+        /* FIX: REMOVER ESPAÇO TOPO E LINHA PADRÃO */
+        .block-container { padding-top: 1rem !important; padding-bottom: 2rem !important; }
+        div[data-baseweb="tab-border"] { display: none !important; }
         
-        /* CARD COM ÍCONE IOS */
-        .rich-card {
-            background-color: white; padding: 25px; border-radius: 16px; 
-            border: 1px solid #E2E8F0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            height: 200px;
-            display: flex; flex-direction: column; justify-content: center;
-            text-decoration: none; color: inherit; position: relative;
-        }
-        .rich-card:hover { 
-            transform: translateY(-5px); 
-            border-color: var(--secondary); 
-            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.15); 
-        }
-        .rich-card h3 { margin: 5px 0; font-size: 1.1rem; color: var(--text-dark); font-weight: 700; }
-        .rich-card p { font-size: 0.9rem; color: var(--text-light); line-height: 1.5; }
-
-        /* 3. BARRA DE PROGRESSO */
+        /* BARRA DE PROGRESSO DISCRETA (VERMELHA) */
         .minimal-track {
-            width: 100%; height: 6px; background-color: #F1F5F9; border-radius: 3px;
-            position: relative; margin: 0 0 30px 0;
+            width: 100%; height: 4px; background-color: #EDF2F7; border-radius: 2px;
+            position: relative; margin: 0 0 25px 0;
         }
         .minimal-fill {
-            height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-            border-radius: 3px; transition: width 0.6s ease;
+            height: 100%; background-color: var(--brand-coral); border-radius: 2px;
+            transition: width 0.5s ease;
+            box-shadow: 0 2px 4px rgba(255, 107, 107, 0.25);
         }
         .minimal-cursor {
-            position: absolute; top: -18px; font-size: 1.8rem;
-            transition: left 0.6s ease; transform: translateX(-50%); z-index: 10;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            position: absolute; top: -14px; font-size: 1.4rem;
+            transition: left 0.5s ease; transform: translateX(-50%); z-index: 10;
         }
 
-        /* 4. COMPONENTES DE FORMULÁRIO */
+        /* HEADER LIMPO */
+        .header-unified {
+            background-color: white; padding: 20px 40px; border-radius: 16px;
+            border: 1px solid #E2E8F0; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px;
+            display: flex; align-items: center; gap: 25px;
+        }
+        .header-unified span { 
+            color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;
+        }
+
+        /* CARDS ESTÁVEIS */
+        .rich-card {
+            background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; cursor: pointer;
+            text-align: left; height: 220px; display: flex; flex-direction: column; justify-content: flex-start;
+            text-decoration: none; color: inherit; position: relative;
+        }
+        .rich-card:hover { transform: translateY(-5px); border-color: var(--brand-blue); }
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
+        .rich-icon { 
+            font-size: 2.5rem; color: var(--brand-coral); margin-bottom: 10px;
+            background: #FFF5F5; padding: 10px; border-radius: 12px; width: fit-content;
+        }
+        
+        /* ABAS */
+        .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; }
+        .stTabs [data-baseweb="tab"] {
+            height: 40px; border-radius: 10px; border: 1px solid #E2E8F0; font-weight: 700; color: #718096;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: var(--brand-coral) !important; color: white !important; border-color: var(--brand-coral) !important;
+        }
+
+        /* INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 10px !important; border-color: #E2E8F0 !important; 
         }
         div[data-testid="column"] .stButton button { 
-            border-radius: 10px !important; font-weight: 700 !important; height: 50px !important; 
-        }
-        
-        /* EXPANDERS MAIS LIMPOS */
-        .streamlit-expanderHeader {
-            background-color: transparent;
-            color: var(--primary);
-            font-weight: 600;
+            border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; 
         }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -152,8 +114,9 @@ LISTAS_BARREIRAS = {
     "Acadêmico": ["Alfabetização", "Compreensão Leitora", "Cálculo", "Produção Textual"]
 }
 
-LISTA_POTENCIAS = ["Memória Visual", "Musicalidade", "Tecnologia", "Hiperfoco", "Liderança", "Esportes", "Desenho", "Cálculo Mental", "Oralidade", "Criatividade", "Empatia"]
+LISTA_POTENCIAS = ["Memória Visual", "Musicalidade", "Tecnologia", "Hiperfoco", "Liderança", "Esportes", "Desenho", "Cálculo Mental", "Oralidade", "Criatividade"]
 LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", "Neuropediatra", "Psiquiatra", "Psicopedagogo", "Professor de Apoio", "AT"]
+# Lista inclusiva
 LISTA_FAMILIA = ["Mãe", "Pai", "Avó", "Avô", "Irmão(s)", "Tio(a)", "Padrasto", "Madrasta", "Tutor Legal", "Abrigo Institucional"]
 
 # ==============================================================================
@@ -197,9 +160,7 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    # Emojis animados (estilo bonequinho)
-    emoji = "🥚" if p < 15 else ("🐣" if p < 30 else ("🦖" if p < 60 else ("🦕" if p < 90 else "🐲")))
-    
+    emoji = "🚦" if p < 10 else ("🏃" if p < 100 else "🏁")
     st.markdown(f"""
     <div class="minimal-track">
         <div class="minimal-fill" style="width: {p}%;"></div>
@@ -256,59 +217,57 @@ def excluir_aluno(nome_arq):
     except: return False
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (HUMANIZADA)
+# 6. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
     if not api_key: return "Bem-vindo ao PEI 360º."
     try:
         client = OpenAI(api_key=api_key)
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta, acolhedora e inspiradora para um professor de educação inclusiva."}], temperature=0.9)
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}], temperature=0.8)
         return res.choices[0].message.content
-    except: return "A inclusão é um ato de amor e competência."
+    except: return "A inclusão transforma vidas."
 
 @st.cache_data(ttl=3600)
 def gerar_noticia_ia(api_key):
-    if not api_key: return "Dica: Mantenha o PEI sempre atualizado."
+    if not api_key: return "Dica: Consulte a Lei Brasileira de Inclusão."
     try:
         client = OpenAI(api_key=api_key)
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Uma curiosidade científica curta (1 frase) sobre neuroplasticidade ou aprendizagem."}], temperature=0.7)
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta sobre legislação de inclusão ou neurociência (máx 2 frases)."}], temperature=0.7)
         return res.choices[0].message.content
-    except: return "O cérebro aprende durante toda a vida."
+    except: return "O PEI é um direito garantido por lei."
 
 def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API."
     try:
         client = OpenAI(api_key=api_key)
         
-        # Contexto humanizado
+        # Contexto humanizado para a IA
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
         prompt_sys = """
-        Você é um Assistente Pedagógico Especialista em Inclusão (Tom: Acolhedor, Técnico e Prático).
-        Sua missão é ajudar o professor a ver o potencial do aluno, não apenas as falhas.
+        Você é um Consultor Pedagógico Especialista em Educação Inclusiva (Tom: Acolhedor, Motivador e Técnico).
+        Sua missão é criar um plano que valorize o aluno.
         
-        ESTRUTURA DA RESPOSTA (Use Markdown bonito):
-        1. 🌟 VISÃO GERAL: Um parágrafo resumindo quem é o aluno e suas potências.
-        2. 🎯 OBJETIVOS PRIORITÁRIOS (BNCC): 3 objetivos claros para o trimestre.
-        3. 💡 ESTRATÉGIAS DE HIPERFOCO: Como usar o interesse dele ({hiperfoco}) para ensinar conteúdos difíceis?
-        4. 🧩 ADAPTAÇÕES PRÁTICAS: O que mudar na sala de aula amanhã?
+        ESTRUTURA DA RESPOSTA (Markdown Limpo):
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial focando nas potências.
+        2. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos claros e adaptados.
+        3. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar o interesse ({hiperfoco}) para engajar?
+        4. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas de ambiente e material.
         """.format(hiperfoco=dados['hiperfoco'])
         
         prompt_user = f"""
-        ALUNO: {dados['nome']}
+        ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
         DIAGNÓSTICO: {dados['diagnostico']}
         FAMÍLIA: {familia}
+        CONTEXTO FAMILIAR: {dados['familia']}
         
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         
-        BARREIRAS IDENTIFICADAS:
-        {json.dumps(dados['barreiras_selecionadas'], indent=2, ensure_ascii=False)}
-        
-        EVIDÊNCIAS DE SALA:
-        {evid}
+        BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
+        EVIDÊNCIAS: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -351,7 +310,6 @@ def gerar_pdf_final(dados, tem_anexo):
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Medicação:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, med_str); pdf.ln(2)
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Família:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, fam_str)
 
-    # Resto do PDF (Lógica mantida para não quebrar)
     evid = [k.replace('?', '') for k, v in dados['checklist_evidencias'].items() if v]
     if evid:
         pdf.section_title("2. PONTOS DE ATENÇÃO")
@@ -378,13 +336,22 @@ def gerar_pdf_final(dados, tem_anexo):
             elif l.strip().endswith(':') and len(l) < 70:
                 pdf.ln(2); pdf.set_font("Arial", 'B', 10); pdf.multi_cell(0, 6, l); pdf.set_font("Arial", size=10)
             else: pdf.multi_cell(0, 6, l)
-            
+    
+    if dados.get('monitoramento_data'):
+        pdf.section_title("CRONOGRAMA DE REVISÃO E MONITORAMENTO")
+        pdf.set_font("Arial", size=10)
+        pp = ', '.join(dados.get('proximos_passos_select', []))
+        txt = f"Previsão de Revisão: {dados['monitoramento_data'].strftime('%d/%m/%Y')}\n\nStatus da Meta: {dados.get('status_meta','-')}\n\nParecer Geral: {dados.get('parecer_geral','-')}\n\nPróximos Passos: {pp}"
+        pdf.multi_cell(0, 6, limpar_texto_pdf(txt))
+
     return pdf.output(dest='S').encode('latin-1', 'replace')
 
 def gerar_docx_final(dados):
-    doc = Document(); doc.add_heading('PEI - ' + dados['nome'], 0)
+    doc = Document(); style = doc.styles['Normal']; style.font.name = 'Arial'; style.font.size = Pt(11)
+    doc.add_heading('PLANO DE ENSINO INDIVIDUALIZADO', 0)
+    doc.add_paragraph(f"Estudante: {dados['nome']}")
     if dados['ia_sugestao']: doc.add_paragraph(dados['ia_sugestao'])
-    b = BytesIO(); doc.save(b); b.seek(0); return b
+    buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
 # ==============================================================================
 # 8. INTERFACE UI (PRINCIPAL)
@@ -401,7 +368,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v21.0 Humanized</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v22.0 Stable</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER LIMPO (LOGO + SUBTÍTULO)
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -434,16 +401,16 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card"><div class="icon-shape"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da Educação Inclusiva.</p></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card"><div class="icon-shape"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão (LBI) e Decretos.</p></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card"><div class="icon-shape"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card"><div class="icon-shape"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Base Nacional Comum Curricular Oficial.</p></a>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-book-open-line rich-icon"></i><h3>O que é PEI?</h3><p>Conceitos fundamentais da Educação Inclusiva.</p></div></a>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-scales-3-line rich-icon"></i><h3>Legislação</h3><p>Lei Brasileira de Inclusão (LBI) e Decretos.</p></div></a>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-brain-line rich-icon"></i><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
+    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-compass-3-line rich-icon"></i><h3>BNCC</h3><p>Base Nacional Comum Curricular Oficial.</p></div></a>""", unsafe_allow_html=True)
 
     if api_key:
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">💡 Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v21.0:** Ícones iOS Style, Medicação Simplificada e Composição Familiar via Tags.")
+    st.caption("🚀 **Novidades v22.0:** Layout estável restaurado com melhorias funcionais.")
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -460,16 +427,18 @@ with tab1: # ESTUDANTE
     st.session_state.dados['serie'] = c3.selectbox("Série/Ano", LISTA_SERIES, index=serie_idx, placeholder="Selecione...")
     st.session_state.dados['turma'] = c4.text_input("Turma", st.session_state.dados['turma'])
     st.markdown("---")
+    
     c1, c2 = st.columns(2)
     st.session_state.dados['historico'] = c1.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Resuma a trajetória escolar.")
-    st.session_state.dados['familia'] = c2.text_area("Contexto Familiar (Observações)", st.session_state.dados['familia'], help="Dinâmica familiar e apoio.")
+    st.session_state.dados['familia'] = c2.text_area("Contexto Familiar (Detalhes)", st.session_state.dados['familia'], help="Dinâmica familiar e apoio.")
     
-    # Composição Familiar com Tags
-    st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno? (Selecione todos que se aplicam)", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Ex: Mãe, Avó...")
+    # Composição Familiar Inclusiva (Tag + Texto)
+    st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
+    st.caption("Nota: Se houver configurações específicas (ex: duas mães), detalhe no campo 'Contexto Familiar' acima.")
     
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico (CID se houver)", st.session_state.dados['diagnostico'])
     
-    # Medicação Humanizada (Toggle)
+    # Medicação Simplificada (Toggle)
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
@@ -585,7 +554,7 @@ with tab6: # MONITORAMENTO
     with c4:
         st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
 
-with tab7: # IA (AGORA MAIS AMIGÁVEL)
+with tab7: # IA (MAIS ACOLHEDORA)
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
     
