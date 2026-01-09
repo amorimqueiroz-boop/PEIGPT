@@ -27,19 +27,16 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. FUNÇÃO DE ESTILO (CORREÇÃO DO ERRO VISUAL)
+# 2. ESTILO VISUAL (CSS CORRIGIDO E SEGURO)
 # ==============================================================================
 def aplicar_estilo_visual():
-    # O SEGREDO ESTÁ AQUI: As tags <style> no início e </style> no fim.
     estilo = """
     <style>
-        /* Fonte e Cores Globais */
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
 
-        /* CABEÇALHO UNIFICADO */
         .header-unified {
             background-color: white; padding: 20px 40px; border-radius: var(--card-radius);
             border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
@@ -47,7 +44,6 @@ def aplicar_estilo_visual():
         }
         .header-unified p { color: #004E92; margin: 0; font-size: 1.4rem; font-weight: 800; }
 
-        /* ABAS PÍLULA (PILLS) */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
             height: 42px; border-radius: 20px; padding: 0 25px; background-color: white;
@@ -59,7 +55,6 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* CARDS RICOS DA HOME */
         .rich-card {
             background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
@@ -73,14 +68,12 @@ def aplicar_estilo_visual():
         .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
         .rich-icon { font-size: 3rem; color: var(--brand-coral); margin-bottom: 15px; }
         
-        /* CARD DE DESTAQUE IA */
         .highlight-card {
             background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-left: 6px solid #F6AD55;
             border-radius: 12px; padding: 20px; margin-top: 15px; margin-bottom: 20px;
             display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        /* INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { 
             border-radius: 12px !important; border-color: #E2E8F0 !important; 
         }
@@ -92,24 +85,55 @@ def aplicar_estilo_visual():
     """
     st.markdown(estilo, unsafe_allow_html=True)
 
-# Chama a função de estilo imediatamente
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 3. LISTAS DE DADOS (INTEGRAIS E RESTAURADAS)
+# 3. LISTAS DE DADOS (RIQUEZA RESTAURADA)
 # ==============================================================================
+# Listas completas como na versão blindada original
 LISTAS_BARREIRAS = {
-    "Cognitivo": ["Atenção Sustentada", "Atenção Alternada", "Memória de Trabalho", "Memória de Curto Prazo", "Controle Inibitório", "Flexibilidade Cognitiva", "Planejamento e Organização", "Velocidade de Processamento", "Raciocínio Lógico/Abstrato"],
-    "Comunicacional": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito", "Pragmática (Uso Social)", "Articulação/Fonologia", "Comunicação Não-Verbal", "Necessidade de Comunicação Alternativa"],
-    "Socioemocional": ["Regulação Emocional", "Tolerância à Frustração", "Interação com Pares", "Interação com Adultos", "Compreensão de Regras Sociais", "Rigidez de Pensamento", "Autoestima/Autoconfiança", "Agressividade/Impulsividade"],
-    "Sensorial/Motor": ["Coordenação Motora Fina", "Coordenação Motora Ampla", "Hipersensibilidade Auditiva", "Hipersensibilidade Tátil", "Hipersensibilidade Visual", "Busca Sensorial", "Tônus Muscular", "Planejamento Motor"],
-    "Acadêmico": ["Alfabetização (Decodificação)", "Compreensão Leitora", "Grafia/Legibilidade", "Produção Textual", "Raciocínio Lógico-Matemático", "Cálculo/Operações", "Resolução de Problemas", "Uso de Materiais Escolares"]
+    "Cognitivo": [
+        "Atenção Sustentada (Foco longo)", "Atenção Alternada (Troca de foco)", "Memória de Trabalho (Reter info)", 
+        "Memória de Curto Prazo", "Controle Inibitório (Impulsividade)", "Flexibilidade Cognitiva (Mudança de regra)", 
+        "Planejamento e Organização", "Velocidade de Processamento", "Raciocínio Lógico/Abstrato"
+    ],
+    "Comunicacional": [
+        "Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito",
+        "Pragmática (Uso Social/Contexto)", "Articulação/Fonologia (Trocas na fala)", "Comunicação Não-Verbal (Gestos/Olhar)",
+        "Necessidade de Comunicação Alternativa (CAA)"
+    ],
+    "Socioemocional": [
+        "Regulação Emocional (Choro/Raiva)", "Tolerância à Frustração", "Interação com Pares", 
+        "Interação com Adultos", "Compreensão de Regras Sociais", "Rigidez de Pensamento",
+        "Autoestima/Autoconfiança", "Agressividade/Impulsividade", "Passividade/Isolamento"
+    ],
+    "Sensorial/Motor": [
+        "Coordenação Motora Fina (Escrita/Pintura)", "Coordenação Motora Ampla (Correr/Pular)", 
+        "Hipersensibilidade Auditiva (Barulhos)", "Hipersensibilidade Tátil (Texturas)", "Hipersensibilidade Visual (Luz)",
+        "Busca Sensorial (Agitação)", "Tônus Muscular (Postura)", "Planejamento Motor (Praxia)"
+    ],
+    "Acadêmico": [
+        "Alfabetização (Decodificação)", "Compreensão Leitora", "Grafia/Legibilidade",
+        "Produção Textual", "Raciocínio Lógico-Matemático", "Cálculo/Operações",
+        "Resolução de Problemas", "Uso de Materiais Escolares", "Autonomia na Tarefa"
+    ]
 }
 
-LISTA_POTENCIAS = ["Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", "Musicalidade", "Interesse por Tecnologia", "Hiperfoco", "Vocabulário Rico", "Empatia", "Liderança", "Esportes", "Persistência"]
+LISTA_POTENCIAS = [
+    "Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade/Imaginação",
+    "Habilidades Artísticas (Desenho/Pintura)", "Musicalidade", "Interesse por Tecnologia",
+    "Hiperfoco em Áreas Específicas", "Vocabulário Rico", "Empatia/Cuidado com o Outro",
+    "Liderança", "Habilidades Esportivas", "Persistência/Esforço", "Curiosidade Investigativa"
+]
+
+LISTA_PROFISSIONAIS = [
+    "Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional (TO)", "Neuropediatra", 
+    "Psiquiatra Infantil", "Psicopedagogo", "Professor de Apoio", 
+    "Acompanhante Terapêutico (AT)", "Equipe Multidisciplinar"
+]
 
 # ==============================================================================
-# 4. GERENCIAMENTO DE ESTADO (BLINDADO)
+# 4. GERENCIAMENTO DE ESTADO (BLINDAGEM)
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -131,12 +155,10 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 5. UTILITÁRIOS E BANCO (LOCAL)
+# 5. UTILITÁRIOS E BANCO (JSON)
 # ==============================================================================
-# Pasta do Banco de Dados Local
 PASTA_BANCO = "banco_alunos"
-if not os.path.exists(PASTA_BANCO):
-    os.makedirs(PASTA_BANCO)
+if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
 
 def finding_logo():
     possiveis = ["360.png", "360.jpg", "logo.png", "logo.jpg", "iconeaba.png"]
@@ -193,7 +215,7 @@ def gerar_saudacao_ia(api_key):
     if not api_key: return "Bem-vindo ao PEI 360º."
     try:
         client = OpenAI(api_key=api_key)
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta e inspiradora para professor sobre inclusão."}], temperature=0.8)
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}], temperature=0.8)
         return res.choices[0].message.content
     except: return "A inclusão transforma vidas."
 
@@ -212,6 +234,7 @@ def consultar_gpt_final(api_key, dados, contexto_pdf=""):
         client = OpenAI(api_key=api_key)
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         meds = "\n".join([f"- {m['nome']}" for m in dados['lista_medicamentos']])
+        
         map_txt = ""
         for c, i in dados['barreiras_selecionadas'].items():
             if i: map_txt += f"\n[{c}]: " + ", ".join([f"{x} ({dados['niveis_suporte'].get(f'{c}_{x}','Monitorado')})" for x in i])
@@ -283,8 +306,7 @@ def gerar_pdf_final(dados, tem_anexo):
             l = limpar_texto_pdf(linha)
             if re.match(r'^[1-6]\.', l.strip()) and l.strip().isupper():
                 pdf.ln(4); pdf.set_fill_color(240, 248, 255); pdf.set_text_color(0, 78, 146); pdf.set_font('Arial', 'B', 11)
-                pdf.cell(0, 8, f"  {l}", 0, 1, 'L', fill=True)
-                pdf.set_text_color(0); pdf.set_font("Arial", size=10)
+                pdf.cell(0, 8, f"  {l}", 0, 1, 'L', fill=True); pdf.set_text_color(0); pdf.set_font("Arial", size=10)
             elif l.strip().endswith(':') and len(l) < 70:
                 pdf.ln(2); pdf.set_font("Arial", 'B', 10); pdf.multi_cell(0, 6, l); pdf.set_font("Arial", size=10)
             else: pdf.multi_cell(0, 6, l)
@@ -316,13 +338,11 @@ with st.sidebar:
     
     st.markdown("---")
     st.caption("📂 Gestão de Casos")
-    st.info("Para salvar um estudante, vá até a aba 'Documento' e use as opções de Salvar/Carregar Rascunho.")
-    
+    st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
-    data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v8.2</b><br>Rodrigo A. Queiroz<br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v9.0</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
 
-# HEADER UNIFICADO
+# HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
 st.markdown(f"""<div class="header-unified">{img_html}<div><p style="margin:0;">Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
@@ -404,12 +424,12 @@ with tab2: # EVIDÊNCIAS
         for q in ["Explicação 1:1?", "Frustração?", "Desorganização?"]:
             st.session_state.dados['checklist_evidencias'][q] = st.checkbox(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
 
-with tab3: # REDE
+with tab3: # REDE (LISTA EXPANDIDA)
     st.markdown("### <i class='ri-team-line'></i> Rede de Apoio", unsafe_allow_html=True)
-    st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", ["Psicólogo", "Fono", "Neuro", "Psicopedagogo"], default=st.session_state.dados['rede_apoio'])
+    st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'])
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPA (LISTAS REINSERIDAS)
+with tab4: # MAPA (LISTAS EXPANDIDAS E COMPLETAS)
     st.markdown("### <i class='ri-map-pin-user-line'></i> Potencialidades & Barreiras", unsafe_allow_html=True)
     with st.container(border=True):
         c1, c2 = st.columns(2)
