@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CSS SEGURO E IMPONENTE)
+# 2. ESTILO VISUAL (CSS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -37,7 +37,6 @@ def aplicar_estilo_visual():
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
 
-        /* CABEÇALHO UNIFICADO */
         .header-unified {
             background-color: white; padding: 35px 40px; border-radius: var(--card-radius);
             border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
@@ -45,7 +44,6 @@ def aplicar_estilo_visual():
         }
         .header-unified p { color: #004E92; margin: 0; font-size: 1.6rem; font-weight: 800; line-height: 1.2; }
 
-        /* ABAS PÍLULA */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
             height: 42px; border-radius: 20px; padding: 0 25px; background-color: white;
@@ -57,7 +55,6 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* CARDS RICOS */
         .rich-card {
             background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
@@ -85,7 +82,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 3. LISTAS DE DADOS (INTEGRAIS)
+# 3. LISTAS DE DADOS
 # ==============================================================================
 LISTA_SERIES = [
     "Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", 
@@ -96,10 +93,10 @@ LISTA_SERIES = [
 
 LISTAS_BARREIRAS = {
     "Cognitivo": ["Atenção Sustentada", "Atenção Alternada", "Memória de Trabalho", "Memória de Curto Prazo", "Controle Inibitório", "Flexibilidade Cognitiva", "Planejamento e Organização", "Velocidade de Processamento", "Raciocínio Lógico/Abstrato"],
-    "Comunicacional": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito", "Pragmática (Uso Social)", "Articulação/Fonologia", "Comunicação Não-Verbal", "Intencionalidade"],
-    "Socioemocional": ["Regulação Emocional", "Tolerância à Frustração", "Interação Social", "Compreensão de Regras", "Rigidez Mental", "Autoestima", "Agressividade"],
-    "Sensorial/Motor": ["Coordenação Motora Fina", "Coordenação Motora Ampla", "Hipersensibilidade Auditiva", "Hipersensibilidade Tátil", "Hipersensibilidade Visual", "Busca Sensorial", "Tônus", "Praxia"],
-    "Acadêmico": ["Alfabetização (Decodificação)", "Compreensão Leitora", "Grafia", "Produção Textual", "Raciocínio Lógico-Matemático", "Cálculo", "Resolução de Problemas"]
+    "Comunicacional": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito", "Pragmática (Uso Social)", "Articulação/Fonologia", "Comunicação Não-Verbal", "Necessidade de Comunicação Alternativa"],
+    "Socioemocional": ["Regulação Emocional", "Tolerância à Frustração", "Interação com Pares", "Interação com Adultos", "Compreensão de Regras Sociais", "Rigidez de Pensamento", "Autoestima", "Agressividade"],
+    "Sensorial/Motor": ["Coordenação Motora Fina", "Coordenação Motora Ampla", "Hipersensibilidade Auditiva", "Hipersensibilidade Tátil", "Hipersensibilidade Visual", "Busca Sensorial", "Tônus Muscular", "Planejamento Motor"],
+    "Acadêmico": ["Alfabetização (Decodificação)", "Compreensão Leitora", "Grafia/Legibilidade", "Produção Textual", "Raciocínio Lógico-Matemático", "Cálculo/Operações", "Resolução de Problemas"]
 }
 
 LISTA_POTENCIAS = ["Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", "Musicalidade", "Tecnologia", "Hiperfoco", "Vocabulário Rico", "Empatia", "Liderança", "Esportes", "Persistência", "Curiosidade"]
@@ -177,7 +174,7 @@ def carregar_aluno(nome_arq):
     except: return None
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (ALTA CALIBRAGEM BNCC)
+# 6. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
 def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API OpenAI na lateral."
@@ -218,9 +215,9 @@ class PDF_V3(FPDF):
     def section_title(self, label):
         self.ln(8); self.set_fill_color(240, 248, 255); self.set_text_color(0, 78, 146); self.set_font('Arial', 'B', 11); self.cell(0, 8, f"  {label}", 0, 1, 'L', fill=True); self.ln(4)
 
-def gerar_pdf_final(dados, tem_anexo):
+def gerar_pdf_final(dados):
     pdf = PDF_V3(); pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
-    pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
+    pdf.section_title("1. IDENTIFICAÇÃO")
     pdf.set_font("Arial", size=10); pdf.set_text_color(0)
     pdf.cell(40, 6, "Nome:", 0, 0); pdf.cell(0, 6, dados['nome'], 0, 1)
     pdf.cell(40, 6, "Série:", 0, 0); pdf.cell(0, 6, f"{dados['serie']} - {dados['turma']}", 0, 1)
@@ -232,16 +229,9 @@ def gerar_pdf_final(dados, tem_anexo):
     if dados.get('monitoramento_data'):
         pdf.section_title("CRONOGRAMA DE REVISÃO E MONITORAMENTO")
         pp = ', '.join(dados.get('proximos_passos_select', []))
-        txt = f"Revisão: {dados['monitoramento_data'].strftime('%d/%m/%Y')}\n\nStatus da Meta: {dados.get('status_meta','-')}\n\nParecer: {dados.get('parecer_geral','-')}\n\nPróximos Passos: {pp}"
+        txt = f"Previsão de Revisão: {dados['monitoramento_data'].strftime('%d/%m/%Y')}\n\nStatus da Meta: {dados.get('status_meta','-')}\n\nParecer Geral: {dados.get('parecer_geral','-')}\n\nPróximos Passos: {pp}"
         pdf.multi_cell(0, 6, limpar_texto_pdf(txt))
     return pdf.output(dest='S').encode('latin-1', 'replace')
-
-def gerar_docx_final(dados):
-    doc = Document(); style = doc.styles['Normal']; style.font.name = 'Arial'; style.font.size = Pt(11)
-    doc.add_heading('PLANO DE ENSINO INDIVIDUALIZADO', 0)
-    doc.add_paragraph(f"Estudante: {dados['nome']}")
-    if dados['ia_sugestao']: doc.add_paragraph(dados['ia_sugestao'])
-    buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
 # ==============================================================================
 # 8. INTERFACE UI
@@ -251,8 +241,11 @@ with st.sidebar:
     if logo: st.image(logo, width=120)
     api_key = st.text_input("Chave OpenAI:", type="password") if 'OPENAI_API_KEY' not in st.secrets else st.secrets['OPENAI_API_KEY']
     st.markdown("---")
+    st.caption("📂 Gestão de Casos")
+    st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
+    st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v12.0</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v13.0</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path)
 img_html = f'<img src="data:image/png;base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
@@ -290,27 +283,48 @@ with tab3:
     st.markdown("### <i class='ri-team-line'></i> Rede de Apoio", unsafe_allow_html=True)
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, st.session_state.dados['rede_apoio'], placeholder="Selecione...")
 
-with tab4: # --- ABA MAPEAMENTO: BLINDADA E SEGURA ---
+with tab4: # --- VISUAL REPLICADO MANUALMENTE PARA IGUALAR A IMAGEM ---
     st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
     with st.container(border=True):
         st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'], placeholder="Ex: Minecraft, Dinossauros...")
-        p_val = [p for p in st.session_state.dados['potencias'] if p in LISTA_POTENCIAS]
+        # Filtro de segurança para multiselect
+        p_val = [p for p in st.session_state.dados.get('potencias', []) if p in LISTA_POTENCIAS]
         st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=p_val, placeholder="Selecione...")
+    
     st.divider()
+    
     with st.container(border=True):
         st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
-        cols = st.columns(3)
-        for idx, (cat, itens) in enumerate(LISTAS_BARREIRAS.items()):
-            with cols[idx % 3]:
-                st.markdown(f"**{cat}**")
-                b_val = [b for b in st.session_state.dados['barreiras_selecionadas'].get(cat, []) if b in itens]
-                sel = st.multiselect(f"Barreiras:", itens, key=f"bar_{cat}", default=b_val, placeholder="Selecione...")
-                st.session_state.dados['barreiras_selecionadas'][cat] = sel
+        # Layout Manual de 3 Colunas (Igual imagem)
+        c_bg1, c_bg2, c_bg3 = st.columns(3)
+        
+        # Função auxiliar para não repetir código
+        def render_categoria(coluna, titulo, chave_json):
+            with coluna:
+                st.markdown(f"**{titulo}**")
+                opcoes = LISTAS_BARREIRAS[titulo]
+                salvos = st.session_state.dados['barreiras_selecionadas'].get(titulo, [])
+                validos = [x for x in salvos if x in opcoes]
+                sel = st.multiselect("Barreiras:", opcoes, key=f"ms_{titulo}", default=validos, placeholder="Selecione...", label_visibility="collapsed")
+                st.session_state.dados['barreiras_selecionadas'][titulo] = sel
                 if sel:
-                    for x in sel: 
-                        st.session_state.dados['niveis_suporte'][f"{cat}_{x}"] = st.select_slider(f"Apoio para {x}", ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], key=f"sl_{cat}_{x}")
+                    for item in sel:
+                        k = f"{titulo}_{item}"
+                        st.session_state.dados['niveis_suporte'][k] = st.select_slider(item, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(k, "Monitorado"), key=f"sl_{k}")
+                st.write("")
+
+        # Coluna 1: Cognitivo e Sensorial
+        render_categoria(c_bg1, "Cognitivo", "Cognitivo")
+        render_categoria(c_bg1, "Sensorial/Motor", "Sensorial/Motor")
+        
+        # Coluna 2: Comunicacional e Acadêmico
+        render_categoria(c_bg2, "Comunicacional", "Comunicacional")
+        render_categoria(c_bg2, "Acadêmico", "Acadêmico")
+        
+        # Coluna 3: Socioemocional
+        render_categoria(c_bg3, "Socioemocional", "Socioemocional")
 
 with tab5:
     st.markdown("### <i class='ri-tools-line'></i> Plano de Ação Estratégico", unsafe_allow_html=True)
@@ -348,7 +362,7 @@ with tab7:
 with tab8:
     if st.session_state.dados['ia_sugestao']:
         c1, c2 = st.columns(2)
-        with c1: st.download_button("📥 Baixar PDF Pro", gerar_pdf_final(st.session_state.dados, len(st.session_state.pdf_text)>0), f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf")
+        with c1: st.download_button("📥 Baixar PDF Pro", gerar_pdf_final(st.session_state.dados), f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf")
         with c2:
             st.download_button("💾 Salvar Rascunho (JSON)", json.dumps(st.session_state.dados, default=str), f"PEI_{st.session_state.dados['nome']}.json", "application/json")
             up = st.file_uploader("Carregar Rascunho", type="json")
@@ -360,5 +374,6 @@ with tab8:
     st.markdown("#### 🗂️ Banco Local")
     for arq in glob.glob(os.path.join(PASTA_BANCO, "*.json")):
         nome = os.path.basename(arq).replace(".json", "").replace("_", " ").title()
-        if st.button(f"📂 Abrir {nome}", key=arq): st.session_state.dados = json.load(open(arq)); st.rerun()
+        if st.button(f"📂 Abrir {nome}", key=arq): 
+            st.session_state.dados = json.load(open(arq)); st.rerun()
     if st.button("Salvar no Banco Local"): salvar_aluno(st.session_state.dados); st.rerun()
