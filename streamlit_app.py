@@ -150,7 +150,8 @@ default_state = {
 if 'dados' not in st.session_state: st.session_state.dados = default_state
 else:
     for key, val in default_state.items():
-        if key not in st.session_state.dados: st.session_state.dados[key] = val
+        if key not in st.session_state.dados:
+            st.session_state.dados[key] = val
 
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
@@ -234,7 +235,6 @@ def consultar_gpt_final(api_key, dados, contexto_pdf=""):
         client = OpenAI(api_key=api_key)
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         meds = "\n".join([f"- {m['nome']}" for m in dados['lista_medicamentos']])
-        
         map_txt = ""
         for c, i in dados['barreiras_selecionadas'].items():
             if i: map_txt += f"\n[{c}]: " + ", ".join([f"{x} ({dados['niveis_suporte'].get(f'{c}_{x}','Monitorado')})" for x in i])
@@ -340,7 +340,8 @@ with st.sidebar:
     st.caption("📂 Gestão de Casos")
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v9.0</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+    data_atual = date.today().strftime("%d/%m/%Y")
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v9.1</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -476,7 +477,7 @@ with tab7: # IA
             st.markdown("- **Análise de Evidências:** Leitura dos checklists.\n- **Matriz de Suporte:** Cruzamento das barreiras com o nível de ajuda.\n- **Legislação:** Validação com a LBI.")
         
         if st.button("GERAR PLANO AGORA", type="primary"):
-            res, err = consultar_gpt_final(api_key, st.session_state.dados, st.session_state.pdf_text)
+            res, err = consultar_gpt_inovacao(api_key, st.session_state.dados, st.session_state.pdf_text)
             if res: st.session_state.dados['ia_sugestao'] = res; st.success("Sucesso!")
             else: st.error(err)
     with c2:
