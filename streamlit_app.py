@@ -496,4 +496,146 @@ with tab3: # REDE
 
 with tab4: # MAPEAMENTO
     render_progresso()
-    st.markdown("### <i class='ri-map-pin-user-line
+    st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
+    
+    with st.container(border=True):
+        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco (Interesse Intenso)", st.session_state.dados['hiperfoco'], placeholder="Ex: Minecraft, Dinossauros, Desenho...")
+        p_val = [p for p in st.session_state.dados.get('potencias', []) if p in LISTA_POTENCIAS]
+        st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=p_val, placeholder="Selecione...")
+    
+    st.divider()
+    
+    with st.container(border=True):
+        st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
+        c_bar1, c_bar2, c_bar3 = st.columns(3)
+        
+        def render_cat_barreira(coluna, titulo, chave_json):
+            with coluna:
+                st.markdown(f"**{titulo}**")
+                itens = LISTAS_BARREIRAS[chave_json]
+                b_salvas = [b for b in st.session_state.dados['barreiras_selecionadas'].get(chave_json, []) if b in itens]
+                sel = st.multiselect("Selecione:", itens, key=f"ms_{chave_json}", default=b_salvas, placeholder="Selecione...", label_visibility="collapsed")
+                st.session_state.dados['barreiras_selecionadas'][chave_json] = sel
+                if sel:
+                    for x in sel:
+                        st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
+                st.write("")
+
+        render_cat_barreira(c_bar1, "Cognitivo", "Cognitivo")
+        render_cat_barreira(c_bar1, "Sensorial/Motor", "Sensorial/Motor")
+        render_cat_barreira(c_bar2, "Comunicacional", "Comunicacional")
+        render_cat_barreira(c_bar2, "Acadêmico", "Acadêmico")
+        render_cat_barreira(c_bar3, "Socioemocional", "Socioemocional")
+
+with tab5: # PLANO
+    render_progresso()
+    st.markdown("### <i class='ri-tools-line'></i> Plano de Ação Estratégico", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        with st.container(border=True):
+            st.markdown("#### 1. Acesso (DUA)")
+            st.session_state.dados['estrategias_acesso'] = st.multiselect("Recursos", ["Tempo Estendido", "Apoio Leitura/Escrita", "Material Ampliado", "Tecnologia Assistiva", "Sala Silenciosa"], default=st.session_state.dados['estrategias_acesso'], placeholder="Selecione...")
+            st.session_state.dados['outros_acesso'] = st.text_input("Prática Personalizada (Acesso)", st.session_state.dados['outros_acesso'])
+    with c2:
+        with st.container(border=True):
+            st.markdown("#### 2. Ensino")
+            st.session_state.dados['estrategias_ensino'] = st.multiselect("Metodologia", ["Fragmentação de Tarefas", "Pistas Visuais", "Mapas Mentais", "Modelagem", "Ensino Híbrido"], default=st.session_state.dados['estrategias_ensino'], placeholder="Selecione...")
+            st.session_state.dados['outros_ensino'] = st.text_input("Prática Pedagógica (Ensino)", st.session_state.dados['outros_ensino'])
+    with c3:
+        with st.container(border=True):
+            st.markdown("#### 3. Avaliação")
+            st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação"], default=st.session_state.dados['estrategias_avaliacao'], placeholder="Selecione...")
+
+with tab6: # MONITORAMENTO
+    render_progresso()
+    st.markdown("### <i class='ri-loop-right-line'></i> Monitoramento e Metas", unsafe_allow_html=True)
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        st.session_state.dados['monitoramento_data'] = st.date_input("Próxima Revisão", value=st.session_state.dados.get('monitoramento_data', None))
+    with c2:
+        st.session_state.dados['status_meta'] = st.selectbox("Status da Meta Atual", ["Não Iniciado", "Em Andamento", "Parcialmente Atingido", "Atingido", "Superado"], index=0, placeholder="Selecione...")
+
+    st.write("")
+    st.markdown("#### Parecer e Próximos Passos")
+    c3, c4 = st.columns(2)
+    with c3:
+        st.session_state.dados['parecer_geral'] = st.selectbox("Parecer Geral", ["Manter Estratégias", "Aumentar Suporte", "Reduzir Suporte (Autonomia)", "Alterar Metodologia", "Encaminhar para Especialista"], index=0, placeholder="Selecione...")
+    with c4:
+        st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
+
+with tab7: # IA
+    render_progresso()
+    st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
+    
+    c1, c2 = st.columns([1, 2])
+    with c1:
+        st.markdown("""
+        <div style="background-color: #F8FAFC; border-radius: 12px; padding: 20px; border: 1px solid #E2E8F0;">
+            <h4 style="color:#0F52BA; margin-top:0;">🤖 Como posso ajudar?</h4>
+            <p style="font-size:0.9rem; color:#64748B;">Vou analisar os dados do estudante (Hiperfoco, Barreiras e Evidências) para sugerir um plano alinhado à BNCC.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.write("")
+        if st.button("✨ GERAR SUGESTÕES PEDAGÓGICAS", type="primary"):
+            res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text)
+            if res: st.session_state.dados['ia_sugestao'] = res; st.balloons()
+            else: st.error(err)
+            
+    with c2:
+        if st.session_state.dados['ia_sugestao']:
+            st.markdown("""<div style="background:#FFF; padding:20px; border-radius:12px; border:1px solid #E2E8F0; box-shadow:0 4px 6px rgba(0,0,0,0.05);">""", unsafe_allow_html=True)
+            st.markdown(st.session_state.dados['ia_sugestao'])
+            st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
+
+with tab8: # DOCUMENTO & GESTÃO
+    st.markdown("### <i class='ri-file-pdf-line'></i> Documento & Gestão", unsafe_allow_html=True)
+    if st.session_state.dados['ia_sugestao']:
+        c1, c2 = st.columns(2)
+        with c1:
+            pdf = gerar_pdf_final(st.session_state.dados, len(st.session_state.pdf_text)>0)
+            st.download_button("📥 Baixar PDF Pro", pdf, f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf", type="primary")
+        with c2:
+            docx = gerar_docx_final(st.session_state.dados)
+            st.download_button("📥 Baixar Word", docx, f"PEI_{st.session_state.dados['nome']}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            
+            st.write("")
+            st.markdown("##### 💾 Gestão de Rascunhos")
+            json_dados = json.dumps(st.session_state.dados, default=str)
+            st.download_button("Baixar Arquivo do Aluno (.json)", json_dados, f"PEI_{st.session_state.dados['nome']}.json", "application/json")
+            
+            uploaded_json = st.file_uploader("Carregar Arquivo do Aluno", type="json")
+            if uploaded_json:
+                try:
+                    d = json.load(uploaded_json)
+                    if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
+                    if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
+                    st.session_state.dados.update(d); st.success("Dados carregados!"); st.rerun()
+                except: st.error("Erro no arquivo.")
+    
+    st.divider()
+    st.markdown("#### 🗂️ Banco de Estudantes (Local)")
+    arquivos = glob.glob(os.path.join(PASTA_BANCO, "*.json"))
+    if not arquivos: 
+        st.caption("Nenhum estudante salvo no servidor local. Use a opção 'Baixar Arquivo' acima para garantir seus dados.")
+    else:
+        for arq in arquivos:
+            nome = os.path.basename(arq).replace(".json", "").replace("_", " ").title()
+            c1, c2, c3 = st.columns([6, 2, 2])
+            c1.markdown(f"👤 **{nome}**")
+            if c2.button("📂 Abrir", key=f"load_{arq}"):
+                d = carregar_aluno(os.path.basename(arq))
+                if d: st.session_state.dados = d; st.success("Carregado!"); st.rerun()
+            if c3.button("🗑️", key=f"del_{arq}"): excluir_aluno(os.path.basename(arq)); st.rerun()
+            
+    if st.button("Salvar no Banco Local"):
+        ok, msg = salvar_aluno(st.session_state.dados)
+        if ok: st.success(msg); st.rerun()
+        else: st.error(msg)
+
+st.markdown("---")
