@@ -26,13 +26,77 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Pasta do Banco de Dados Local
-PASTA_BANCO = "banco_alunos"
-if not os.path.exists(PASTA_BANCO):
-    os.makedirs(PASTA_BANCO)
+# ==============================================================================
+# 2. FUNÇÃO DE ESTILO (CORREÇÃO DO ERRO VISUAL)
+# ==============================================================================
+def aplicar_estilo_visual():
+    # O SEGREDO ESTÁ AQUI: As tags <style> no início e </style> no fim.
+    estilo = """
+    <style>
+        /* Fonte e Cores Globais */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
+        :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
+        div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
+
+        /* CABEÇALHO UNIFICADO */
+        .header-unified {
+            background-color: white; padding: 20px 40px; border-radius: var(--card-radius);
+            border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
+            display: flex; align-items: center; gap: 25px;
+        }
+        .header-unified p { color: #004E92; margin: 0; font-size: 1.4rem; font-weight: 800; }
+
+        /* ABAS PÍLULA (PILLS) */
+        .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
+        .stTabs [data-baseweb="tab"] {
+            height: 42px; border-radius: 20px; padding: 0 25px; background-color: white;
+            border: 1px solid #E2E8F0; font-weight: 700; color: #718096; font-size: 0.85rem; 
+            text-transform: uppercase; transition: all 0.3s ease;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: var(--brand-coral) !important; color: white !important;
+            border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        }
+
+        /* CARDS RICOS DA HOME */
+        .rich-card {
+            background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
+            text-align: left; height: 240px; display: flex; flex-direction: column; justify-content: flex-start;
+            text-decoration: none; color: inherit; position: relative; overflow: hidden;
+        }
+        .rich-card:hover { 
+            transform: translateY(-8px); border-color: var(--brand-blue); box-shadow: 0 15px 30px rgba(0,78,146,0.15); 
+        }
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
+        .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
+        .rich-icon { font-size: 3rem; color: var(--brand-coral); margin-bottom: 15px; }
+        
+        /* CARD DE DESTAQUE IA */
+        .highlight-card {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-left: 6px solid #F6AD55;
+            border-radius: 12px; padding: 20px; margin-top: 15px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* INPUTS E BOTÕES */
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { 
+            border-radius: 12px !important; border-color: #E2E8F0 !important; 
+        }
+        div[data-testid="column"] .stButton button { 
+            border-radius: 12px !important; font-weight: 800 !important; text-transform: uppercase; height: 50px !important; 
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+    """
+    st.markdown(estilo, unsafe_allow_html=True)
+
+# Chama a função de estilo imediatamente
+aplicar_estilo_visual()
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (INTEGRAIS)
+# 3. LISTAS DE DADOS (INTEGRAIS E RESTAURADAS)
 # ==============================================================================
 LISTAS_BARREIRAS = {
     "Cognitivo": ["Atenção Sustentada", "Atenção Alternada", "Memória de Trabalho", "Memória de Curto Prazo", "Controle Inibitório", "Flexibilidade Cognitiva", "Planejamento e Organização", "Velocidade de Processamento", "Raciocínio Lógico/Abstrato"],
@@ -45,7 +109,7 @@ LISTAS_BARREIRAS = {
 LISTA_POTENCIAS = ["Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", "Musicalidade", "Interesse por Tecnologia", "Hiperfoco", "Vocabulário Rico", "Empatia", "Liderança", "Esportes", "Persistência"]
 
 # ==============================================================================
-# 3. GERENCIAMENTO DE ESTADO (BLINDADO)
+# 4. GERENCIAMENTO DE ESTADO (BLINDADO)
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -67,8 +131,13 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 4. UTILITÁRIOS
+# 5. UTILITÁRIOS E BANCO (LOCAL)
 # ==============================================================================
+# Pasta do Banco de Dados Local
+PASTA_BANCO = "banco_alunos"
+if not os.path.exists(PASTA_BANCO):
+    os.makedirs(PASTA_BANCO)
+
 def finding_logo():
     possiveis = ["360.png", "360.jpg", "logo.png", "logo.jpg", "iconeaba.png"]
     for nome in possiveis:
@@ -117,7 +186,7 @@ def excluir_aluno(nome_arq):
     except: return False
 
 # ==============================================================================
-# 5. INTELIGÊNCIA ARTIFICIAL
+# 6. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -157,7 +226,7 @@ def consultar_gpt_final(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 6. GERADOR PDF
+# 7. GERADOR PDF
 # ==============================================================================
 class PDF_V3(FPDF):
     def header(self):
@@ -214,7 +283,8 @@ def gerar_pdf_final(dados, tem_anexo):
             l = limpar_texto_pdf(linha)
             if re.match(r'^[1-6]\.', l.strip()) and l.strip().isupper():
                 pdf.ln(4); pdf.set_fill_color(240, 248, 255); pdf.set_text_color(0, 78, 146); pdf.set_font('Arial', 'B', 11)
-                pdf.cell(0, 8, f"  {l}", 0, 1, 'L', fill=True); pdf.set_text_color(0); pdf.set_font("Arial", size=10)
+                pdf.cell(0, 8, f"  {l}", 0, 1, 'L', fill=True)
+                pdf.set_text_color(0); pdf.set_font("Arial", size=10)
             elif l.strip().endswith(':') and len(l) < 70:
                 pdf.ln(2); pdf.set_font("Arial", 'B', 10); pdf.multi_cell(0, 6, l); pdf.set_font("Arial", size=10)
             else: pdf.multi_cell(0, 6, l)
@@ -235,55 +305,8 @@ def gerar_docx_final(dados):
     buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
 # ==============================================================================
-# 7. INTERFACE UI (CSS CORRIGIDO - COM TAGS STYLE)
+# 8. INTERFACE UI (PRINCIPAL)
 # ==============================================================================
-st.markdown("""
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-    html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-    :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
-    div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
-    
-    .header-unified {
-        background-color: white; padding: 20px 40px; border-radius: var(--card-radius);
-        border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
-        display: flex; align-items: center; gap: 25px;
-    }
-    .header-unified p { color: #004E92; margin: 0; font-size: 1.4rem; font-weight: 800; }
-
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
-    .stTabs [data-baseweb="tab"] {
-        height: 42px; border-radius: 20px; padding: 0 25px; background-color: white; border: 1px solid #E2E8F0;
-        font-weight: 700; color: #718096; font-size: 0.85rem; text-transform: uppercase; transition: all 0.3s ease;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: var(--brand-coral) !important; color: white !important;
-        border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
-    }
-
-    .rich-card {
-        background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
-        text-align: left; height: 240px; display: flex; flex-direction: column; justify-content: flex-start;
-        text-decoration: none; color: inherit; position: relative; overflow: hidden;
-    }
-    .rich-card:hover { transform: translateY(-8px); border-color: var(--brand-blue); box-shadow: 0 15px 30px rgba(0,78,146,0.15); }
-    .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
-    .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
-    .rich-icon { font-size: 3rem; color: var(--brand-coral); margin-bottom: 15px; }
-    
-    .highlight-card {
-        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-left: 6px solid #F6AD55;
-        border-radius: 12px; padding: 20px; margin-top: 15px; margin-bottom: 20px;
-        display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-
-    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { border-radius: 12px !important; border-color: #E2E8F0 !important; }
-    div[data-testid="column"] .stButton button { border-radius: 12px !important; font-weight: 800 !important; text-transform: uppercase; height: 50px !important; }
-    </style>
-""", unsafe_allow_html=True)
-
 # SIDEBAR
 with st.sidebar:
     logo = finding_logo()
@@ -299,7 +322,7 @@ with st.sidebar:
     data_atual = date.today().strftime("%d/%m/%Y")
     st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v8.2</b><br>Rodrigo A. Queiroz<br>{data_atual}</div>", unsafe_allow_html=True)
 
-# HEADER
+# HEADER UNIFICADO
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
 st.markdown(f"""<div class="header-unified">{img_html}<div><p style="margin:0;">Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
@@ -463,6 +486,25 @@ with tab8: # DOCUMENTO & GESTÃO
                     if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
                     st.session_state.dados.update(d); st.success("Dados carregados!"); st.rerun()
                 except: st.error("Erro no arquivo.")
-    else: st.warning("Gere o plano na aba Consultoria IA primeiro.")
+    
+    st.divider()
+    st.markdown("#### 🗂️ Banco de Estudantes (Local)")
+    arquivos = glob.glob(os.path.join(PASTA_BANCO, "*.json"))
+    if not arquivos: 
+        st.caption("Nenhum estudante salvo no servidor local. Use a opção 'Baixar Arquivo' acima para garantir seus dados.")
+    else:
+        for arq in arquivos:
+            nome = os.path.basename(arq).replace(".json", "").replace("_", " ").title()
+            c1, c2, c3 = st.columns([6, 2, 2])
+            c1.markdown(f"👤 **{nome}**")
+            if c2.button("📂 Abrir", key=f"load_{arq}"):
+                d = carregar_aluno(os.path.basename(arq))
+                if d: st.session_state.dados = d; st.success("Carregado!"); st.rerun()
+            if c3.button("🗑️", key=f"del_{arq}"): excluir_aluno(os.path.basename(arq)); st.rerun()
+            
+    if st.button("Salvar no Banco Local"):
+        ok, msg = salvar_aluno(st.session_state.dados)
+        if ok: st.success(msg); st.rerun()
+        else: st.error(msg)
 
 st.markdown("---")
