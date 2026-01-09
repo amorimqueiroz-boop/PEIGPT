@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CSS SEGURO)
+# 2. ESTILO VISUAL (MANTIDO E SEGURO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -88,8 +88,16 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 3. LISTAS DE DADOS (INTEGRAIS)
+# 3. LISTAS DE DADOS
 # ==============================================================================
+# LISTA DE SÉRIES ATUALIZADA (REQ 1: ENSINO MÉDIO DETALHADO)
+LISTA_SERIES = [
+    "Educação Infantil",
+    "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)",
+    "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)",
+    "1ª Série (Ensino Médio)", "2ª Série (Ensino Médio)", "3ª Série (Ensino Médio)"
+]
+
 LISTAS_BARREIRAS = {
     "Cognitivo": ["Atenção Sustentada", "Atenção Alternada", "Memória de Trabalho", "Memória de Curto Prazo", "Controle Inibitório", "Flexibilidade Cognitiva", "Planejamento e Organização", "Velocidade de Processamento", "Raciocínio Lógico/Abstrato"],
     "Comunicacional": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito", "Pragmática (Uso Social)", "Articulação/Fonologia", "Comunicação Não-Verbal", "Necessidade de Comunicação Alternativa"],
@@ -103,7 +111,7 @@ LISTA_POTENCIAS = ["Memória Visual", "Memória Auditiva", "Raciocínio Lógico"
 LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", "Neuropediatra", "Psiquiatra", "Psicopedagogo", "Professor de Apoio", "AT"]
 
 # ==============================================================================
-# 4. GERENCIAMENTO DE ESTADO (BLINDADO)
+# 4. GERENCIAMENTO DE ESTADO
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -314,12 +322,12 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v10.0</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v10.1</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
-st.markdown(f"""<div class="header-unified">{img_html}<div><p>Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
+st.markdown(f"""<div class="header-unified">{img_html}<div><p style="margin:0;">Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
 
 # ABAS
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento"]
@@ -351,19 +359,25 @@ with tab0: # INÍCIO
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F6AD55;"></i><div><h4 style="margin:0; color:#2D3748;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#4A5568;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Versão 10.0:** Mapeamento Blindado (Visual Restaurado) | Monitoramento Otimizado (Click) | IA Pedagógica.")
+    st.caption("🚀 **Novidades v10.1:** Ensino Médio Completo | Melhorias nas Orientações para Professores.")
 
 with tab1: # ESTUDANTE
     st.markdown("### <i class='ri-user-star-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns([3, 2, 2, 1])
     st.session_state.dados['nome'] = c1.text_input("Nome Completo", st.session_state.dados['nome'])
     st.session_state.dados['nasc'] = c2.date_input("Nascimento", value=st.session_state.dados.get('nasc', date(2015, 1, 1)))
-    st.session_state.dados['serie'] = c3.selectbox("Série/Ano", ["Infantil", "1º Ano", "2º Ano", "3º Ano", "4º Ano", "5º Ano", "6º Ano", "7º Ano", "8º Ano", "9º Ano", "Ensino Médio"])
+    
+    # Lógica segura para carregar índice do selectbox
+    try:
+        serie_idx = LISTA_SERIES.index(st.session_state.dados['serie']) if st.session_state.dados['serie'] in LISTA_SERIES else 0
+    except: serie_idx = 0
+    
+    st.session_state.dados['serie'] = c3.selectbox("Série/Ano", LISTA_SERIES, index=serie_idx, placeholder="Selecione...")
     st.session_state.dados['turma'] = c4.text_input("Turma", st.session_state.dados['turma'])
     st.markdown("---")
     c1, c2 = st.columns(2)
-    st.session_state.dados['historico'] = c1.text_area("Histórico Escolar", st.session_state.dados['historico'])
-    st.session_state.dados['familia'] = c2.text_area("Contexto Familiar", st.session_state.dados['familia'])
+    st.session_state.dados['historico'] = c1.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Resuma a trajetória escolar: retenções, mudanças de escola e avanços recentes.")
+    st.session_state.dados['familia'] = c2.text_area("Contexto Familiar", st.session_state.dados['familia'], help="Quem acompanha os estudos? Há questões familiares impactando?")
     st.session_state.dados['composicao_familiar'] = st.text_input("Composição Familiar", st.session_state.dados['composicao_familiar'])
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico", st.session_state.dados['diagnostico'])
     
@@ -406,67 +420,52 @@ with tab3: # REDE
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'], placeholder="Selecione...")
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPA (VISUAL BLINDADO + SEGURANÇA ANTI-CRASH)
+with tab4: # MAPA (BLINDADO E SEGURO)
     st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
-    
     with st.container(border=True):
-        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'])
         
-        # Filtro de Segurança Potências
         potencias_salvas = st.session_state.dados.get('potencias', [])
         potencias_validas = [p for p in potencias_salvas if p in LISTA_POTENCIAS]
-        
-        st.session_state.dados['potencias'] = c2.multiselect(
-            "Pontos Fortes", LISTA_POTENCIAS, default=potencias_validas, placeholder="Selecione..."
-        )
-    
+        st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=potencias_validas, placeholder="Selecione...")
     st.divider()
     
-    with st.container(border=True):
-        st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
-        cols = st.columns(3); idx=0
-        for cat_nome, itens_lista in LISTAS_BARREIRAS.items():
-            with cols[idx%3]:
-                # Visual exato da blindada (sem o container extra, direto na coluna)
+    cols = st.columns(3); idx = 0
+    for cat_nome, itens_lista in LISTAS_BARREIRAS.items():
+        with cols[idx % 3]:
+            with st.container():
                 st.markdown(f"**{cat_nome}**")
-                
-                # Filtro de Segurança Barreiras
                 barreiras_salvas = st.session_state.dados['barreiras_selecionadas'].get(cat_nome, [])
                 barreiras_validas = [b for b in barreiras_salvas if b in itens_lista]
                 
-                sel = st.multiselect(
-                    "Barreiras", itens_lista, key=f"bar_{cat_nome}", 
-                    default=barreiras_validas, placeholder="Selecione..."
-                )
-                
+                sel = st.multiselect("Barreiras", itens_lista, key=f"bar_{cat_nome}", default=barreiras_validas, placeholder="Selecione...")
                 st.session_state.dados['barreiras_selecionadas'][cat_nome] = sel
                 if sel:
                     st.caption("Nível de Suporte:")
                     for x in sel: 
                         st.session_state.dados['niveis_suporte'][f"{cat_nome}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], key=f"sl_{cat_nome}_{x}")
-            idx+=1
+        idx += 1
 
-with tab5: # PLANO (VISUAL BLINDADO)
+with tab5: # PLANO (MELHORIA NAS EXPLICAÇÕES)
     st.markdown("### <i class='ri-tools-line'></i> Plano de Ação Estratégico", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
         with st.container(border=True):
             st.markdown("#### 1. Acesso (DUA)")
             st.session_state.dados['estrategias_acesso'] = st.multiselect("Recursos", ["Tempo Estendido", "Apoio Leitura/Escrita", "Material Ampliado", "Tecnologia Assistiva", "Sala Silenciosa"], default=st.session_state.dados['estrategias_acesso'], placeholder="Selecione...")
-            st.session_state.dados['outros_acesso'] = st.text_input("Outros (Acesso)", st.session_state.dados['outros_acesso'])
+            st.session_state.dados['outros_acesso'] = st.text_input("Prática Personalizada (Acesso)", st.session_state.dados['outros_acesso'], placeholder="Ex: Ledor humano, Mesa adaptada...")
     with c2:
         with st.container(border=True):
             st.markdown("#### 2. Ensino")
             st.session_state.dados['estrategias_ensino'] = st.multiselect("Metodologia", ["Fragmentação de Tarefas", "Pistas Visuais", "Mapas Mentais", "Modelagem", "Ensino Híbrido"], default=st.session_state.dados['estrategias_ensino'], placeholder="Selecione...")
-            st.session_state.dados['outros_ensino'] = st.text_input("Outros (Ensino)", st.session_state.dados['outros_ensino'])
+            st.session_state.dados['outros_ensino'] = st.text_input("Prática Pedagógica (Ensino)", st.session_state.dados['outros_ensino'], placeholder="Ex: Uso de Material Dourado, Gamificação...")
     with c3:
         with st.container(border=True):
             st.markdown("#### 3. Avaliação")
             st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação"], default=st.session_state.dados['estrategias_avaliacao'], placeholder="Selecione...")
 
-with tab6: # MONITORAMENTO (CLICÁVEL)
+with tab6: # MONITORAMENTO
     st.markdown("### <i class='ri-loop-right-line'></i> Monitoramento e Metas", unsafe_allow_html=True)
     st.info("Preencha os dados abaixo para gerar o ciclo de revisão do PEI.")
     
@@ -484,7 +483,7 @@ with tab6: # MONITORAMENTO (CLICÁVEL)
     with c4:
         st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras (Multipla escolha)", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
 
-with tab7: # IA (CALIBRADA)
+with tab7: # IA
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria IA", unsafe_allow_html=True)
     c1, c2 = st.columns([1, 2])
     with c1:
@@ -499,7 +498,7 @@ with tab7: # IA (CALIBRADA)
     with c2:
         if st.session_state.dados['ia_sugestao']: st.text_area("Texto", st.session_state.dados['ia_sugestao'], height=600)
 
-with tab8: # DOCUMENTO
+with tab8: # DOCUMENTO & GESTÃO
     st.markdown("### <i class='ri-file-pdf-line'></i> Documento & Gestão", unsafe_allow_html=True)
     if st.session_state.dados['ia_sugestao']:
         c1, c2 = st.columns(2)
