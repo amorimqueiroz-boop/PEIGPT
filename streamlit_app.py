@@ -17,63 +17,171 @@ import glob
 # ==============================================================================
 def get_favicon():
     if os.path.exists("iconeaba.png"): return "iconeaba.png"
-    return "📘"
+    return "💎"
 
 st.set_page_config(
-    page_title="PEI 360º",
+    page_title="PEI 360º Platinum",
     page_icon=get_favicon(),
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CSS)
+# 2. ESTILO VISUAL PREMIADO (CSS AVANÇADO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
-        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-        :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
-        div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
+        /* IMPORTANDO FONTES MODERNAS */
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap');
 
-        .header-unified {
-            background-color: white; padding: 35px 40px; border-radius: var(--card-radius);
-            border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
-            display: flex; align-items: center; gap: 30px;
+        /* VARIÁVEIS DE COR PREMIUM */
+        :root {
+            --primary-dark: #0F172A;
+            --primary-blue: #3B82F6;
+            --accent-gold: #F59E0B;
+            --accent-green: #10B981;
+            --accent-rose: #F43F5E;
+            --bg-gray: #F8FAFC;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
-        .header-unified p { color: #004E92; margin: 0; font-size: 1.6rem; font-weight: 800; line-height: 1.2; }
 
-        .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
+        html, body, [class*="css"] {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1E293B;
+            background-color: var(--bg-gray);
+        }
+
+        /* HEADER REVOLUCIONÁRIO COM GRADIENTE */
+        .header-unified {
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            padding: 40px;
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .header-unified p {
+            color: #F8FAFC;
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+        .header-subtitle {
+            color: #94A3B8;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        /* CARDS COM EFEITO GLASS (VIDRO) E HOVER */
+        .rich-card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .rich-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.15);
+            border-color: var(--primary-blue);
+        }
+        .rich-card h3 {
+            font-size: 1.25rem;
+            color: #0F172A;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .rich-card p {
+            font-size: 0.9rem;
+            color: #64748B;
+            line-height: 1.5;
+        }
+        .rich-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        /* ESTILIZAÇÃO DAS ABAS */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 12px;
+            background-color: transparent;
+            padding-bottom: 15px;
+        }
         .stTabs [data-baseweb="tab"] {
-            height: 42px; border-radius: 20px; padding: 0 25px; background-color: white;
-            border: 1px solid #E2E8F0; font-weight: 700; color: #718096; font-size: 0.85rem; 
-            text-transform: uppercase; transition: all 0.3s ease;
+            height: 45px;
+            border-radius: 12px;
+            background-color: white;
+            border: 1px solid #E2E8F0;
+            font-weight: 600;
+            color: #64748B;
+            font-size: 0.9rem;
+            transition: all 0.2s;
         }
         .stTabs [aria-selected="true"] {
-            background-color: var(--brand-coral) !important; color: white !important;
-            border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+            background-color: var(--primary-dark) !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        .rich-card {
-            background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
-            text-align: left; height: 240px; display: flex; flex-direction: column; justify-content: flex-start;
-            text-decoration: none; color: inherit; position: relative; overflow: hidden;
+        /* INPUTS MODERNOS */
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+            border-radius: 10px !important;
+            border: 1px solid #CBD5E1 !important;
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
         }
-        .rich-card:hover { transform: translateY(-8px); border-color: var(--brand-blue); box-shadow: 0 15px 30px rgba(0,78,146,0.15); }
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
-        .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
-        .rich-icon { font-size: 3rem; color: var(--brand-coral); margin-bottom: 15px; }
-        
-        .highlight-card {
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-left: 6px solid #F6AD55;
-            border-radius: 12px; padding: 20px; margin-top: 15px; margin-bottom: 20px;
-            display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        .stTextInput input:focus, .stTextArea textarea:focus {
+            border-color: var(--primary-blue) !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
         }
 
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { border-radius: 12px !important; border-color: #E2E8F0 !important; }
-        div[data-testid="column"] .stButton button { border-radius: 12px !important; font-weight: 800 !important; text-transform: uppercase; height: 50px !important; }
+        /* BOTÕES */
+        div[data-testid="column"] .stButton button {
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            height: 50px !important;
+            transition: transform 0.1s;
+        }
+        div[data-testid="column"] .stButton button:active {
+            transform: scale(0.98);
+        }
+
+        /* CONTAINER ESPECIAL: POTENCIALIDADES (VERDE) */
+        .potencia-container {
+            border-left: 5px solid var(--accent-green);
+            background-color: #F0FDF4;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        /* CONTAINER ESPECIAL: BARREIRAS (LARANJA) */
+        .barreira-container {
+            border-left: 5px solid var(--accent-rose);
+            background-color: #FFF1F2;
+            padding: 20px;
+            border-radius: 12px;
+        }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -220,12 +328,12 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
 # ==============================================================================
 class PDF_V3(FPDF):
     def header(self):
-        self.set_draw_color(0, 78, 146); self.set_line_width(0.4)
+        self.set_draw_color(15, 23, 42); self.set_line_width(0.5)
         self.rect(5, 5, 200, 287)
         logo = finding_logo()
         if logo: self.image(logo, 10, 10, 30); x_offset = 45 
         else: x_offset = 12
-        self.set_xy(x_offset, 16); self.set_font('Arial', 'B', 16); self.set_text_color(0, 78, 146)
+        self.set_xy(x_offset, 16); self.set_font('Arial', 'B', 16); self.set_text_color(15, 23, 42)
         self.cell(0, 8, 'PLANO DE ENSINO INDIVIDUALIZADO', 0, 1, 'L')
         self.set_xy(x_offset, 23); self.set_font('Arial', 'I', 10); self.set_text_color(100)
         self.cell(0, 5, 'Documento Oficial de Planejamento Pedagógico', 0, 1, 'L'); self.ln(20)
@@ -233,7 +341,7 @@ class PDF_V3(FPDF):
         self.set_y(-15); self.set_font('Arial', 'I', 8); self.set_text_color(128)
         self.cell(0, 10, f'Gerado via PEI 360º | Página {self.page_no()}', 0, 0, 'C')
     def section_title(self, label):
-        self.ln(8); self.set_fill_color(240, 248, 255); self.set_text_color(0, 78, 146)
+        self.ln(8); self.set_fill_color(241, 245, 249); self.set_text_color(15, 23, 42)
         self.set_font('Arial', 'B', 11); self.cell(0, 8, f"  {label}", 0, 1, 'L', fill=True); self.ln(4)
 
 def gerar_pdf_final(dados, tem_anexo):
@@ -272,7 +380,7 @@ def gerar_pdf_final(dados, tem_anexo):
         for linha in dados['ia_sugestao'].split('\n'):
             l = limpar_texto_pdf(linha)
             if re.match(r'^[1-6]\.', l.strip()) and l.strip().isupper():
-                pdf.ln(4); pdf.set_fill_color(240, 248, 255); pdf.set_text_color(0, 78, 146); pdf.set_font('Arial', 'B', 11)
+                pdf.ln(4); pdf.set_fill_color(241, 245, 249); pdf.set_text_color(15, 23, 42); pdf.set_font('Arial', 'B', 11)
                 pdf.cell(0, 8, f"  {l}", 0, 1, 'L', fill=True); pdf.set_text_color(0); pdf.set_font("Arial", size=10)
             elif l.strip().endswith(':') and len(l) < 70:
                 pdf.ln(2); pdf.set_font("Arial", 'B', 10); pdf.multi_cell(0, 6, l); pdf.set_font("Arial", size=10)
@@ -309,12 +417,19 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v13.0</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#64748B;'><b>PEI 360º v14.0 Platinum</b><br>Desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
-# HEADER
+# HEADER PREMIADO
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
-st.markdown(f"""<div class="header-unified">{img_html}<div><p style="margin:0;">Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
+st.markdown(f"""
+<div class="header-unified">
+    {img_html}
+    <div>
+        <p>PEI 360º Platinum</p>
+        <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
+    </div>
+</div>""", unsafe_allow_html=True)
 
 # ABAS
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento"]
@@ -327,10 +442,10 @@ with tab0: # INÍCIO
             noticia = gerar_noticia_ia(api_key)
         
         st.markdown(f"""
-        <div style="background: linear-gradient(90deg, #004E92 0%, #000428 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 20px; box-shadow: 0 8px 15px rgba(0,78,146,0.2);">
-            <div style="display:flex; gap:15px; align-items:center;">
-                <i class="ri-sparkling-fill" style="font-size: 2rem; color: #FFD700;"></i>
-                <div><h3 style="color:white; margin:0; font-size: 1.3rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.9;">{saudacao}</p></div>
+        <div style="background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%); padding: 25px; border-radius: 16px; color: white; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);">
+            <div style="display:flex; gap:20px; align-items:center;">
+                <i class="ri-sparkling-fill" style="font-size: 2.5rem; color: #FCD34D;"></i>
+                <div><h3 style="color:white; margin:0; font-size: 1.4rem; font-weight:700;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.9; font-size:1rem;">{saudacao}</p></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -343,10 +458,15 @@ with tab0: # INÍCIO
     with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-compass-3-line rich-icon"></i><h3>BNCC</h3><p>Base Nacional Comum Curricular Oficial.</p></div></a>""", unsafe_allow_html=True)
 
     if api_key:
-        st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F6AD55;"></i><div><h4 style="margin:0; color:#2D3748;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#4A5568;">{noticia}</p></div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style="background: white; border-left: 5px solid #F59E0B; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display:flex; gap:20px; align-items:center;">
+            <i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i>
+            <div><h4 style="margin:0; color:#1E293B; font-weight:700;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.95rem; color:#64748B;">{noticia}</p></div>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v13.0:** Mapeamento em 2 Containers | Layout Fixo | Ensino Médio.")
+    st.caption("🚀 **Versão Platinum:** Design Glassmorphism | Tipografia Premium | Layout Inteligente.")
 
 with tab1: # ESTUDANTE
     st.markdown("### <i class='ri-user-star-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
@@ -406,46 +526,43 @@ with tab3: # REDE
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'], placeholder="Selecione...")
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS)
+with tab4: # MAPEAMENTO - AGORA COM DESIGN DIFERENCIADO
     st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
     
-    # CONTAINER 1: POTENCIALIDADES
-    with st.container(border=True):
-        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
-        c1, c2 = st.columns(2)
-        st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'], placeholder="Ex: Minecraft, Dinossauros...")
-        p_val = [p for p in st.session_state.dados.get('potencias', []) if p in LISTA_POTENCIAS]
-        st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=p_val, placeholder="Selecione...")
+    # CONTAINER 1: POTENCIALIDADES (COM COR DE FUNDO ESPECÍFICA)
+    st.markdown('<div class="potencia-container">', unsafe_allow_html=True)
+    st.markdown("#### <i class='ri-plant-line' style='color:#10B981'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
+    c1, c2 = st.columns(2)
+    st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'], placeholder="Ex: Minecraft, Dinossauros...")
+    p_val = [p for p in st.session_state.dados.get('potencias', []) if p in LISTA_POTENCIAS]
+    st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=p_val, placeholder="Selecione...")
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    st.divider()
+    st.write("") # Espaço
     
-    # CONTAINER 2: BARREIRAS (LAYOUT MANUAL FIXO 3 COLUNAS)
-    with st.container(border=True):
-        st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
-        c_bar1, c_bar2, c_bar3 = st.columns(3)
-        
-        def render_cat_barreira(coluna, titulo, chave_json):
-            with coluna:
-                st.markdown(f"**{titulo}**")
-                itens = LISTAS_BARREIRAS[chave_json]
-                b_salvas = [b for b in st.session_state.dados['barreiras_selecionadas'].get(chave_json, []) if b in itens]
-                sel = st.multiselect("Selecione:", itens, key=f"ms_{chave_json}", default=b_salvas, placeholder="Selecione...", label_visibility="collapsed")
-                st.session_state.dados['barreiras_selecionadas'][chave_json] = sel
-                if sel:
-                    for x in sel:
-                        st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
-                st.write("")
+    # CONTAINER 2: BARREIRAS (COM COR DE FUNDO ESPECÍFICA)
+    st.markdown('<div class="barreira-container">', unsafe_allow_html=True)
+    st.markdown("#### <i class='ri-alarm-warning-line' style='color:#F43F5E'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
+    c_bar1, c_bar2, c_bar3 = st.columns(3)
+    
+    def render_cat_barreira(coluna, titulo, chave_json):
+        with coluna:
+            st.markdown(f"**{titulo}**")
+            itens = LISTAS_BARREIRAS[chave_json]
+            b_salvas = [b for b in st.session_state.dados['barreiras_selecionadas'].get(chave_json, []) if b in itens]
+            sel = st.multiselect("Selecione:", itens, key=f"ms_{chave_json}", default=b_salvas, placeholder="Selecione...", label_visibility="collapsed")
+            st.session_state.dados['barreiras_selecionadas'][chave_json] = sel
+            if sel:
+                for x in sel:
+                    st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
+            st.write("")
 
-        # Coluna 1: Cognitivo + Sensorial
-        render_cat_barreira(c_bar1, "Cognitivo", "Cognitivo")
-        render_cat_barreira(c_bar1, "Sensorial/Motor", "Sensorial/Motor")
-        
-        # Coluna 2: Comunicacional + Acadêmico
-        render_cat_barreira(c_bar2, "Comunicacional", "Comunicacional")
-        render_cat_barreira(c_bar2, "Acadêmico", "Acadêmico")
-        
-        # Coluna 3: Socioemocional
-        render_cat_barreira(c_bar3, "Socioemocional", "Socioemocional")
+    render_cat_barreira(c_bar1, "Cognitivo", "Cognitivo")
+    render_cat_barreira(c_bar1, "Sensorial/Motor", "Sensorial/Motor")
+    render_cat_barreira(c_bar2, "Comunicacional", "Comunicacional")
+    render_cat_barreira(c_bar2, "Acadêmico", "Acadêmico")
+    render_cat_barreira(c_bar3, "Socioemocional", "Socioemocional")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with tab5: # PLANO (VISUAL CARDS)
     st.markdown("### <i class='ri-tools-line'></i> Plano de Ação Estratégico", unsafe_allow_html=True)
@@ -487,9 +604,9 @@ with tab7: # IA
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria IA", unsafe_allow_html=True)
     c1, c2 = st.columns([1, 2])
     with c1:
-        st.markdown("""<div style="background:#F0F4FF; padding:15px; border-radius:12px; border-left: 4px solid #004E92; color: #2D3748; font-size: 0.95rem;"><b>IA Pedagógica:</b> Cruzamento de dados com BNCC e Neurociência.</div>""", unsafe_allow_html=True)
-        with st.expander("🔍 Ver detalhes do processamento"):
-            st.markdown("- **BNCC:** Habilidades do Ano vs. Recomposição.\n- **Neurociência:** Funções Executivas.\n- **Engajamento:** Uso do Hiperfoco.")
+        st.markdown("""<div style="background:#F0F9FF; padding:20px; border-radius:12px; border: 1px solid #BAE6FD; color: #0F172A;">
+        <h4 style="margin:0 0 10px 0; color:#0284C7;">IA Pedagógica</h4>
+        Cruzamento de dados com BNCC e Neurociência.</div>""", unsafe_allow_html=True)
         
         if st.button("GERAR PLANO AGORA", type="primary"):
             res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text)
