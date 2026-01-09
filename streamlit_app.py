@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (FIX ABAS + ÍCONES VETORIAIS + CORES VIBRANTES)
+# 2. ESTILO VISUAL (REFINADO: BARRA FINA & CARDS VIBRANTES)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -35,86 +35,90 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         
-        /* FIX DE LAYOUT E REMOÇÃO DA "LINHA FANTASMA" */
-        .block-container { padding-top: 1rem !important; padding-bottom: 2rem !important; }
+        /* 1. LAYOUT GERAL E FIXES */
+        .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
         div[data-baseweb="tab-border"] { display: none !important; }
-        div[data-baseweb="tab-highlight"] { visibility: hidden !important; } /* Oculta a linha padrão */
+        div[data-baseweb="tab-highlight"] { display: none !important; } /* Remove a linha padrão do Streamlit */
         
-        /* BARRA DE PROGRESSO COM ÍCONE VETORIAL */
+        /* 2. BARRA DE PROGRESSO (FINA E ELEGANTE) */
         .minimal-track {
-            width: 100%; height: 6px; background-color: #EDF2F7; border-radius: 3px;
-            position: relative; margin: 5px 0 35px 0; /* Espaço ajustado */
+            width: 100%; height: 4px; /* Mais fina */
+            background-color: #EDF2F7; border-radius: 2px;
+            position: relative; margin: 10px 0 40px 0; /* Espaçamento ajustado */
         }
         .minimal-fill {
-            height: 100%; background: linear-gradient(90deg, var(--brand-coral) 0%, #FF8E53 100%);
-            border-radius: 3px;
+            height: 100%; 
+            background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%); /* Gradiente Coral */
+            border-radius: 2px;
             transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-            box-shadow: 0 2px 5px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4);
         }
         .minimal-cursor-icon {
-            position: absolute; top: -16px; 
-            font-size: 1.8rem; /* Ícone maior */
-            color: var(--brand-coral);
+            position: absolute; top: -18px; /* Ajuste vertical do ícone */
+            font-size: 1.6rem; color: #FF6B6B;
             transition: left 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             transform: translateX(-50%); z-index: 10;
-            background: white; border-radius: 50%; /* Fundo branco para destacar o ícone */
-            width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: white; border-radius: 50%;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            border: 2px solid white;
         }
 
-        /* HEADER */
+        /* 3. HEADER */
         .header-unified {
             background-color: white; padding: 20px 40px; border-radius: 16px;
-            border: 1px solid #E2E8F0; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px;
+            border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px;
             display: flex; align-items: center; gap: 25px;
         }
         .header-unified span { 
             color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;
         }
 
-        /* ABAS ESTILO PÍLULA (PERFEITAS) */
-        .stTabs [data-baseweb="tab-list"] { gap: 12px; flex-wrap: wrap; }
+        /* 4. ABAS PÍLULA (PERFEITAS) */
+        .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
-            height: 42px; border-radius: 21px !important; 
+            height: 38px; border-radius: 19px !important; 
             background-color: white; border: 1px solid #E2E8F0;
-            color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 25px;
+            color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px;
             transition: all 0.2s ease;
         }
         .stTabs [aria-selected="true"] {
-            background-color: var(--brand-coral) !important; color: white !important; 
-            border-color: var(--brand-coral) !important;
-            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-            transform: translateY(-1px);
+            background-color: #FF6B6B !important; color: white !important; 
+            border-color: #FF6B6B !important;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* CARDS MULTICOLORIDOS (INÍCIO) */
+        /* 5. CARDS DA TELA INICIAL (CORRIGIDOS) */
+        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+        
         .rich-card {
-            background-color: white; padding: 30px; border-radius: 20px; border: 1px solid #EDF2F7;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
-            text-align: left; height: 260px; display: flex; flex-direction: column; justify-content: flex-start;
-            text-decoration: none; color: inherit; position: relative; overflow: hidden;
+            background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
+            height: 280px; display: flex; flex-direction: column; justify-content: flex-start;
+            position: relative; overflow: hidden;
         }
-        .rich-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
         
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.25rem; color: #2D3748; font-weight: 800; }
-        .rich-card p { font-size: 0.95rem; color: #718096; line-height: 1.6; }
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: #2D3748; font-weight: 800; }
+        .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
         
-        /* Ícones Específicos */
-        .icon-box {
-            width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; margin-bottom: 15px;
+        /* Ícones Coloridos */
+        .icon-container {
+            width: 50px; height: 50px; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; margin-bottom: 10px;
         }
-        .icon-blue { background-color: #EBF8FF; color: #3182CE; }
-        .icon-gold { background-color: #FFFFF0; color: #D69E2E; }
-        .icon-pink { background-color: #FFF5F7; color: #D53F8C; }
-        .icon-green { background-color: #F0FFF4; color: #38A169; }
+        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
+        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
+        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
+        .ic-green { background-color: #F0FFF4; color: #38A169; }
 
-        /* INPUTS E BOTÕES */
+        /* 6. INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 12px !important; border-color: #E2E8F0 !important; 
         }
         div[data-testid="column"] .stButton button { 
-            border-radius: 12px !important; font-weight: 800 !important; height: 55px !important; 
+            border-radius: 12px !important; font-weight: 800 !important; height: 50px !important; 
         }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -181,10 +185,10 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    # Lógica de Ícones Vetoriais (Remix Icons)
-    if p < 15: icon_class = "ri-checkbox-blank-circle-line"
+    # Ícones vetoriais que mudam com o progresso
+    if p < 10: icon_class = "ri-checkbox-blank-circle-line"
     elif p < 100: icon_class = "ri-run-line"
-    else: icon_class = "ri-rocket-2-fill"
+    else: icon_class = "ri-flag-2-fill"
     
     st.markdown(f"""
     <div class="minimal-track">
@@ -249,9 +253,9 @@ def gerar_saudacao_ia(api_key):
     if not api_key: return "Bem-vindo ao PEI 360º."
     try:
         client = OpenAI(api_key=api_key)
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta, acolhedora e inspiradora para um professor de educação inclusiva."}], temperature=0.9)
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}], temperature=0.9)
         return res.choices[0].message.content
-    except: return "A inclusão é um ato de amor e competência."
+    except: return "A inclusão transforma vidas."
 
 @st.cache_data(ttl=3600)
 def gerar_noticia_ia(api_key):
@@ -271,20 +275,17 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         
         prompt_sys = """
         Você é um Consultor Pedagógico Especialista em Educação Inclusiva (Tom: Acolhedor, Técnico e Prático).
-        Sua missão é ajudar o professor a ver o potencial do aluno e traçar caminhos claros.
-        
         ESTRUTURA DA RESPOSTA (Markdown Limpo):
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial focando nas potências.
-        2. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos claros e adaptados.
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
+        2. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos adaptados.
         3. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar o interesse ({hiperfoco}) para engajar?
-        4. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas de ambiente e material.
+        4. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas.
         """.format(hiperfoco=dados['hiperfoco'])
         
         prompt_user = f"""
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
         DIAGNÓSTICO: {dados['diagnostico']}
-        FAMÍLIA: {familia}
-        CONTEXTO FAMILIAR: {dados['familia']}
+        FAMÍLIA: {familia} | CONTEXTO: {dados['familia']}
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
@@ -380,7 +381,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v25.0 Polished</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v26.0 Polish</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -403,26 +404,26 @@ with tab0: # INÍCIO
             noticia = gerar_noticia_ia(api_key)
         
         st.markdown(f"""
-        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);">
-            <div style="display:flex; gap:20px; align-items:center;">
-                <div style="background:rgba(255,255,255,0.2); padding:12px; border-radius:50%;"><i class="ri-sparkling-2-fill" style="font-size: 2rem; color: #FFD700;"></i></div>
-                <div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div>
+        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 20px; box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);">
+            <div style="display:flex; gap:15px; align-items:center;">
+                <i class="ri-sparkling-fill" style="font-size: 2rem; color: #FCD34D;"></i>
+                <div><h3 style="color:white; margin:0; font-size: 1.3rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.9;">{saudacao}</p></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card"><div class="icon-box icon-blue"><i class="ri-book-read-line"></i></div><h3>O que é PEI?</h3><p>Descubra os pilares essenciais do Planejamento Educacional Individualizado.</p></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card"><div class="icon-box icon-gold"><i class="ri-government-line"></i></div><h3>Legislação</h3><p>Consulte a Lei Brasileira de Inclusão (LBI) e garanta os direitos do aluno.</p></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card"><div class="icon-box icon-pink"><i class="ri-brain-fill"></i></div><h3>Neurociência</h3><p>Entenda o cérebro e os processos de aprendizagem atípica.</p></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card"><div class="icon-box icon-green"><i class="ri-plant-fill"></i></div><h3>BNCC</h3><p>Alinhe as adaptações curriculares com a Base Nacional Comum.</p></a>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Entenda os conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Conheça a Lei Brasileira de Inclusão (LBI).</p></div></a>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
+    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Base Nacional Comum Curricular Oficial.</p></div></a>""", unsafe_allow_html=True)
 
     if api_key:
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">💡 Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v25.0:** Cores Vibrantes, Ícones Vetoriais e UX Polido.")
+    st.caption("🚀 **Novidades v26.0:** Cards Vibrantes e Barra de Progresso Refinada.")
 
 with tab1: # ESTUDANTE
     render_progresso()
