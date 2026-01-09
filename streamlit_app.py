@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CSS BLINDADO + FIX DA LINHA DUPLA)
+# 2. ESTILO VISUAL (CSS BLINDADO + FIX DE ESPAÇAMENTO E LOGO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -37,61 +37,52 @@ def aplicar_estilo_visual():
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         
         /* -----------------------------------------------------------
-           FIX: REMOVER LINHA PADRÃO DO STREAMLIT
+           FIX 1: REMOVER ESPAÇO EM BRANCO DO TOPO (HEADER)
         ----------------------------------------------------------- */
-        /* Remove a borda/linha cinza padrão abaixo das abas */
-        div[data-baseweb="tab-border"] { 
-            display: none !important; 
-            height: 0 !important; 
-            margin: 0 !important; 
+        .block-container {
+            padding-top: 1.5rem !important; /* Reduz drasticamente a margem superior */
+            padding-bottom: 1rem !important;
         }
-        div[data-baseweb="tab-highlight"] { 
-            background-color: transparent !important; 
-        }
+        
+        /* -----------------------------------------------------------
+           FIX 2: REMOVER LINHA PADRÃO ABAIXO DAS ABAS
+        ----------------------------------------------------------- */
+        div[data-baseweb="tab-border"] { display: none !important; height: 0 !important; margin: 0 !important; }
+        div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
 
         /* -----------------------------------------------------------
            BARRA DE PROGRESSO MINIMALISTA (LINHA VERMELHA)
         ----------------------------------------------------------- */
         .minimal-track {
-            width: 100%;
-            height: 4px; /* Levemente mais espessa para ser a linha principal */
-            background-color: #EDF2F7; /* Cinza muito suave no fundo */
-            border-radius: 2px;
-            position: relative;
-            margin: 0 0 30px 0; /* Margem superior 0 para colar nas abas */
+            width: 100%; height: 4px; background-color: #EDF2F7; border-radius: 2px;
+            position: relative; margin: 0 0 25px 0;
         }
         .minimal-fill {
-            height: 100%;
-            background-color: var(--brand-coral); /* Vermelho da marca */
-            border-radius: 2px;
+            height: 100%; background-color: var(--brand-coral); border-radius: 2px;
             transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 2px 4px rgba(255, 107, 107, 0.25);
         }
         .minimal-cursor {
-            position: absolute;
-            top: -14px; /* Emoji flutuando em cima da linha */
-            font-size: 1.4rem;
+            position: absolute; top: -14px; font-size: 1.4rem;
             transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateX(-50%);
+            transform: translateX(-50%); z-index: 10;
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
-            z-index: 10;
         }
 
         /* -----------------------------------------------------------
-           COMPONENTES VISUAIS (MANTIDOS DA V13)
+           COMPONENTES VISUAIS
         ----------------------------------------------------------- */
         .header-unified {
-            background-color: white; padding: 35px 40px; border-radius: var(--card-radius);
-            border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
+            background-color: white; padding: 25px 40px; border-radius: var(--card-radius);
+            border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 20px;
             display: flex; align-items: center; gap: 30px;
         }
-        .header-unified p { color: #004E92; margin: 0; font-size: 1.6rem; font-weight: 800; line-height: 1.2; }
+        /* Ajuste fino para o texto acompanhar o logo grande */
+        .header-text-col { display: flex; flex-direction: column; justify-content: center; }
+        .header-unified p { color: #004E92; margin: 0; font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+        .header-unified span { color: #718096; font-size: 0.95rem; font-weight: 600; margin-top: 5px; }
 
-        .stTabs [data-baseweb="tab-list"] { 
-            gap: 8px; 
-            padding-bottom: 5px; /* Reduzido para aproximar da linha vermelha */
-            flex-wrap: wrap; 
-        }
+        .stTabs [data-baseweb="tab-list"] { gap: 8px; padding-bottom: 5px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
             height: 42px; border-radius: 20px; padding: 0 25px; background-color: white;
             border: 1px solid #E2E8F0; font-weight: 700; color: #718096; font-size: 0.85rem; 
@@ -121,6 +112,9 @@ def aplicar_estilo_visual():
 
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { border-radius: 12px !important; border-color: #E2E8F0 !important; }
         div[data-testid="column"] .stButton button { border-radius: 12px !important; font-weight: 800 !important; text-transform: uppercase; height: 50px !important; }
+        
+        /* Estilo para os Expanders de Ajuda */
+        .streamlit-expanderHeader { font-weight: 700; color: #004E92; background-color: #F7FAFC; border-radius: 8px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -178,7 +172,7 @@ if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 # ==============================================================================
 def calcular_progresso():
     pontos = 0
-    total = 7 # Nome, Serie, Diag, Evidencias, Hiperfoco, Barreiras, Estrategias
+    total = 7 
     d = st.session_state.dados
     if d['nome']: pontos += 1
     if d['serie']: pontos += 1
@@ -191,9 +185,7 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    # Emoji muda conforme o progresso
     emoji = "🚦" if p < 10 else ("🏃" if p < 100 else "🏁")
-    
     st.markdown(f"""
     <div class="minimal-track">
         <div class="minimal-fill" style="width: {p}%;"></div>
@@ -385,12 +377,20 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v19.0 Polished</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v20.0 UX</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
-# HEADER
+# HEADER COM LOGO GIGANTE
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
-img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
-st.markdown(f"""<div class="header-unified">{img_html}<div><p style="margin:0;">Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
+img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 110px;">' if logo_path else "" # Aumentado para 110px
+
+st.markdown(f"""
+<div class="header-unified">
+    {img_html}
+    <div class="header-text-col">
+        <p>PEI 360º</p>
+        <span>Ecossistema de Inteligência Pedagógica e Inclusiva</span>
+    </div>
+</div>""", unsafe_allow_html=True)
 
 # ABAS
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento"]
@@ -422,13 +422,18 @@ with tab0: # INÍCIO
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F6AD55;"></i><div><h4 style="margin:0; color:#2D3748;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#4A5568;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v19.0:** Visual limpo com barra de progresso integrada.")
+    st.caption("🚀 **Novidades v20.0 UX:** Layout otimizado, Logo Grande e Ajuda Contextual.")
 
 with tab1: # ESTUDANTE
-    render_progresso() # LINHA MINIMALISTA AQUI
+    render_progresso()
+    
+    # UX: Guia do Usuário
+    with st.expander("ℹ️ Dica: Como preencher o Dossiê"):
+        st.markdown("Preencha os dados com base na matrícula e na entrevista inicial com a família. O **Histórico Escolar** deve conter retenções e escolas anteriores.")
+
     st.markdown("### <i class='ri-user-star-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns([3, 2, 2, 1])
-    st.session_state.dados['nome'] = c1.text_input("Nome Completo", st.session_state.dados['nome'])
+    st.session_state.dados['nome'] = c1.text_input("Nome Completo", st.session_state.dados['nome'], help="Nome oficial do aluno conforme certidão.")
     st.session_state.dados['nasc'] = c2.date_input("Nascimento", value=st.session_state.dados.get('nasc', date(2015, 1, 1)))
     
     try:
@@ -441,14 +446,14 @@ with tab1: # ESTUDANTE
     c1, c2 = st.columns(2)
     st.session_state.dados['historico'] = c1.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Resuma a trajetória escolar: retenções, mudanças de escola e avanços recentes.")
     st.session_state.dados['familia'] = c2.text_area("Contexto Familiar", st.session_state.dados['familia'], help="Quem acompanha os estudos? Há questões familiares impactando?")
-    st.session_state.dados['composicao_familiar'] = st.text_input("Composição Familiar", st.session_state.dados['composicao_familiar'])
-    st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico", st.session_state.dados['diagnostico'])
+    st.session_state.dados['composicao_familiar'] = st.text_input("Composição Familiar", st.session_state.dados['composicao_familiar'], placeholder="Ex: Pai, Mãe e 2 irmãos")
+    st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico (CID se houver)", st.session_state.dados['diagnostico'], help="Insira o laudo médico ou hipótese diagnóstica.")
     
     with st.container(border=True):
         st.markdown("**Controle de Medicação**")
         c1, c2, c3 = st.columns([3, 2, 1])
         nm = c1.text_input("Nome Med", key="nm_med")
-        pos = c2.text_input("Posologia", key="pos_med")
+        pos = c2.text_input("Posologia", key="pos_med", placeholder="Ex: 1cp pela manhã")
         if c3.button("➕ Add"):
             st.session_state.dados['lista_medicamentos'].append({"nome": nm, "posologia": pos, "escola": False}); st.rerun()
         for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
@@ -464,6 +469,10 @@ with tab1: # ESTUDANTE
 
 with tab2: # EVIDÊNCIAS
     render_progresso()
+    
+    with st.expander("ℹ️ Por que coletar evidências?"):
+        st.markdown("As evidências comprovam a necessidade do PEI. Marque apenas o que você observa **frequentemente** em sala de aula.")
+
     st.markdown("### <i class='ri-search-eye-line'></i> Coleta de Evidências", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -482,18 +491,22 @@ with tab2: # EVIDÊNCIAS
 with tab3: # REDE
     render_progresso()
     st.markdown("### <i class='ri-team-line'></i> Rede de Apoio", unsafe_allow_html=True)
-    st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'], placeholder="Selecione...")
-    st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
+    st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais que atendem o aluno:", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'], placeholder="Selecione...")
+    st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações Clínicas Importantes", st.session_state.dados['orientacoes_especialistas'], placeholder="Ex: A fonoaudióloga solicitou que o aluno sente na frente...")
 
 with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS - BLINDADO)
     render_progresso()
+    
+    with st.expander("ℹ️ Como Mapear?"):
+        st.markdown("**Potencialidades:** O que o aluno ama? Use isso a favor dele.\n**Barreiras:** O que impede o aprendizado? Selecione e defina o nível de ajuda necessária.")
+
     st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
     
     # CONTAINER 1: POTENCIALIDADES
     with st.container(border=True):
         st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
-        st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'], placeholder="Ex: Minecraft, Dinossauros...")
+        st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco (Interesse Intenso)", st.session_state.dados['hiperfoco'], placeholder="Ex: Minecraft, Dinossauros, Desenho...", help="Use este interesse para criar estratégias de ensino.")
         p_val = [p for p in st.session_state.dados.get('potencias', []) if p in LISTA_POTENCIAS]
         st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=p_val, placeholder="Selecione...")
     
@@ -524,6 +537,10 @@ with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS - BLINDADO)
 
 with tab5: # PLANO (VISUAL CARDS)
     render_progresso()
+    
+    with st.expander("ℹ️ O que é DUA?"):
+        st.markdown("Desenho Universal para Aprendizagem (DUA) são estratégias para que **todos** aprendam. Foque em como o aluno acessa a informação (Acesso), como ele aprende (Ensino) e como ele demonstra o que aprendeu (Avaliação).")
+
     st.markdown("### <i class='ri-tools-line'></i> Plano de Ação Estratégico", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -535,7 +552,7 @@ with tab5: # PLANO (VISUAL CARDS)
         with st.container(border=True):
             st.markdown("#### 2. Ensino")
             st.session_state.dados['estrategias_ensino'] = st.multiselect("Metodologia", ["Fragmentação de Tarefas", "Pistas Visuais", "Mapas Mentais", "Modelagem", "Ensino Híbrido"], default=st.session_state.dados['estrategias_ensino'], placeholder="Selecione...")
-            st.session_state.dados['outros_ensino'] = st.text_input("Prática Pedagógica (Ensino)", st.session_state.dados['outros_ensino'], placeholder="Ex: Uso de Material Dourado, Gamificação...")
+            st.session_state.dados['outros_ensino'] = st.text_input("Prática Pedagógica (Ensino)", st.session_state.dados['outros_ensino'], placeholder="Ex: Uso de Material Dourado...")
     with c3:
         with st.container(border=True):
             st.markdown("#### 3. Avaliação")
