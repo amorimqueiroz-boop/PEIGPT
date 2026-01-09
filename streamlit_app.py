@@ -12,14 +12,6 @@ import os
 import re
 import glob
 
-# TENTATIVA SEGURA DE IMPORTAR PLOTLY
-# Se não estiver instalado, o app não quebra, apenas adapta o visual.
-try:
-    import plotly.graph_objects as go
-    HAS_PLOTLY = True
-except ImportError:
-    HAS_PLOTLY = False
-
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
 # ==============================================================================
@@ -34,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (MANTIDO O PERFEITO)
+# 2. ESTILO VISUAL (TOGGLES + DASHBOARD CARDS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -43,11 +35,11 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         
-        /* LAYOUT GERAL */
+        /* LAYOUT */
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        /* BARRA DE PROGRESSO */
+        /* BARRA DE PROGRESSO FINA */
         .minimal-track {
             width: 100%; height: 3px; background-color: #EDF2F7; border-radius: 1.5px;
             position: relative; margin: 12px 0 45px 0;
@@ -85,47 +77,24 @@ def aplicar_estilo_visual():
             border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* CARDS E DASHBOARD */
-        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-        .rich-card {
-            background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            height: 280px; display: flex; flex-direction: column; justify-content: flex-start;
-            position: relative; overflow: hidden;
+        /* DASHBOARD METRICS CARDS */
+        .metric-card {
+            background-color: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0;
+            text-align: center; height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
-        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); border-color: #BEE3F8;}
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: #2D3748; font-weight: 800; }
-        .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
-        
-        /* DASHBOARD CARD */
-        .dash-card {
-            background-color: white; border-radius: 16px; padding: 20px;
-            border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-            height: 100%;
-        }
-        .dash-label { font-size: 0.85rem; color: #718096; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
-        .dash-value { font-size: 1.5rem; color: #2D3748; font-weight: 800; }
-        .tag-pill {
-            display: inline-block; padding: 4px 12px; border-radius: 15px;
-            font-size: 0.8rem; font-weight: 600; margin: 0 5px 5px 0;
-        }
-        .tag-green { background: #F0FFF4; color: #2F855A; border: 1px solid #C6F6D5; }
-        
-        .icon-container {
-            width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; margin-bottom: 10px;
-        }
-        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
-        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
-        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
-        .ic-green { background-color: #F0FFF4; color: #38A169; }
+        .metric-value { font-size: 2rem; font-weight: 800; color: #004E92; }
+        .metric-label { font-size: 0.85rem; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; }
 
+        /* INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 12px !important; border-color: #E2E8F0 !important; 
         }
         div[data-testid="column"] .stButton button { 
             border-radius: 12px !important; font-weight: 800 !important; height: 50px !important; 
         }
+        
+        /* CUSTOM TOGGLE SWITCH COLOR (Streamlit default is red, let's keep it consistent) */
+        .stToggle { margin-top: 10px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -251,26 +220,8 @@ def excluir_aluno(nome_arq):
     except: return False
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL
+# 6. INTELIGÊNCIA ARTIFICIAL (Considerando Medicação)
 # ==============================================================================
-@st.cache_data(ttl=3600)
-def gerar_saudacao_ia(api_key):
-    if not api_key: return "Bem-vindo ao PEI 360º."
-    try:
-        client = OpenAI(api_key=api_key)
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}], temperature=0.9)
-        return res.choices[0].message.content
-    except: return "A inclusão transforma vidas."
-
-@st.cache_data(ttl=3600)
-def gerar_noticia_ia(api_key):
-    if not api_key: return "Dica: Mantenha o PEI sempre atualizado."
-    try:
-        client = OpenAI(api_key=api_key)
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta sobre legislação de inclusão ou neurociência (máx 2 frases)."}], temperature=0.7)
-        return res.choices[0].message.content
-    except: return "O cérebro aprende durante toda a vida."
-
 def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API."
     try:
@@ -278,19 +229,31 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
+        # Prepara string de medicação detalhada
+        meds_info = "Nenhuma medicação informada."
+        if dados['lista_medicamentos']:
+            meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Observações: {m.get('obs', 'Nenhuma')}" for m in dados['lista_medicamentos']])
+
         prompt_sys = """
-        Você é um Consultor Pedagógico Especialista em Educação Inclusiva.
+        Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Farmacologia Educacional.
+        
+        DIRETRIZES CRÍTICAS:
+        1. Considere a MEDICAÇÃO do aluno. Se houver (ex: Ritalina, Risperidona), mencione como ela pode afetar a atenção, sono ou comportamento na sala.
+        2. Conecte o Hiperfoco ({hiperfoco}) às habilidades da BNCC.
+        
         ESTRUTURA DA RESPOSTA (Markdown Limpo):
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
-        2. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos adaptados.
-        3. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar o interesse ({hiperfoco}) para engajar?
-        4. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas.
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial (Cite potências).
+        2. 💊 FATOR MEDICAMENTOSO & COMPORTAMENTO: Análise breve sobre o impacto da medicação na rotina escolar (se houver).
+        3. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos adaptados.
+        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar o interesse para engajar?
+        5. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas de ambiente.
         """.format(hiperfoco=dados['hiperfoco'])
         
         prompt_user = f"""
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
         DIAGNÓSTICO: {dados['diagnostico']}
-        FAMÍLIA: {familia} | CONTEXTO: {dados['familia']}
+        FAMÍLIA: {familia}
+        MEDICAÇÃO: {meds_info}
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
@@ -386,7 +349,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v30.1 Safe</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v31.0 Pro</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -405,8 +368,13 @@ tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 with tab0: # INÍCIO
     if api_key:
         with st.spinner("Gerando inspiração..."):
-            saudacao = gerar_saudacao_ia(api_key)
-            noticia = gerar_noticia_ia(api_key)
+            try:
+                client = OpenAI(api_key=api_key)
+                saudacao = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}]).choices[0].message.content
+                noticia = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta sobre legislação de inclusão ou neurociência."}]).choices[0].message.content
+            except:
+                saudacao = "A inclusão transforma vidas."
+                noticia = "O PEI é um direito garantido por lei."
         
         st.markdown(f"""
         <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);">
@@ -426,9 +394,6 @@ with tab0: # INÍCIO
 
     if api_key:
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
-    
-    st.write(""); st.write("")
-    st.caption("🚀 **Novidades v30.1:** Safe Mode (Plotly Opcional).")
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -453,46 +418,45 @@ with tab1: # ESTUDANTE
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico (CID se houver)", st.session_state.dados['diagnostico'])
     
+    # Medicação Melhorada com Observações
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
         if usa_med:
-            c1, c2, c3 = st.columns([3, 2, 1])
+            c1, c2, c3 = st.columns([2, 2, 3])
             nm = c1.text_input("Nome do Medicamento", key="nm_med")
-            pos = c2.text_input("Horário/Posologia", key="pos_med", placeholder="Ex: 1cp após o almoço")
-            if c3.button("Adicionar"):
-                st.session_state.dados['lista_medicamentos'].append({"nome": nm, "posologia": pos, "escola": False}); st.rerun()
+            pos = c2.text_input("Posologia", key="pos_med", placeholder="Ex: 1cp pela manhã")
+            obs_med = c3.text_input("Efeitos Observados", key="obs_med", placeholder="Ex: Sonolência, mais foco...")
+            
+            if st.button("Adicionar Medicação"):
+                st.session_state.dados['lista_medicamentos'].append({"nome": nm, "posologia": pos, "obs": obs_med, "escola": False}); st.rerun()
             
             if st.session_state.dados['lista_medicamentos']:
                 st.markdown("**Lista Atual:**")
                 for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
-                    c_a, c_b, c_c, c_d = st.columns([3, 3, 2, 1])
-                    with c_a: st.info(f"**{m['nome']}**")
-                    with c_b: st.caption(m['posologia'])
-                    with c_c: m['escola'] = st.checkbox("Na Escola?", value=m['escola'], key=f"esc_{i}")
-                    with c_d: 
-                        if st.button("🗑️", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
+                    st.info(f"💊 **{m['nome']}** ({m['posologia']}) - *Obs: {m['obs']}*")
+                    if st.button("Remover", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
     
     with st.expander("📎 Anexar Laudo"):
         up = st.file_uploader("PDF", type="pdf"); 
         if up: st.session_state.pdf_text = ler_pdf(up)
 
-with tab2: # EVIDÊNCIAS
+with tab2: # EVIDÊNCIAS (AGORA COM TOGGLES)
     render_progresso()
     st.markdown("### <i class='ri-search-eye-line'></i> Coleta de Evidências", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
         st.markdown("**Currículo**")
         for q in ["Estagnação na aprendizagem", "Dificuldade de generalização", "Dificuldade de abstração", "Lacuna em pré-requisitos"]:
-            st.session_state.dados['checklist_evidencias'][q] = st.checkbox(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
+            st.session_state.dados['checklist_evidencias'][q] = st.toggle(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
     with c2:
         st.markdown("**Atenção**")
         for q in ["Oscilação de foco", "Fadiga mental rápida", "Dificuldade de iniciar tarefas", "Esquecimento recorrente"]:
-            st.session_state.dados['checklist_evidencias'][q] = st.checkbox(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
+            st.session_state.dados['checklist_evidencias'][q] = st.toggle(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
     with c3:
         st.markdown("**Comportamento**")
         for q in ["Dependência de mediação (1:1)", "Baixa tolerância à frustração", "Desorganização de materiais", "Recusa de tarefas"]:
-            st.session_state.dados['checklist_evidencias'][q] = st.checkbox(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
+            st.session_state.dados['checklist_evidencias'][q] = st.toggle(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
 
 with tab3: # REDE
     render_progresso()
@@ -581,7 +545,7 @@ with tab7: # IA
         st.markdown("""
         <div style="background-color: #F8FAFC; border-radius: 12px; padding: 20px; border: 1px solid #E2E8F0;">
             <h4 style="color:#0F52BA; margin-top:0;">🤖 Como posso ajudar?</h4>
-            <p style="font-size:0.9rem; color:#64748B;">Vou analisar os dados do estudante (Hiperfoco, Barreiras e Evidências) para sugerir um plano alinhado à BNCC.</p>
+            <p style="font-size:0.9rem; color:#64748B;">Vou analisar os dados do estudante (Hiperfoco, Barreiras, Medicação e Evidências) para sugerir um plano alinhado à BNCC.</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -597,73 +561,44 @@ with tab7: # IA
         else:
             st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
 
-with tab8: # DOCUMENTO & DASHBOARD
+with tab8: # DOCUMENTO & DASHBOARD NATIVO
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     
-    if st.session_state.dados['nome']: # Só mostra se tiver nome
-        # DASHBOARD VISUAL
-        st.markdown("#### 📊 Visão Geral do PEI")
+    if st.session_state.dados['nome']:
+        # DASHBOARD 100% NATIVO (SEM PLOTLY)
+        st.markdown("#### 📊 Visão Geral do Aluno")
         
-        c_dash1, c_dash2, c_dash3 = st.columns([2, 1, 1])
+        # 1. Cartões de Métricas
+        c_m1, c_m2, c_m3 = st.columns(3)
+        c_m1.metric("Potencialidades", len(st.session_state.dados['potencias']))
+        barreiras_total = sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values())
+        c_m2.metric("Barreiras Mapeadas", barreiras_total, delta_color="inverse")
         
-        # 1. Gráfico Radar (Teia) - SEGURO
-        with c_dash1:
-            if HAS_PLOTLY:
-                try:
-                    categorias = list(LISTAS_BARREIRAS.keys())
-                    valores = []
-                    for cat in categorias:
-                        itens = st.session_state.dados['barreiras_selecionadas'].get(cat, [])
-                        if not itens:
-                            valores.append(0)
-                            continue
-                        
-                        soma = 0
-                        for item in itens:
-                            nivel = st.session_state.dados['niveis_suporte'].get(f"{cat}_{item}", "Monitorado")
-                            peso = {"Autônomo": 1, "Monitorado": 2, "Substancial": 3, "Muito Substancial": 4}.get(nivel, 2)
-                            soma += peso
-                        valores.append(soma / len(itens))
-                    
-                    fig = go.Figure(data=go.Scatterpolar(
-                        r=valores, theta=categorias, fill='toself', line_color='#004E92'
-                    ))
-                    fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 4])), showlegend=False, height=300, margin=dict(l=40, r=40, t=20, b=20))
-                    st.plotly_chart(fig, use_container_width=True)
-                except:
-                    st.warning("Gráfico indisponível no momento.")
-            else:
-                st.info("Visualização gráfica simplificada (Biblioteca Plotly ausente).")
-                # Fallback simples: Barras Nativas
-                st.bar_chart({"Nível Suporte": [1, 2, 3, 2, 1]})
-
-        # 2. Resumo Identidade
-        with c_dash2:
-            st.markdown('<div class="dash-card">', unsafe_allow_html=True)
-            st.markdown('<div class="dash-label">Estudante</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="dash-value">{st.session_state.dados["nome"].split()[0]}</div>', unsafe_allow_html=True)
-            st.caption(f"{st.session_state.dados['serie']}")
-            st.divider()
-            st.markdown('<div class="dash-label">Diagnóstico</div>', unsafe_allow_html=True)
-            st.markdown(f"**{st.session_state.dados['diagnostico'] or 'Não informado'}**")
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        # 3. Potências e Próximos Passos
-        with c_dash3:
-            st.markdown('<div class="dash-card">', unsafe_allow_html=True)
-            st.markdown('<div class="dash-label">Hiperfoco</div>', unsafe_allow_html=True)
-            if st.session_state.dados['hiperfoco']:
-                st.markdown(f'<span class="tag-pill tag-green">{st.session_state.dados["hiperfoco"]}</span>', unsafe_allow_html=True)
-            else: st.caption("-")
+        # Lógica para Status do PEI
+        status_pei = "Em Construção"
+        if st.session_state.dados['ia_sugestao']: status_pei = "Pronto para Revisão"
+        c_m3.metric("Status do Documento", status_pei)
+        
+        st.divider()
+        
+        # 2. DNA do Suporte (Barras de Progresso Nativas)
+        st.markdown("##### 🧬 Nível de Suporte por Área")
+        col_dna1, col_dna2 = st.columns(2)
+        
+        # Calcula intensidade (0 a 100) para cada área baseada na quantidade de barreiras selecionadas
+        areas = list(LISTAS_BARREIRAS.keys())
+        for i, area in enumerate(areas):
+            qtd = len(st.session_state.dados['barreiras_selecionadas'][area])
+            # Simples normalização: 5 barreiras = 100% da barra (só visual)
+            valor = min(qtd * 20, 100) 
             
-            st.divider()
-            st.markdown('<div class="dash-label">Próxima Revisão</div>', unsafe_allow_html=True)
-            data_rev = st.session_state.dados.get('monitoramento_data')
-            st.markdown(f"📅 {data_rev.strftime('%d/%m/%Y') if data_rev else '-'}")
-            st.markdown('</div>', unsafe_allow_html=True)
+            # Distribui nas colunas
+            target_col = col_dna1 if i < 3 else col_dna2
+            target_col.caption(f"{area} ({qtd} itens)")
+            target_col.progress(valor)
 
-    st.divider()
-    
+        st.divider()
+
     # ÁREA DE DOWNLOAD
     if st.session_state.dados['ia_sugestao']:
         c1, c2 = st.columns(2)
