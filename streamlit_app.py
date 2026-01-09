@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CSS BLINDADO + BARRA MINIMALISTA)
+# 2. ESTILO VISUAL (CSS BLINDADO + FIX DA LINHA DUPLA)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -37,37 +37,49 @@ def aplicar_estilo_visual():
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         
         /* -----------------------------------------------------------
+           FIX: REMOVER LINHA PADRÃO DO STREAMLIT
+        ----------------------------------------------------------- */
+        /* Remove a borda/linha cinza padrão abaixo das abas */
+        div[data-baseweb="tab-border"] { 
+            display: none !important; 
+            height: 0 !important; 
+            margin: 0 !important; 
+        }
+        div[data-baseweb="tab-highlight"] { 
+            background-color: transparent !important; 
+        }
+
+        /* -----------------------------------------------------------
            BARRA DE PROGRESSO MINIMALISTA (LINHA VERMELHA)
         ----------------------------------------------------------- */
         .minimal-track {
             width: 100%;
-            height: 3px; /* Linha super fina */
-            background-color: #E2E8F0;
+            height: 4px; /* Levemente mais espessa para ser a linha principal */
+            background-color: #EDF2F7; /* Cinza muito suave no fundo */
             border-radius: 2px;
             position: relative;
-            margin: 10px 0 25px 0; /* Espaço entre abas e conteúdo */
+            margin: 0 0 30px 0; /* Margem superior 0 para colar nas abas */
         }
         .minimal-fill {
             height: 100%;
             background-color: var(--brand-coral); /* Vermelho da marca */
             border-radius: 2px;
-            transition: width 0.4s ease-out;
-            box-shadow: 0 0 8px rgba(255, 107, 107, 0.4); /* Brilho suave */
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(255, 107, 107, 0.25);
         }
         .minimal-cursor {
             position: absolute;
-            top: -10px; /* Centraliza o emoji na linha */
-            font-size: 1.2rem;
-            transition: left 0.4s ease-out;
-            transform: translateX(-50%); /* Centraliza o cursor no ponto */
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
+            top: -14px; /* Emoji flutuando em cima da linha */
+            font-size: 1.4rem;
+            transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-50%);
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+            z-index: 10;
         }
 
         /* -----------------------------------------------------------
-           COMPONENTES VISUAIS PADRÃO (MANTIDOS DA V13)
+           COMPONENTES VISUAIS (MANTIDOS DA V13)
         ----------------------------------------------------------- */
-        div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
-
         .header-unified {
             background-color: white; padding: 35px 40px; border-radius: var(--card-radius);
             border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
@@ -75,7 +87,11 @@ def aplicar_estilo_visual():
         }
         .header-unified p { color: #004E92; margin: 0; font-size: 1.6rem; font-weight: 800; line-height: 1.2; }
 
-        .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
+        .stTabs [data-baseweb="tab-list"] { 
+            gap: 8px; 
+            padding-bottom: 5px; /* Reduzido para aproximar da linha vermelha */
+            flex-wrap: wrap; 
+        }
         .stTabs [data-baseweb="tab"] {
             height: 42px; border-radius: 20px; padding: 0 25px; background-color: white;
             border: 1px solid #E2E8F0; font-weight: 700; color: #718096; font-size: 0.85rem; 
@@ -369,7 +385,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v18.0 Minimal</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v19.0 Polished</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -406,7 +422,7 @@ with tab0: # INÍCIO
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F6AD55;"></i><div><h4 style="margin:0; color:#2D3748;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#4A5568;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Versão Minimal:** Linha de progresso simplificada e elegante.")
+    st.caption("🚀 **Novidades v19.0:** Visual limpo com barra de progresso integrada.")
 
 with tab1: # ESTUDANTE
     render_progresso() # LINHA MINIMALISTA AQUI
@@ -483,7 +499,7 @@ with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS - BLINDADO)
     
     st.divider()
     
-    # CONTAINER 2: BARREIRAS (LAYOUT MANUAL FIXO 3 COLUNAS)
+    # CONTAINER 2: BARREIRAS
     with st.container(border=True):
         st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
         c_bar1, c_bar2, c_bar3 = st.columns(3)
@@ -500,15 +516,10 @@ with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS - BLINDADO)
                         st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
                 st.write("")
 
-        # Coluna 1: Cognitivo + Sensorial
         render_cat_barreira(c_bar1, "Cognitivo", "Cognitivo")
         render_cat_barreira(c_bar1, "Sensorial/Motor", "Sensorial/Motor")
-        
-        # Coluna 2: Comunicacional + Acadêmico
         render_cat_barreira(c_bar2, "Comunicacional", "Comunicacional")
         render_cat_barreira(c_bar2, "Acadêmico", "Acadêmico")
-        
-        # Coluna 3: Socioemocional
         render_cat_barreira(c_bar3, "Socioemocional", "Socioemocional")
 
 with tab5: # PLANO (VISUAL CARDS)
