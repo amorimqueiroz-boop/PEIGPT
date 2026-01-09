@@ -20,19 +20,19 @@ def get_favicon():
     return "📘"
 
 st.set_page_config(
-    page_title="PEI 360º | Pro",
+    page_title="PEI 360º",
     page_icon=get_favicon(),
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Cria pasta local para Banco de Dados
+# Pasta do Banco de Dados Local
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO):
     os.makedirs(PASTA_BANCO)
 
 # ==============================================================================
-# 2. SISTEMA DE AUTO-REPARO DE DADOS
+# 2. AUTO-REPARO DE DADOS
 # ==============================================================================
 default_state = {
     'nome': '', 
@@ -110,7 +110,7 @@ def salvar_aluno(dados):
     caminho = os.path.join(PASTA_BANCO, nome_arq)
     try:
         with open(caminho, 'w', encoding='utf-8') as f: json.dump(dados, f, default=str, ensure_ascii=False, indent=4)
-        return True, f"Salvo: {dados['nome']}"
+        return True, f"Estudante '{dados['nome']}' salvo com sucesso!"
     except Exception as e: return False, str(e)
 
 def carregar_aluno(nome_arq):
@@ -127,21 +127,17 @@ def excluir_aluno(nome_arq):
     except: return False
 
 # ==============================================================================
-# 4. INTELIGÊNCIA ARTIFICIAL (RELATÓRIO + NOVIDADES)
+# 4. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_destaque_inclusao(api_key):
-    """Gera uma notícia ou dica sobre inclusão para a Home."""
-    if not api_key: return "⚠️ Insira a Chave API para ver os destaques da legislação e neurociência em tempo real."
+    if not api_key: return "Dica: Mantenha o PEI sempre atualizado conforme a legislação vigente."
     try:
         client = OpenAI(api_key=api_key)
-        prompt = """
-        Gere um parágrafo curto e envolvente (máx 30 palavras) sobre uma novidade legislativa (ex: PEI obrigatório) 
-        ou uma dica de ouro da neurociência para professores de inclusão. Comece com um emoji.
-        """
+        prompt = "Escreva uma curiosidade curta ou dica importante sobre Educação Inclusiva, Neurociência ou a Lei 12.686/2025. Máximo 2 frases. Use tom inspirador."
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}], temperature=0.8)
         return res.choices[0].message.content
-    except: return "📢 O PEI é um direito garantido! Mantenha os registros sempre atualizados."
+    except: return "A inclusão escolar é um direito garantido que transforma a sociedade."
 
 def consultar_gpt_inovacao(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API."
@@ -157,7 +153,7 @@ def consultar_gpt_inovacao(api_key, dados, contexto_pdf=""):
         extra_en = f" | Outros: {dados.get('outros_ensino','')}"
         estrat = f"Acesso: {', '.join(dados['estrategias_acesso'])}{extra_ac}\nEnsino: {', '.join(dados['estrategias_ensino'])}{extra_en}\nAvaliação: {', '.join(dados['estrategias_avaliacao'])}"
 
-        sys = "Especialista em Educação Inclusiva. GERE O RELATÓRIO SEGUINDO A NUMERAÇÃO 1 A 6 EM CAIXA ALTA. SEM TÍTULO DE CAPA."
+        sys = "Especialista em Educação Inclusiva. GERE O RELATÓRIO TÉCNICO SEGUINDO A NUMERAÇÃO 1 A 6 EM CAIXA ALTA. SEM TÍTULO DE CAPA."
         usr = f"ALUNO: {dados['nome']}\nDIAG: {dados['diagnostico']}\nMEDS: {meds}\nHIST: {dados['historico']}\nEVID: {evid}\nBARREIRAS: {map_txt}\nHIPERFOCO: {dados['hiperfoco']}\nESTRATÉGIAS: {estrat}\nLAUDO: {contexto_pdf[:5000]}"
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": sys}, {"role": "user", "content": usr}])
@@ -257,7 +253,7 @@ def gerar_docx_final(dados):
     buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
 # ==============================================================================
-# 6. INTERFACE UI (CSS ISOLADO E DESIGN RICO)
+# 6. INTERFACE UI (CSS LIMPO E SEGURO)
 # ==============================================================================
 st.markdown("""
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -267,7 +263,7 @@ st.markdown("""
     :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
     div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
     
-    /* CABEÇALHO UNIFICADO E LIMPO */
+    /* CABEÇALHO UNIFICADO */
     .header-unified {
         background-color: white; padding: 20px 40px; border-radius: var(--card-radius);
         border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
@@ -275,10 +271,10 @@ st.markdown("""
     }
     .header-unified p { color: #004E92; margin: 0; font-size: 1.4rem; font-weight: 800; }
 
-    /* ABAS PÍLULA (PILLS) - ESTILO RESTAURADO */
+    /* ABAS PÍLULA (PILLS) */
     .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
     .stTabs [data-baseweb="tab"] {
-        height: 42px; border-radius: 20px; /* Borda redonda */
+        height: 42px; border-radius: 20px;
         padding: 0 25px; background-color: white; border: 1px solid #E2E8F0;
         font-weight: 700; color: #718096; font-size: 0.85rem; text-transform: uppercase;
         transition: all 0.3s ease;
@@ -288,7 +284,7 @@ st.markdown("""
         border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
     }
 
-    /* CARDS RICOS E ANIMADOS */
+    /* CARDS DA HOME (Ricos e Animados) */
     .rich-card {
         background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
         box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
@@ -300,10 +296,10 @@ st.markdown("""
     .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
     .rich-icon { font-size: 3rem; color: var(--brand-coral); margin-bottom: 15px; }
     
-    /* CARD DE DESTAQUE IA */
+    /* CARD DE NOVIDADES IA */
     .highlight-card {
         background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-left: 6px solid #FFD700;
-        border-radius: 12px; padding: 25px; margin-top: 15px;
+        border-radius: 12px; padding: 20px; margin-top: 15px; margin-bottom: 20px;
         display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
 
@@ -312,56 +308,43 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# SIDEBAR
+# SIDEBAR (Limpa)
 with st.sidebar:
     logo = finding_logo()
     if logo: st.image(logo, width=120)
     if 'OPENAI_API_KEY' in st.secrets: api_key = st.secrets['OPENAI_API_KEY']; st.success("✅ OpenAI OK")
     else: api_key = st.text_input("Chave OpenAI:", type="password")
-    
     st.markdown("---")
-    st.caption("📂 Gestão de Rascunhos")
-    json_dados = json.dumps(st.session_state.dados, default=str)
-    st.download_button("💾 Baixar (JSON)", json_dados, "pei.json", "application/json")
-    uploaded_json = st.file_uploader("Carregar (JSON)", type="json")
-    if uploaded_json:
-        try:
-            d = json.load(uploaded_json)
-            if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
-            if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
-            st.session_state.dados.update(d); st.success("OK!"); st.rerun()
-        except: st.error("Erro no arquivo.")
+    data_atual = date.today().strftime("%d/%m/%Y")
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v6.0</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
 
+# CABEÇALHO (LOGO + TEXTO)
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
 st.markdown(f"""
 <div class="header-unified">
     {img_html}
-    <div>
-        <p>Ecossistema de Inteligência Pedagógica e Inclusiva</p>
-    </div>
+    <div><p>Ecossistema de Inteligência Pedagógica e Inclusiva</p></div>
 </div>
 """, unsafe_allow_html=True)
 
-# ABAS
-abas = ["INÍCIO", "ESTUDANTE", "EVIDÊNCIAS", "REDE", "MAPEAMENTO", "PLANO", "MONITORAMENTO", "IA", "DOCUMENTO"]
+# ABAS (NOMES ORIGINAIS COMPLETOS)
+abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 
 with tab0: # INÍCIO (PORTAL RICO)
     
-    # ÁREA DE DESTAQUE IA (NOVAS LEGISLAÇÕES/NOTÍCIAS)
+    # ÁREA DE DESTAQUE IA
     destaque = gerar_destaque_inclusao(api_key)
     st.markdown(f"""
     <div class="highlight-card">
         <i class="ri-lightbulb-flash-fill" style="font-size: 2.5rem; color: #F6AD55;"></i>
         <div>
-            <h4 style="margin:0; color:#2D3748;">💡 Destaque da Educação Inclusiva (IA)</h4>
-            <p style="margin:5px 0 0 0; font-size:1rem; color:#4A5568;">{destaque}</p>
+            <h4 style="margin:0; color:#2D3748;">📢 Destaque do Dia (IA)</h4>
+            <p style="margin:5px 0 0 0; font-size:0.95rem; color:#4A5568;">{destaque}</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
-    st.write(""); st.write("")
     
     # 4 CARDS ORIGINAIS (RICOS E CLICÁVEIS)
     c1, c2, c3, c4 = st.columns(4)
@@ -381,7 +364,7 @@ with tab0: # INÍCIO (PORTAL RICO)
             <div class="rich-card">
                 <i class="ri-scales-3-line rich-icon"></i>
                 <h3>Legislação</h3>
-                <p>Acesse na íntegra a Lei Brasileira de Inclusão (LBI) e os novos decretos de Dezembro/2025 que reforçam o suporte.</p>
+                <p>Acesse na íntegra a Lei Brasileira de Inclusão (LBI) e os novos decretos de Dezembro/2025.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
@@ -391,7 +374,7 @@ with tab0: # INÍCIO (PORTAL RICO)
             <div class="rich-card">
                 <i class="ri-brain-line rich-icon"></i>
                 <h3>Neurociência</h3>
-                <p>Artigos científicos sobre desenvolvimento atípico, funções executivas e neuroplasticidade na aprendizagem.</p>
+                <p>Artigos científicos sobre desenvolvimento atípico, funções executivas e neuroplasticidade.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
@@ -401,15 +384,10 @@ with tab0: # INÍCIO (PORTAL RICO)
             <div class="rich-card">
                 <i class="ri-compass-3-line rich-icon"></i>
                 <h3>BNCC</h3>
-                <p>Consulte as Competências Gerais e Habilidades específicas da Base Nacional Comum Curricular para adaptação.</p>
+                <p>Consulte as Competências Gerais e Habilidades essenciais da Base Nacional Comum Curricular.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
-
-    # RODAPÉ DE NOVIDADES DISCRETO
-    st.write(""); st.write("")
-    st.markdown("---")
-    st.caption("🚀 **Novidades v6.0:** Banco de Estudantes Local | IA Narrativa | Monitoramento PDCA")
 
 with tab1: # ESTUDANTE
     st.markdown("### <i class='ri-user-star-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
@@ -444,7 +422,7 @@ with tab1: # ESTUDANTE
         if up: st.session_state.pdf_text = ler_pdf(up)
 
 with tab2: # EVIDÊNCIAS
-    st.markdown("### <i class='ri-search-eye-line'></i> Evidências", unsafe_allow_html=True)
+    st.markdown("### <i class='ri-search-eye-line'></i> Coleta de Evidências", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
         st.markdown("**Currículo**")
@@ -465,7 +443,7 @@ with tab3: # REDE
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
 
 with tab4: # MAPA
-    st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento", unsafe_allow_html=True)
+    st.markdown("### <i class='ri-map-pin-user-line'></i> Potencialidades & Barreiras", unsafe_allow_html=True)
     with st.container(border=True):
         c1, c2 = st.columns(2)
         st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'])
