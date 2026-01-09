@@ -11,6 +11,7 @@ import json
 import os
 import re
 import glob
+import plotly.graph_objects as go # Biblioteca gráfica adicionada
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -26,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (ANIMAÇÃO SUAVE + LAYOUT LIMPO)
+# 2. ESTILO VISUAL
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -35,60 +36,49 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         
-        /* 1. LAYOUT GERAL */
+        /* LAYOUT GERAL */
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        /* 2. BARRA DE PROGRESSO (ANIMAÇÃO REFINADA) */
+        /* BARRA DE PROGRESSO */
         .minimal-track {
             width: 100%; height: 3px; background-color: #EDF2F7; border-radius: 1.5px;
             position: relative; margin: 12px 0 45px 0;
         }
         .minimal-fill {
-            height: 100%; 
-            background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
-            border-radius: 1.5px;
-            /* Aumentei o tempo para 1s para dar sensação de deslizamento */
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%; background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
+            border-radius: 1.5px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
         }
         .minimal-cursor-icon {
-            position: absolute; top: -17px;
-            font-size: 1.5rem; color: #FF6B6B;
-            /* A transição left agora acompanha a largura suavemente */
-            transition: left 1s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateX(-50%); z-index: 10;
-            background: white; border-radius: 50%;
-            width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            border: 2px solid white;
+            position: absolute; top: -17px; font-size: 1.5rem; color: #FF6B6B;
+            transition: left 1s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10;
+            background: white; border-radius: 50%; width: 30px; height: 30px; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
-        /* 3. HEADER */
+        /* HEADER */
         .header-unified {
             background-color: white; padding: 20px 40px; border-radius: 16px;
             border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px;
             display: flex; align-items: center; gap: 25px;
         }
-        .header-unified span { 
-            color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;
-        }
+        .header-unified span { color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* 4. ABAS PÍLULA */
+        /* ABAS PÍLULA */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
-            height: 38px; border-radius: 19px !important; 
-            background-color: white; border: 1px solid #E2E8F0;
-            color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px;
+            height: 38px; border-radius: 19px !important; background-color: white; 
+            border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px;
             transition: all 0.2s ease;
         }
         .stTabs [aria-selected="true"] {
             background-color: #FF6B6B !important; color: white !important; 
-            border-color: #FF6B6B !important;
-            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+            border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* 5. CARDS RICOS (COM TEXTOS MELHORES) */
+        /* CARDS E DASHBOARD */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
             background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
@@ -100,9 +90,23 @@ def aplicar_estilo_visual():
         .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: #2D3748; font-weight: 800; }
         .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
         
+        /* DASHBOARD CARD */
+        .dash-card {
+            background-color: white; border-radius: 16px; padding: 20px;
+            border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            height: 100%;
+        }
+        .dash-label { font-size: 0.85rem; color: #718096; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
+        .dash-value { font-size: 1.5rem; color: #2D3748; font-weight: 800; }
+        .tag-pill {
+            display: inline-block; padding: 4px 12px; border-radius: 15px;
+            font-size: 0.8rem; font-weight: 600; margin: 0 5px 5px 0;
+        }
+        .tag-green { background: #F0FFF4; color: #2F855A; border: 1px solid #C6F6D5; }
+        .tag-blue { background: #EBF8FF; color: #2C5282; border: 1px solid #BEE3F8; }
+
         .icon-container {
-            width: 50px; height: 50px; border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center;
+            width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
             font-size: 1.8rem; margin-bottom: 10px;
         }
         .ic-blue { background-color: #EBF8FF; color: #3182CE; }
@@ -110,7 +114,7 @@ def aplicar_estilo_visual():
         .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
         .ic-green { background-color: #F0FFF4; color: #38A169; }
 
-        /* 6. INPUTS E BOTÕES */
+        /* INPUTS */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 12px !important; border-color: #E2E8F0 !important; 
         }
@@ -182,7 +186,6 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    # Ícones Dinâmicos
     if p < 10: icon_class = "ri-map-pin-user-line"
     elif p < 100: icon_class = "ri-run-line"
     else: icon_class = "ri-rocket-2-fill"
@@ -378,7 +381,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v29.0 Precision</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v30.0 Finale</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -401,10 +404,10 @@ with tab0: # INÍCIO
             noticia = gerar_noticia_ia(api_key)
         
         st.markdown(f"""
-        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 20px; box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);">
-            <div style="display:flex; gap:15px; align-items:center;">
-                <i class="ri-sparkling-fill" style="font-size: 2rem; color: #FCD34D;"></i>
-                <div><h3 style="color:white; margin:0; font-size: 1.3rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.9;">{saudacao}</p></div>
+        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);">
+            <div style="display:flex; gap:20px; align-items:center;">
+                <div style="background:rgba(255,255,255,0.2); padding:12px; border-radius:50%;"><i class="ri-sparkling-2-fill" style="font-size: 2rem; color: #FFD700;"></i></div>
+                <div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -420,7 +423,7 @@ with tab0: # INÍCIO
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v29.0:** Animação Suave (1s), PDF Clássico e IA Clean.")
+    st.caption("🚀 **Novidades v30.0:** Dashboard Visual com Gráfico Radar e PDF Oficial.")
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -564,7 +567,7 @@ with tab6: # MONITORAMENTO
     with c4:
         st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
 
-with tab7: # IA (LIMPO SEM CAIXA)
+with tab7: # IA
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
     
@@ -585,21 +588,90 @@ with tab7: # IA (LIMPO SEM CAIXA)
             
     with c2:
         if st.session_state.dados['ia_sugestao']:
-            # Removido o container extra (div) para o texto respirar
             st.markdown(st.session_state.dados['ia_sugestao'])
         else:
             st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
 
-with tab8: # DOCUMENTO & GESTÃO
-    st.markdown("### <i class='ri-file-pdf-line'></i> Documento & Gestão", unsafe_allow_html=True)
+with tab8: # DOCUMENTO & DASHBOARD
+    st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
+    
+    if st.session_state.dados['nome']: # Só mostra se tiver nome
+        # DASHBOARD VISUAL
+        st.markdown("#### 📊 Visão Geral do PEI")
+        
+        c_dash1, c_dash2, c_dash3 = st.columns([2, 1, 1])
+        
+        # 1. Gráfico Radar (Teia)
+        with c_dash1:
+            try:
+                # Prepara dados do radar
+                categorias = list(LISTAS_BARREIRAS.keys())
+                valores = []
+                for cat in categorias:
+                    itens = st.session_state.dados['barreiras_selecionadas'].get(cat, [])
+                    if not itens:
+                        valores.append(0)
+                        continue
+                    
+                    soma = 0
+                    for item in itens:
+                        nivel = st.session_state.dados['niveis_suporte'].get(f"{cat}_{item}", "Monitorado")
+                        peso = {"Autônomo": 1, "Monitorado": 2, "Substancial": 3, "Muito Substancial": 4}.get(nivel, 2)
+                        soma += peso
+                    valores.append(soma / len(itens)) # Média
+                
+                fig = go.Figure(data=go.Scatterpolar(
+                    r=valores,
+                    theta=categorias,
+                    fill='toself',
+                    line_color='#004E92'
+                ))
+                fig.update_layout(
+                    polar=dict(radialaxis=dict(visible=True, range=[0, 4])),
+                    showlegend=False,
+                    height=300,
+                    margin=dict(l=40, r=40, t=20, b=20)
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            except:
+                st.warning("Gráfico indisponível (requer dados preenchidos).")
+
+        # 2. Resumo Identidade
+        with c_dash2:
+            st.markdown('<div class="dash-card">', unsafe_allow_html=True)
+            st.markdown('<div class="dash-label">Estudante</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="dash-value">{st.session_state.dados["nome"].split()[0]}</div>', unsafe_allow_html=True)
+            st.caption(f"{st.session_state.dados['serie']}")
+            st.divider()
+            st.markdown('<div class="dash-label">Diagnóstico</div>', unsafe_allow_html=True)
+            st.markdown(f"**{st.session_state.dados['diagnostico'] or 'Não informado'}**")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # 3. Potências e Próximos Passos
+        with c_dash3:
+            st.markdown('<div class="dash-card">', unsafe_allow_html=True)
+            st.markdown('<div class="dash-label">Hiperfoco</div>', unsafe_allow_html=True)
+            if st.session_state.dados['hiperfoco']:
+                st.markdown(f'<span class="tag-pill tag-green">{st.session_state.dados["hiperfoco"]}</span>', unsafe_allow_html=True)
+            else: st.caption("-")
+            
+            st.divider()
+            st.markdown('<div class="dash-label">Próxima Revisão</div>', unsafe_allow_html=True)
+            data_rev = st.session_state.dados.get('monitoramento_data')
+            st.markdown(f"📅 {data_rev.strftime('%d/%m/%Y') if data_rev else '-'}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    st.divider()
+    
+    # ÁREA DE DOWNLOAD
     if st.session_state.dados['ia_sugestao']:
         c1, c2 = st.columns(2)
         with c1:
             pdf = gerar_pdf_final(st.session_state.dados, len(st.session_state.pdf_text)>0)
-            st.download_button("📥 Baixar PDF Pro", pdf, f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf", type="primary")
+            st.download_button("📥 Baixar PDF Oficial", pdf, f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf", type="primary")
         with c2:
             docx = gerar_docx_final(st.session_state.dados)
-            st.download_button("📥 Baixar Word", docx, f"PEI_{st.session_state.dados['nome']}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            st.download_button("📥 Baixar Word Editável", docx, f"PEI_{st.session_state.dados['nome']}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             
             st.write("")
             st.markdown("##### 💾 Gestão de Rascunhos")
