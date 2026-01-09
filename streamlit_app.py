@@ -26,20 +26,20 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (TOGGLES + DASHBOARD NATIVO)
+# 2. ESTILO VISUAL (CARDS RETANGULARES + DASHBOARD)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-        :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
+        :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 12px; }
         
         /* LAYOUT */
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        /* BARRA DE PROGRESSO FINA */
+        /* BARRA DE PROGRESSO */
         .minimal-track {
             width: 100%; height: 3px; background-color: #EDF2F7; border-radius: 1.5px;
             position: relative; margin: 12px 0 45px 0;
@@ -77,20 +77,48 @@ def aplicar_estilo_visual():
             border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* DASHBOARD METRICS CARDS */
-        .metric-card {
+        /* CARDS RETANGULARES (HORIZONTAL) - OTIMIZADOS */
+        a.rich-card-link { text-decoration: none; color: inherit; display: block; }
+        .rich-card {
             background-color: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0;
-            text-align: center; height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s ease; 
+            min-height: 120px; /* Mais baixo */
+            display: flex; align-items: center; gap: 20px; /* Ícone ao lado do texto */
+            position: relative; overflow: hidden;
         }
-        .metric-value { font-size: 2rem; font-weight: 800; color: #004E92; }
-        .metric-label { font-size: 0.85rem; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; }
+        .rich-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.06); border-color: #BEE3F8;}
+        
+        .rich-content { display: flex; flex-direction: column; justify-content: center; text-align: left; }
+        .rich-card h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: #2D3748; font-weight: 800; }
+        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
+        
+        .icon-container {
+            min-width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem;
+        }
+        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
+        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
+        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
+        .ic-green { background-color: #F0FFF4; color: #38A169; }
+
+        /* DASHBOARD ELEMENTS */
+        .dash-highlight {
+            background-color: #F7FAFC; padding: 20px; border-radius: 12px; border: 1px solid #EDF2F7;
+            text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;
+        }
+        .dash-title { font-size: 0.8rem; text-transform: uppercase; color: #718096; font-weight: 700; margin-bottom: 8px; }
+        .dash-data { font-size: 1.2rem; color: #2D3748; font-weight: 800; }
+        .dash-tag { 
+            background: #DEF7EC; color: #03543F; padding: 5px 15px; border-radius: 20px; 
+            font-weight: 700; display: inline-block; font-size: 1rem; border: 1px solid #BCF0DA;
+        }
 
         /* INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
-            border-radius: 12px !important; border-color: #E2E8F0 !important; 
+            border-radius: 10px !important; border-color: #E2E8F0 !important; 
         }
         div[data-testid="column"] .stButton button { 
-            border-radius: 12px !important; font-weight: 800 !important; height: 50px !important; 
+            border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; 
         }
         
         .stToggle { margin-top: 10px; }
@@ -246,10 +274,10 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
-        # LÓGICA DE CORREÇÃO DO ERRO DA MEDICAÇÃO
+        # CORREÇÃO DEFINITIVA DO ERRO DE MEDICAÇÃO
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
-            # Uso o .get('obs', '') para garantir que não quebre em registros antigos
+            # .get('obs', '') evita o KeyError
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
         prompt_sys = """
@@ -309,7 +337,7 @@ def gerar_pdf_final(dados, tem_anexo):
     pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
     pdf.set_font("Arial", size=10); pdf.set_text_color(0)
     
-    # Tratamento seguro para medicação antiga
+    # Tratamento seguro para medicação e evitar erros
     med_list = []
     if dados['lista_medicamentos']:
         for m in dados['lista_medicamentos']:
@@ -377,7 +405,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v32.0 Robust</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v33.0 Dash Master</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -396,8 +424,13 @@ tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 with tab0: # INÍCIO
     if api_key:
         with st.spinner("Gerando inspiração..."):
-            saudacao = gerar_saudacao_ia(api_key)
-            noticia = gerar_noticia_ia(api_key)
+            try:
+                client = OpenAI(api_key=api_key)
+                saudacao = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}]).choices[0].message.content
+                noticia = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta sobre legislação de inclusão ou neurociência."}]).choices[0].message.content
+            except:
+                saudacao = "A inclusão transforma vidas."
+                noticia = "O PEI é um direito garantido por lei."
         
         st.markdown(f"""
         <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);">
@@ -409,11 +442,28 @@ with tab0: # INÍCIO
         """, unsafe_allow_html=True)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Domine os pilares da inclusão e transforme a trajetória escolar de cada estudante.</p></div></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Navegue com segurança pela LBI e garanta os direitos fundamentais do aluno.</p></div></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Desvende o cérebro atípico e potencialize a aprendizagem com base científica.</p></div></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Conecte o currículo oficial às adaptações necessárias para uma educação equitativa.</p></div></a>""", unsafe_allow_html=True)
+    
+    # CARDS HORIZONTAIS RETANGULARES (OTIMIZADOS)
+    c1, c2 = st.columns(2)
+    with c1: 
+        st.markdown("""<a href="https://diversa.org.br" target="_blank" class="rich-card-link"><div class="rich-card">
+            <div class="icon-container ic-blue"><i class="ri-book-open-line"></i></div>
+            <div class="rich-content"><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div>
+        </div></a>""", unsafe_allow_html=True)
+        st.markdown("""<a href="https://institutoneurosaber.com.br" target="_blank" class="rich-card-link" style="margin-top:15px;"><div class="rich-card">
+            <div class="icon-container ic-pink"><i class="ri-brain-line"></i></div>
+            <div class="rich-content"><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div>
+        </div></a>""", unsafe_allow_html=True)
+        
+    with c2: 
+        st.markdown("""<a href="https://planalto.gov.br" target="_blank" class="rich-card-link"><div class="rich-card">
+            <div class="icon-container ic-gold"><i class="ri-scales-3-line"></i></div>
+            <div class="rich-content"><h3>Legislação</h3><p>Lei Brasileira de Inclusão (LBI) e Decretos.</p></div>
+        </div></a>""", unsafe_allow_html=True)
+        st.markdown("""<a href="http://basenacionalcomum.mec.gov.br" target="_blank" class="rich-card-link" style="margin-top:15px;"><div class="rich-card">
+            <div class="icon-container ic-green"><i class="ri-compass-3-line"></i></div>
+            <div class="rich-content"><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div>
+        </div></a>""", unsafe_allow_html=True)
 
     if api_key:
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
@@ -441,7 +491,7 @@ with tab1: # ESTUDANTE
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico (CID se houver)", st.session_state.dados['diagnostico'])
     
-    # Medicação Melhorada (COM CORREÇÃO DE ERRO)
+    # Medicação Melhorada (COM CORREÇÃO DE ERRO DO KEYERROR)
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
@@ -449,7 +499,7 @@ with tab1: # ESTUDANTE
             c1, c2, c3 = st.columns([2, 2, 3])
             nm = c1.text_input("Nome do Medicamento", key="nm_med")
             pos = c2.text_input("Posologia", key="pos_med", placeholder="Ex: 1cp pela manhã")
-            obs_med = c3.text_input("Efeitos Observados", key="obs_med", placeholder="Ex: Sonolência, mais foco...")
+            obs_med = c3.text_input("Efeitos Observados", key="obs_med", placeholder="Ex: Sonolência...")
             
             if st.button("Adicionar Medicação"):
                 st.session_state.dados['lista_medicamentos'].append({"nome": nm, "posologia": pos, "obs": obs_med, "escola": False}); st.rerun()
@@ -457,10 +507,9 @@ with tab1: # ESTUDANTE
             if st.session_state.dados['lista_medicamentos']:
                 st.markdown("**Lista Atual:**")
                 for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
-                    # CORREÇÃO CRÍTICA AQUI: .get('obs', '') impede o KeyError
-                    obs_txt = m.get('obs', '')
+                    # CORREÇÃO SEGURA: .get('obs', '')
                     display_txt = f"💊 **{m['nome']}** ({m['posologia']})"
-                    if obs_txt: display_txt += f" - *Obs: {obs_txt}*"
+                    if m.get('obs'): display_txt += f" - *Obs: {m['obs']}*"
                     
                     st.info(display_txt)
                     if st.button("Remover", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
@@ -589,37 +638,54 @@ with tab7: # IA
         else:
             st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
 
-with tab8: # DOCUMENTO & DASHBOARD NATIVO
+with tab8: # DASHBOARD COMPLETO (RENOVADO)
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     
-    if st.session_state.dados['nome']: # Só mostra se tiver nome
-        # DASHBOARD 100% NATIVO (SEM PLOTLY)
-        st.markdown("#### 📊 Visão Geral do Aluno")
+    if st.session_state.dados['nome']:
+        # LAYOUT DO DASHBOARD: 3 COLUNAS VISUAIS
+        st.markdown("#### 📊 Painel Geral do Aluno")
         
-        # 1. Cartões de Métricas
-        c_m1, c_m2, c_m3 = st.columns(3)
-        c_m1.metric("Potencialidades", len(st.session_state.dados['potencias']))
-        barreiras_total = sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values())
-        c_m2.metric("Barreiras Mapeadas", barreiras_total, delta_color="inverse")
+        c_main1, c_main2, c_main3 = st.columns([1, 1, 1])
         
-        # Lógica para Status do PEI
-        status_pei = "Em Construção"
-        if st.session_state.dados['ia_sugestao']: status_pei = "Pronto para Revisão"
-        c_m3.metric("Status do Documento", status_pei)
-        
+        # Coluna 1: Identidade
+        with c_main1:
+            st.markdown('<div class="dash-highlight">', unsafe_allow_html=True)
+            st.markdown('<div class="dash-title">Estudante</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="dash-data">{st.session_state.dados["nome"].split()[0]}</div>', unsafe_allow_html=True)
+            st.caption(st.session_state.dados['serie'])
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        # Coluna 2: Hiperfoco (GRANDE)
+        with c_main2:
+            st.markdown('<div class="dash-highlight" style="background:#F0FFF4; border-color:#C6F6D5;">', unsafe_allow_html=True)
+            st.markdown('<div class="dash-title" style="color:#2F855A;">Hiperfoco (Chave de Acesso)</div>', unsafe_allow_html=True)
+            hf = st.session_state.dados['hiperfoco'] or "Não informado"
+            st.markdown(f'<div class="dash-tag">{hf}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Coluna 3: Monitoramento
+        with c_main3:
+            st.markdown('<div class="dash-highlight">', unsafe_allow_html=True)
+            st.markdown('<div class="dash-title">Próxima Revisão</div>', unsafe_allow_html=True)
+            drev = st.session_state.dados.get('monitoramento_data')
+            st.markdown(f'<div class="dash-data">📅 {drev.strftime("%d/%m/%Y") if drev else "-"}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
         st.divider()
         
-        # 2. DNA do Suporte (Barras de Progresso Nativas)
-        st.markdown("##### 🧬 Nível de Suporte por Área")
-        col_dna1, col_dna2 = st.columns(2)
+        # DNA DO SUPORTE (BARRAS NATIVAS)
+        st.markdown("##### 🧬 DNA de Suporte (Nível de Ajuda Necessária)")
+        dna_c1, dna_c2 = st.columns(2)
         
         areas = list(LISTAS_BARREIRAS.keys())
         for i, area in enumerate(areas):
-            qtd = len(st.session_state.dados['barreiras_selecionadas'][area])
-            valor = min(qtd * 20, 100) 
-            target_col = col_dna1 if i < 3 else col_dna2
-            target_col.caption(f"{area} ({qtd} itens)")
-            target_col.progress(valor)
+            # Lógica simples: Conta quantos itens selecionados e multiplica por 20% (max 100%)
+            qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
+            val = min(qtd * 20, 100)
+            
+            target = dna_c1 if i < 3 else dna_c2
+            target.caption(f"{area} ({qtd} barreiras identificadas)")
+            target.progress(val)
 
     st.divider()
 
