@@ -95,7 +95,7 @@ LISTAS_BARREIRAS = {
     "Comunicacional": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito", "Pragmática (Uso Social)", "Articulação/Fonologia", "Comunicação Não-Verbal", "Necessidade de Comunicação Alternativa"],
     "Socioemocional": ["Regulação Emocional", "Tolerância à Frustração", "Interação com Pares", "Interação com Adultos", "Compreensão de Regras Sociais", "Rigidez de Pensamento", "Autoestima", "Agressividade"],
     "Sensorial/Motor": ["Coordenação Motora Fina", "Coordenação Motora Ampla", "Hipersensibilidade Auditiva", "Hipersensibilidade Tátil", "Hipersensibilidade Visual", "Busca Sensorial", "Tônus Muscular", "Planejamento Motor"],
-    "Acadêmico": ["Alfabetização", "Compreensão Leitora", "Grafia/Legibilidade", "Produção Textual", "Raciocínio Lógico-Matemático", "Cálculo/Operações", "Resolução de Problemas"]
+    "Acadêmico": ["Alfabetização (Decodificação)", "Compreensão Leitora", "Grafia/Legibilidade", "Produção Textual", "Raciocínio Lógico-Matemático", "Cálculo/Operações", "Resolução de Problemas"]
 }
 
 LISTA_POTENCIAS = ["Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", "Musicalidade", "Tecnologia", "Hiperfoco", "Vocabulário Rico", "Empatia", "Liderança", "Esportes", "Persistência"]
@@ -286,7 +286,6 @@ def gerar_pdf_final(dados, tem_anexo):
     if dados.get('monitoramento_data'):
         pdf.section_title("CRONOGRAMA DE REVISÃO E MONITORAMENTO")
         pdf.set_font("Arial", size=10)
-        # Formatação do monitoramento clicável para o PDF
         pp = ', '.join(dados.get('proximos_passos_select', []))
         txt = f"Previsão de Revisão: {dados['monitoramento_data'].strftime('%d/%m/%Y')}\n\nStatus da Meta: {dados.get('status_meta','-')}\n\nParecer Geral: {dados.get('parecer_geral','-')}\n\nPróximos Passos: {pp}"
         pdf.multi_cell(0, 6, limpar_texto_pdf(txt))
@@ -315,7 +314,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v9.6</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v10.0</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -352,7 +351,7 @@ with tab0: # INÍCIO
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F6AD55;"></i><div><h4 style="margin:0; color:#2D3748;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#4A5568;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v9.6:** Monitoramento Clicável (Select) e Correção de Erros de Listas (Crash Proof).")
+    st.caption("🚀 **Versão 10.0:** Mapeamento Blindado (Visual Restaurado) | Monitoramento Otimizado (Click) | IA Pedagógica.")
 
 with tab1: # ESTUDANTE
     st.markdown("### <i class='ri-user-star-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
@@ -407,9 +406,11 @@ with tab3: # REDE
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'], placeholder="Selecione...")
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPA (COM FILTRO ANTI-ERRO)
+with tab4: # MAPA (VISUAL BLINDADO + SEGURANÇA ANTI-CRASH)
     st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
+    
     with st.container(border=True):
+        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'])
         
@@ -420,12 +421,15 @@ with tab4: # MAPA (COM FILTRO ANTI-ERRO)
         st.session_state.dados['potencias'] = c2.multiselect(
             "Pontos Fortes", LISTA_POTENCIAS, default=potencias_validas, placeholder="Selecione..."
         )
+    
     st.divider()
     
-    cols = st.columns(3); idx = 0
-    for cat_nome, itens_lista in LISTAS_BARREIRAS.items():
-        with cols[idx % 3]:
-            with st.container():
+    with st.container(border=True):
+        st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
+        cols = st.columns(3); idx=0
+        for cat_nome, itens_lista in LISTAS_BARREIRAS.items():
+            with cols[idx%3]:
+                # Visual exato da blindada (sem o container extra, direto na coluna)
                 st.markdown(f"**{cat_nome}**")
                 
                 # Filtro de Segurança Barreiras
@@ -442,10 +446,10 @@ with tab4: # MAPA (COM FILTRO ANTI-ERRO)
                     st.caption("Nível de Suporte:")
                     for x in sel: 
                         st.session_state.dados['niveis_suporte'][f"{cat_nome}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], key=f"sl_{cat_nome}_{x}")
-        idx += 1
+            idx+=1
 
-with tab5: # PLANO
-    st.markdown("### <i class='ri-tools-line'></i> Plano de Ação", unsafe_allow_html=True)
+with tab5: # PLANO (VISUAL BLINDADO)
+    st.markdown("### <i class='ri-tools-line'></i> Plano de Ação Estratégico", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
         with st.container(border=True):
@@ -462,7 +466,7 @@ with tab5: # PLANO
             st.markdown("#### 3. Avaliação")
             st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação"], default=st.session_state.dados['estrategias_avaliacao'], placeholder="Selecione...")
 
-with tab6: # MONITORAMENTO (AGORA COM CLIQUES)
+with tab6: # MONITORAMENTO (CLICÁVEL)
     st.markdown("### <i class='ri-loop-right-line'></i> Monitoramento e Metas", unsafe_allow_html=True)
     st.info("Preencha os dados abaixo para gerar o ciclo de revisão do PEI.")
     
@@ -480,7 +484,7 @@ with tab6: # MONITORAMENTO (AGORA COM CLIQUES)
     with c4:
         st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras (Multipla escolha)", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
 
-with tab7: # IA
+with tab7: # IA (CALIBRADA)
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria IA", unsafe_allow_html=True)
     c1, c2 = st.columns([1, 2])
     with c1:
@@ -495,7 +499,7 @@ with tab7: # IA
     with c2:
         if st.session_state.dados['ia_sugestao']: st.text_area("Texto", st.session_state.dados['ia_sugestao'], height=600)
 
-with tab8: # DOCUMENTO & GESTÃO
+with tab8: # DOCUMENTO
     st.markdown("### <i class='ri-file-pdf-line'></i> Documento & Gestão", unsafe_allow_html=True)
     if st.session_state.dados['ia_sugestao']:
         c1, c2 = st.columns(2)
