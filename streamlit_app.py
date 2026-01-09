@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CSS CORRIGIDO PARA NÃO DAR ERRO NA TELA)
+# 2. ESTILO VISUAL (AJUSTADO: CABEÇALHO MAIOR)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -37,12 +37,25 @@ def aplicar_estilo_visual():
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
 
+        /* CABEÇALHO UNIFICADO (AUMENTADO) */
         .header-unified {
-            background-color: white; padding: 20px 40px; border-radius: var(--card-radius);
-            border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
-            display: flex; align-items: center; gap: 25px;
+            background-color: white; 
+            padding: 35px 40px; /* Aumentado de 20px para 35px */
+            border-radius: var(--card-radius);
+            border: 1px solid #EDF2F7; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04); 
+            margin-bottom: 25px;
+            display: flex; 
+            align-items: center; 
+            gap: 30px; /* Espaço maior entre logo e texto */
         }
-        .header-unified p { color: #004E92; margin: 0; font-size: 1.4rem; font-weight: 800; }
+        .header-unified p { 
+            color: #004E92; 
+            margin: 0; 
+            font-size: 1.6rem; /* Fonte maior */
+            font-weight: 800; 
+            line-height: 1.2;
+        }
 
         .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
@@ -88,28 +101,28 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 3. LISTAS DE DADOS DA VERSÃO BLINDADA (COMPLETAS)
+# 3. LISTAS DE DADOS (INTEGRAIS)
 # ==============================================================================
 LISTAS_BARREIRAS = {
     "Cognitivo": [
-        "Atenção Sustentada", "Atenção Alternada", "Memória de Trabalho", "Memória de Curto Prazo",
-        "Controle Inibitório", "Flexibilidade Cognitiva", "Planejamento e Organização",
-        "Velocidade de Processamento", "Raciocínio Lógico/Abstrato", "Generalização do Aprendizado"
+        "Atenção Sustentada (Foco longo)", "Atenção Alternada (Troca de foco)", "Memória de Trabalho (Reter info)", 
+        "Memória de Curto Prazo", "Controle Inibitório (Impulsividade)", "Flexibilidade Cognitiva (Mudança de regra)", 
+        "Planejamento e Organização", "Velocidade de Processamento", "Raciocínio Lógico/Abstrato"
     ],
     "Comunicacional": [
         "Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito",
-        "Pragmática (Uso Social)", "Articulação/Fonologia", "Comunicação Não-Verbal",
-        "Intencionalidade Comunicativa", "Necessidade de CAA"
+        "Pragmática (Uso Social/Contexto)", "Articulação/Fonologia (Trocas na fala)", "Comunicação Não-Verbal (Gestos/Olhar)",
+        "Necessidade de Comunicação Alternativa (CAA)"
     ],
     "Socioemocional": [
-        "Regulação Emocional", "Tolerância à Frustração", "Interação com Pares", 
+        "Regulação Emocional (Choro/Raiva)", "Tolerância à Frustração", "Interação com Pares", 
         "Interação com Adultos", "Compreensão de Regras Sociais", "Rigidez de Pensamento",
-        "Autoestima", "Agressividade", "Passividade", "Comportamentos Repetitivos"
+        "Autoestima/Autoconfiança", "Agressividade/Impulsividade", "Passividade/Isolamento"
     ],
     "Sensorial/Motor": [
-        "Coordenação Motora Fina", "Coordenação Motora Ampla", 
-        "Hipersensibilidade Auditiva", "Hipersensibilidade Tátil", "Hipersensibilidade Visual",
-        "Busca Sensorial", "Tônus Muscular", "Planejamento Motor (Praxia)", "Noção Espacial"
+        "Coordenação Motora Fina (Escrita/Pintura)", "Coordenação Motora Ampla (Correr/Pular)", 
+        "Hipersensibilidade Auditiva (Barulhos)", "Hipersensibilidade Tátil (Texturas)", "Hipersensibilidade Visual (Luz)",
+        "Busca Sensorial (Agitação)", "Tônus Muscular (Postura)", "Planejamento Motor (Praxia)"
     ],
     "Acadêmico": [
         "Alfabetização (Decodificação)", "Compreensão Leitora", "Grafia/Legibilidade",
@@ -119,14 +132,16 @@ LISTAS_BARREIRAS = {
 }
 
 LISTA_POTENCIAS = [
-    "Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", 
-    "Musicalidade", "Interesse por Tecnologia", "Hiperfoco em Áreas Específicas", "Vocabulário Rico", 
-    "Empatia", "Liderança", "Habilidades Esportivas", "Persistência", "Curiosidade"
+    "Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade/Imaginação",
+    "Habilidades Artísticas (Desenho/Pintura)", "Musicalidade", "Interesse por Tecnologia",
+    "Hiperfoco em Áreas Específicas", "Vocabulário Rico", "Empatia/Cuidado com o Outro",
+    "Liderança", "Habilidades Esportivas", "Persistência/Esforço", "Curiosidade Investigativa"
 ]
 
 LISTA_PROFISSIONAIS = [
     "Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional (TO)", "Neuropediatra", 
-    "Psiquiatra Infantil", "Psicopedagogo", "Professor de Apoio", "Acompanhante Terapêutico (AT)"
+    "Psiquiatra Infantil", "Psicopedagogo", "Professor de Apoio", 
+    "Acompanhante Terapêutico (AT)", "Equipe Multidisciplinar"
 ]
 
 # ==============================================================================
@@ -144,8 +159,7 @@ default_state = {
     'monitoramento_data': None, 'monitoramento_indicadores': '', 'monitoramento_proximos': ''
 }
 
-if 'dados' not in st.session_state:
-    st.session_state.dados = default_state
+if 'dados' not in st.session_state: st.session_state.dados = default_state
 else:
     for key, val in default_state.items():
         if key not in st.session_state.dados:
@@ -154,7 +168,7 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 5. UTILITÁRIOS E BANCO
+# 5. UTILITÁRIOS E BANCO (JSON)
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
@@ -190,7 +204,7 @@ def salvar_aluno(dados):
     caminho = os.path.join(PASTA_BANCO, nome_arq)
     try:
         with open(caminho, 'w', encoding='utf-8') as f: json.dump(dados, f, default=str, ensure_ascii=False, indent=4)
-        return True, f"Estudante '{dados['nome']}' salvo com sucesso!"
+        return True, f"Salvo: {dados['nome']}"
     except Exception as e: return False, str(e)
 
 def carregar_aluno(nome_arq):
@@ -325,7 +339,7 @@ def gerar_docx_final(dados):
     buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
 # ==============================================================================
-# 8. INTERFACE UI
+# 8. INTERFACE UI (PRINCIPAL)
 # ==============================================================================
 # SIDEBAR
 with st.sidebar:
@@ -339,12 +353,12 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v9.2</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v9.3</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
-st.markdown(f"""<div class="header-unified">{img_html}<div><p style="margin:0;">Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
+st.markdown(f"""<div class="header-unified">{img_html}<div><p>Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
 
 # ABAS
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento"]
@@ -374,6 +388,9 @@ with tab0: # INÍCIO
 
     if api_key:
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F6AD55;"></i><div><h4 style="margin:0; color:#2D3748;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#4A5568;">{noticia}</p></div></div>""", unsafe_allow_html=True)
+    
+    st.write(""); st.write("")
+    st.caption("🚀 **Novidades v9.3:** Mapeamento completo restaurado | Gestão de Rascunhos | Visual Premium.")
 
 with tab1: # ESTUDANTE
     st.markdown("### <i class='ri-user-star-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
@@ -423,53 +440,48 @@ with tab2: # EVIDÊNCIAS
         for q in ["Explicação 1:1?", "Frustração?", "Desorganização?"]:
             st.session_state.dados['checklist_evidencias'][q] = st.checkbox(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
 
-with tab3: # REDE
+with tab3: # REDE (LISTA EXPANDIDA)
     st.markdown("### <i class='ri-team-line'></i> Rede de Apoio", unsafe_allow_html=True)
-    st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'])
+    st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'], placeholder="Selecione...")
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPA (RESTAURADO ESTRUTURA BLINDADA)
+with tab4: # MAPA (LISTAS EXPANDIDAS E COMPLETAS)
     st.markdown("### <i class='ri-map-pin-user-line'></i> Potencialidades & Barreiras", unsafe_allow_html=True)
-    
     with st.container(border=True):
-        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'])
-        st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=st.session_state.dados['potencias'])
-    
+        # RESTAURADO: Lista completa de Potências
+        st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=st.session_state.dados['potencias'], placeholder="Selecione...")
     st.divider()
     
-    st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
-    cols = st.columns(3); idx=0
+    cols = st.columns(3); idx = 0
     for cat_nome, itens_lista in LISTAS_BARREIRAS.items():
-        with cols[idx%3]:
+        with cols[idx % 3]:
             with st.container():
                 st.markdown(f"**{cat_nome}**")
-                sel = st.multiselect("Barreiras", itens_lista, key=f"bar_{cat_nome}", default=st.session_state.dados['barreiras_selecionadas'].get(cat_nome, []))
+                sel = st.multiselect("Barreiras", itens_lista, key=f"bar_{cat_nome}", default=st.session_state.dados['barreiras_selecionadas'].get(cat_nome, []), placeholder="Selecione...")
                 st.session_state.dados['barreiras_selecionadas'][cat_nome] = sel
-                if sel:
-                    st.caption("Nível de Suporte:")
-                    for x in sel: 
-                        st.session_state.dados['niveis_suporte'][f"{cat_nome}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], key=f"sl_{cat_nome}_{x}")
-        idx+=1
+                for x in sel: 
+                    st.session_state.dados['niveis_suporte'][f"{cat_nome}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], key=f"sl_{cat_nome}_{x}")
+        idx += 1
 
-with tab5: # PLANO (RESTAURADO ESTRUTURA BLINDADA)
+with tab5: # PLANO
     st.markdown("### <i class='ri-tools-line'></i> Plano de Ação", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
         with st.container(border=True):
             st.markdown("#### 1. Acesso (DUA)")
-            st.session_state.dados['estrategias_acesso'] = st.multiselect("Recursos", ["Tempo Estendido", "Apoio Leitura/Escrita", "Material Ampliado", "Tecnologia Assistiva", "Sala Silenciosa"], default=st.session_state.dados['estrategias_acesso'])
+            st.session_state.dados['estrategias_acesso'] = st.multiselect("Recursos", ["Tempo Estendido", "Apoio Leitura/Escrita", "Material Ampliado", "Tecnologia Assistiva", "Sala Silenciosa"], default=st.session_state.dados['estrategias_acesso'], placeholder="Selecione...")
             st.session_state.dados['outros_acesso'] = st.text_input("Outros (Acesso)", st.session_state.dados['outros_acesso'])
     with c2:
         with st.container(border=True):
             st.markdown("#### 2. Ensino")
-            st.session_state.dados['estrategias_ensino'] = st.multiselect("Metodologia", ["Fragmentação de Tarefas", "Pistas Visuais", "Mapas Mentais", "Modelagem", "Ensino Híbrido"], default=st.session_state.dados['estrategias_ensino'])
+            st.session_state.dados['estrategias_ensino'] = st.multiselect("Metodologia", ["Fragmentação de Tarefas", "Pistas Visuais", "Mapas Mentais", "Modelagem", "Ensino Híbrido"], default=st.session_state.dados['estrategias_ensino'], placeholder="Selecione...")
             st.session_state.dados['outros_ensino'] = st.text_input("Outros (Ensino)", st.session_state.dados['outros_ensino'])
     with c3:
         with st.container(border=True):
             st.markdown("#### 3. Avaliação")
-            st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação"], default=st.session_state.dados['estrategias_avaliacao'])
+            st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação"], default=st.session_state.dados['estrategias_avaliacao'], placeholder="Selecione...")
 
 with tab6: # MONITORAMENTO
     st.markdown("### <i class='ri-loop-right-line'></i> Monitoramento (PDCA)", unsafe_allow_html=True)
@@ -487,7 +499,7 @@ with tab7: # IA
             st.markdown("- **Análise de Evidências:** Leitura dos checklists.\n- **Matriz de Suporte:** Cruzamento das barreiras com o nível de ajuda.\n- **Legislação:** Validação com a LBI.")
         
         if st.button("GERAR PLANO AGORA", type="primary"):
-            res, err = consultar_gpt_inovacao(api_key, st.session_state.dados, st.session_state.pdf_text)
+            res, err = consultar_gpt_final(api_key, st.session_state.dados, st.session_state.pdf_text)
             if res: st.session_state.dados['ia_sugestao'] = res; st.success("Sucesso!")
             else: st.error(err)
     with c2:
