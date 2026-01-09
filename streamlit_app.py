@@ -26,21 +26,26 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Pasta do Banco de Dados Local
+PASTA_BANCO = "banco_alunos"
+if not os.path.exists(PASTA_BANCO):
+    os.makedirs(PASTA_BANCO)
+
 # ==============================================================================
-# 2. LISTAS DE DADOS (INTEGRIDADE TOTAL)
+# 2. LISTAS DE DADOS (INTEGRAIS)
 # ==============================================================================
 LISTAS_BARREIRAS = {
     "Cognitivo": ["Atenção Sustentada", "Atenção Alternada", "Memória de Trabalho", "Memória de Curto Prazo", "Controle Inibitório", "Flexibilidade Cognitiva", "Planejamento e Organização", "Velocidade de Processamento", "Raciocínio Lógico/Abstrato"],
     "Comunicacional": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito", "Pragmática (Uso Social)", "Articulação/Fonologia", "Comunicação Não-Verbal", "Necessidade de Comunicação Alternativa"],
-    "Socioemocional": ["Regulação Emocional", "Tolerância à Frustração", "Interação com Pares", "Interação com Adultos", "Compreensão de Regras Sociais", "Rigidez de Pensamento", "Autoestima", "Agressividade"],
+    "Socioemocional": ["Regulação Emocional", "Tolerância à Frustração", "Interação com Pares", "Interação com Adultos", "Compreensão de Regras Sociais", "Rigidez de Pensamento", "Autoestima/Autoconfiança", "Agressividade/Impulsividade"],
     "Sensorial/Motor": ["Coordenação Motora Fina", "Coordenação Motora Ampla", "Hipersensibilidade Auditiva", "Hipersensibilidade Tátil", "Hipersensibilidade Visual", "Busca Sensorial", "Tônus Muscular", "Planejamento Motor"],
-    "Acadêmico": ["Alfabetização", "Compreensão Leitora", "Grafia/Legibilidade", "Produção Textual", "Raciocínio Lógico-Matemático", "Cálculo", "Resolução de Problemas"]
+    "Acadêmico": ["Alfabetização (Decodificação)", "Compreensão Leitora", "Grafia/Legibilidade", "Produção Textual", "Raciocínio Lógico-Matemático", "Cálculo/Operações", "Resolução de Problemas", "Uso de Materiais Escolares"]
 }
 
-LISTA_POTENCIAS = ["Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", "Musicalidade", "Tecnologia", "Hiperfoco", "Vocabulário Rico", "Empatia", "Liderança", "Esportes", "Persistência"]
+LISTA_POTENCIAS = ["Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", "Musicalidade", "Interesse por Tecnologia", "Hiperfoco", "Vocabulário Rico", "Empatia", "Liderança", "Esportes", "Persistência"]
 
 # ==============================================================================
-# 3. GERENCIAMENTO DE ESTADO
+# 3. GERENCIAMENTO DE ESTADO (BLINDADO)
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -89,6 +94,28 @@ def limpar_texto_pdf(texto):
     texto = texto.replace('* ', '-') 
     return re.sub(r'[^\x00-\xff]', '', texto)
 
+def salvar_aluno(dados):
+    if not dados['nome']: return False, "Nome obrigatório."
+    nome_arq = re.sub(r'[^a-zA-Z0-9]', '_', dados['nome'].lower()) + ".json"
+    caminho = os.path.join(PASTA_BANCO, nome_arq)
+    try:
+        with open(caminho, 'w', encoding='utf-8') as f: json.dump(dados, f, default=str, ensure_ascii=False, indent=4)
+        return True, f"Salvo: {dados['nome']}"
+    except Exception as e: return False, str(e)
+
+def carregar_aluno(nome_arq):
+    caminho = os.path.join(PASTA_BANCO, nome_arq)
+    try:
+        with open(caminho, 'r', encoding='utf-8') as f: d = json.load(f)
+        if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
+        if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
+        return d
+    except: return None
+
+def excluir_aluno(nome_arq):
+    try: os.remove(os.path.join(PASTA_BANCO, nome_arq)); return True
+    except: return False
+
 # ==============================================================================
 # 5. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
@@ -97,7 +124,7 @@ def gerar_saudacao_ia(api_key):
     if not api_key: return "Bem-vindo ao PEI 360º."
     try:
         client = OpenAI(api_key=api_key)
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}], temperature=0.8)
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta e inspiradora para professor sobre inclusão."}], temperature=0.8)
         return res.choices[0].message.content
     except: return "A inclusão transforma vidas."
 
@@ -187,8 +214,7 @@ def gerar_pdf_final(dados, tem_anexo):
             l = limpar_texto_pdf(linha)
             if re.match(r'^[1-6]\.', l.strip()) and l.strip().isupper():
                 pdf.ln(4); pdf.set_fill_color(240, 248, 255); pdf.set_text_color(0, 78, 146); pdf.set_font('Arial', 'B', 11)
-                pdf.cell(0, 8, f"  {l}", 0, 1, 'L', fill=True)
-                pdf.set_text_color(0); pdf.set_font("Arial", size=10)
+                pdf.cell(0, 8, f"  {l}", 0, 1, 'L', fill=True); pdf.set_text_color(0); pdf.set_font("Arial", size=10)
             elif l.strip().endswith(':') and len(l) < 70:
                 pdf.ln(2); pdf.set_font("Arial", 'B', 10); pdf.multi_cell(0, 6, l); pdf.set_font("Arial", size=10)
             else: pdf.multi_cell(0, 6, l)
@@ -209,7 +235,7 @@ def gerar_docx_final(dados):
     buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
 # ==============================================================================
-# 7. INTERFACE UI (CORRIGIDA)
+# 7. INTERFACE UI (CSS CORRIGIDO - COM TAGS STYLE)
 # ==============================================================================
 st.markdown("""
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -271,7 +297,7 @@ with st.sidebar:
     
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v8.1</b><br>Rodrigo A. Queiroz<br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v8.2</b><br>Rodrigo A. Queiroz<br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -365,12 +391,10 @@ with tab4: # MAPA (LISTAS REINSERIDAS)
     with st.container(border=True):
         c1, c2 = st.columns(2)
         st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'])
-        # RESTAURADO: Lista completa de Potências
         st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=st.session_state.dados['potencias'])
     st.divider()
     
     cols = st.columns(3); idx = 0
-    # Loop usando as LISTAS COMPLETAS definidas no início
     for cat_nome, itens_lista in LISTAS_BARREIRAS.items():
         with cols[idx % 3]:
             with st.container():
@@ -400,7 +424,7 @@ with tab6: # MONITORAMENTO
     st.session_state.dados['monitoramento_indicadores'] = c2.text_area("Indicadores de Sucesso", st.session_state.dados['monitoramento_indicadores'])
     st.session_state.dados['monitoramento_proximos'] = st.text_area("Próximos Passos", st.session_state.dados['monitoramento_proximos'])
 
-with tab7: # IA RESTAURADA
+with tab7: # IA
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria IA", unsafe_allow_html=True)
     c1, c2 = st.columns([1, 2])
     with c1:
@@ -427,7 +451,6 @@ with tab8: # DOCUMENTO & GESTÃO
             st.download_button("📥 Baixar Word", docx, f"PEI_{st.session_state.dados['nome']}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             
             st.write("")
-            # SISTEMA DE SALVAR JSON (ROBUSTO)
             st.markdown("##### 💾 Gestão de Rascunhos")
             json_dados = json.dumps(st.session_state.dados, default=str)
             st.download_button("Baixar Arquivo do Aluno (.json)", json_dados, f"PEI_{st.session_state.dados['nome']}.json", "application/json")
