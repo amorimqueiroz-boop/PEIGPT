@@ -10,7 +10,6 @@ import base64
 import json
 import os
 import re
-import glob
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -26,14 +25,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Pasta do Banco de Dados Local
-PASTA_BANCO = "banco_alunos"
-if not os.path.exists(PASTA_BANCO):
-    os.makedirs(PASTA_BANCO)
-
 # ==============================================================================
-# 2. AUTO-REPARO DE DADOS
+# 2. GERENCIAMENTO DE ESTADO (BLINDAGEM)
 # ==============================================================================
+# Define o estado inicial completo para evitar KeyError
 default_state = {
     'nome': '', 
     'nasc': date(2015, 1, 1), 
@@ -55,6 +50,7 @@ default_state = {
     'estrategias_ensino': [], 
     'estrategias_avaliacao': [], 
     'ia_sugestao': '',
+    # Campos extras para compatibilidade
     'outros_acesso': '', 
     'outros_ensino': '', 
     'monitoramento_data': None, 
@@ -65,6 +61,7 @@ default_state = {
 if 'dados' not in st.session_state:
     st.session_state.dados = default_state
 else:
+    # Auto-Reparo: Garante que chaves novas existam na sessão antiga
     for key, val in default_state.items():
         if key not in st.session_state.dados:
             st.session_state.dados[key] = val
@@ -72,7 +69,7 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 3. UTILITÁRIOS E BANCO
+# 3. UTILITÁRIOS (PDF, IMAGEM, TEXTO)
 # ==============================================================================
 def finding_logo():
     possiveis = ["360.png", "360.jpg", "logo.png", "logo.jpg", "iconeaba.png"]
@@ -98,70 +95,65 @@ def ler_pdf(arquivo):
 
 def limpar_texto_pdf(texto):
     if not texto: return ""
+    # Substituições para evitar quebra do FPDF
     texto = texto.replace('**', '').replace('__', '')
     texto = texto.replace('### ', '').replace('## ', '').replace('# ', '')
     texto = texto.replace('* ', '-') 
+    texto = texto.replace('–', '-').replace('—', '-')
+    texto = texto.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
     texto = re.sub(r'[^\x00-\xff]', '', texto) 
     return texto
 
-def salvar_aluno(dados):
-    if not dados['nome']: return False, "Nome obrigatório."
-    nome_arq = re.sub(r'[^a-zA-Z0-9]', '_', dados['nome'].lower()) + ".json"
-    caminho = os.path.join(PASTA_BANCO, nome_arq)
-    try:
-        with open(caminho, 'w', encoding='utf-8') as f: json.dump(dados, f, default=str, ensure_ascii=False, indent=4)
-        return True, f"Estudante '{dados['nome']}' salvo com sucesso!"
-    except Exception as e: return False, str(e)
-
-def carregar_aluno(nome_arq):
-    caminho = os.path.join(PASTA_BANCO, nome_arq)
-    try:
-        with open(caminho, 'r', encoding='utf-8') as f: d = json.load(f)
-        if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
-        if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
-        return d
-    except: return None
-
-def excluir_aluno(nome_arq):
-    try: os.remove(os.path.join(PASTA_BANCO, nome_arq)); return True
-    except: return False
-
 # ==============================================================================
-# 4. INTELIGÊNCIA ARTIFICIAL
+# 4. INTELIGÊNCIA ARTIFICIAL (FUNCIONALIDADES)
 # ==============================================================================
 @st.cache_data(ttl=3600)
-def gerar_destaque_inclusao(api_key):
-    if not api_key: return "Dica: Mantenha o PEI sempre atualizado conforme a legislação vigente."
+def gerar_mensagem_boas_vindas(api_key):
+    """Gera saudação inicial inspiradora."""
+    if not api_key: return "Bem-vindo ao PEI 360º. A inclusão transforma vidas."
     try:
         client = OpenAI(api_key=api_key)
-        prompt = "Escreva uma curiosidade curta ou dica importante sobre Educação Inclusiva, Neurociência ou a Lei 12.686/2025. Máximo 2 frases. Use tom inspirador."
+        prompt = "Escreva uma frase curta (máx 20 palavras) e inspiradora para um professor sobre o impacto positivo do PEI na vida do aluno. Tom acolhedor."
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}], temperature=0.8)
         return res.choices[0].message.content
-    except: return "A inclusão escolar é um direito garantido que transforma a sociedade."
+    except: return "Planejar para incluir é um ato de amor e competência pedagógica."
 
-def consultar_gpt_inovacao(api_key, dados, contexto_pdf=""):
-    if not api_key: return None, "⚠️ Configure a Chave API."
+@st.cache_data(ttl=3600)
+def gerar_destaque_noticia(api_key):
+    """Gera destaque sobre legislação ou prática."""
+    if not api_key: return "Dica: Consulte sempre a Lei Brasileira de Inclusão para fundamentar suas práticas."
     try:
         client = OpenAI(api_key=api_key)
-        evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
+        prompt = "Escreva um parágrafo curto (estilo 'Você Sabia?' ou 'Destaque') sobre uma novidade recente da legislação de inclusão no Brasil (como o Decreto 12.686) ou uma estratégia neurocientífica."
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}], temperature=0.7)
+        return res.choices[0].message.content
+    except: return "A legislação atual reforça a obrigatoriedade do PEI como documento norteador da trajetória escolar."
+
+def consultar_gpt_relatorio(api_key, dados, contexto_pdf=""):
+    if not api_key: return None, "⚠️ Configure a Chave API OpenAI."
+    try:
+        client = OpenAI(api_key=api_key)
+        contexto_seguro = contexto_pdf[:5000] if contexto_pdf else "Sem laudo anexado."
+        
+        # Prepara dados
+        evidencias = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         meds = "\n".join([f"- {m['nome']} ({m['posologia']})" for m in dados['lista_medicamentos']])
+        
         map_txt = ""
         for c, i in dados['barreiras_selecionadas'].items():
             if i: map_txt += f"\n[{c}]: " + ", ".join([f"{x} ({dados['niveis_suporte'].get(f'{c}_{x}','Monitorado')})" for x in i])
         
-        extra_ac = f" | Outros: {dados.get('outros_acesso','')}"
-        extra_en = f" | Outros: {dados.get('outros_ensino','')}"
-        estrat = f"Acesso: {', '.join(dados['estrategias_acesso'])}{extra_ac}\nEnsino: {', '.join(dados['estrategias_ensino'])}{extra_en}\nAvaliação: {', '.join(dados['estrategias_avaliacao'])}"
+        estrat = f"Acesso: {', '.join(dados['estrategias_acesso'])}\nEnsino: {', '.join(dados['estrategias_ensino'])}\nAvaliação: {', '.join(dados['estrategias_avaliacao'])}"
 
-        sys = "Especialista em Educação Inclusiva. GERE O RELATÓRIO TÉCNICO SEGUINDO A NUMERAÇÃO 1 A 6 EM CAIXA ALTA. SEM TÍTULO DE CAPA."
-        usr = f"ALUNO: {dados['nome']}\nDIAG: {dados['diagnostico']}\nMEDS: {meds}\nHIST: {dados['historico']}\nEVID: {evid}\nBARREIRAS: {map_txt}\nHIPERFOCO: {dados['hiperfoco']}\nESTRATÉGIAS: {estrat}\nLAUDO: {contexto_pdf[:5000]}"
+        sys = "Especialista em Educação Inclusiva. GERE O RELATÓRIO SEGUINDO A ESTRUTURA NUMERADA (1 A 6) EM CAIXA ALTA. SEM TÍTULO DE CAPA."
+        usr = f"ALUNO: {dados['nome']}\nDIAG: {dados['diagnostico']}\nMEDS: {meds}\nHIST: {dados['historico']}\nEVID: {evid}\nBARREIRAS: {map_txt}\nHIPERFOCO: {dados['hiperfoco']}\nESTRATÉGIAS: {estrat}\nLAUDO: {contexto_seguro}"
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": sys}, {"role": "user", "content": usr}])
         return res.choices[0].message.content, None
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 5. GERADOR PDF
+# 5. GERADOR PDF (CLASSE V3 BLINDADA)
 # ==============================================================================
 class PDF_V3(FPDF):
     def header(self):
@@ -169,7 +161,7 @@ class PDF_V3(FPDF):
         self.rect(5, 5, 200, 287)
         logo = finding_logo()
         if logo: 
-            self.image(logo, 10, 10, 30) # Logo Grande
+            self.image(logo, 10, 10, 30) # Logo 30mm
             x_offset = 45 
         else: x_offset = 12
         self.set_xy(x_offset, 16); self.set_font('Arial', 'B', 16); self.set_text_color(0, 78, 146)
@@ -253,7 +245,7 @@ def gerar_docx_final(dados):
     buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
 # ==============================================================================
-# 6. INTERFACE UI (CSS LIMPO E SEGURO)
+# 6. INTERFACE UI (CSS PROTEGIDO E DESIGN CORRIGIDO)
 # ==============================================================================
 st.markdown("""
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -263,7 +255,7 @@ st.markdown("""
     :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
     div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
     
-    /* CABEÇALHO UNIFICADO */
+    /* CABEÇALHO LIMPO (Logo + Texto) */
     .header-unified {
         background-color: white; padding: 20px 40px; border-radius: var(--card-radius);
         border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
@@ -271,7 +263,7 @@ st.markdown("""
     }
     .header-unified p { color: #004E92; margin: 0; font-size: 1.4rem; font-weight: 800; }
 
-    /* ABAS PÍLULA (PILLS) */
+    /* ABAS ESTILO PÍLULA (PILLS) */
     .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
     .stTabs [data-baseweb="tab"] {
         height: 42px; border-radius: 20px;
@@ -296,7 +288,7 @@ st.markdown("""
     .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
     .rich-icon { font-size: 3rem; color: var(--brand-coral); margin-bottom: 15px; }
     
-    /* CARD DE NOVIDADES IA */
+    /* CARD DE DESTAQUE IA */
     .highlight-card {
         background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-left: 6px solid #FFD700;
         border-radius: 12px; padding: 20px; margin-top: 15px; margin-bottom: 20px;
@@ -316,7 +308,7 @@ with st.sidebar:
     else: api_key = st.text_input("Chave OpenAI:", type="password")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v6.0</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v6.1</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
 
 # CABEÇALHO (LOGO + TEXTO)
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -334,17 +326,39 @@ tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 
 with tab0: # INÍCIO (PORTAL RICO)
     
-    # ÁREA DE DESTAQUE IA
-    destaque = gerar_destaque_inclusao(api_key)
-    st.markdown(f"""
-    <div class="highlight-card">
-        <i class="ri-lightbulb-flash-fill" style="font-size: 2.5rem; color: #F6AD55;"></i>
-        <div>
-            <h4 style="margin:0; color:#2D3748;">📢 Destaque do Dia (IA)</h4>
-            <p style="margin:5px 0 0 0; font-size:0.95rem; color:#4A5568;">{destaque}</p>
+    # BOAS VINDAS IA (Box Azul)
+    if api_key:
+        with st.spinner("Conectando..."):
+            msg_dia = gerar_mensagem_boas_vindas(api_key)
+            destaque = gerar_destaque_noticia(api_key)
+        
+        st.markdown(f"""
+        <div style="background: linear-gradient(90deg, #004E92 0%, #000428 100%); padding: 25px; border-radius: 16px; color: white; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,78,146,0.25);">
+            <div style="display:flex; gap:15px; align-items:center;">
+                <i class="ri-sparkling-fill" style="font-size: 2.2rem; color: #FFD700;"></i>
+                <div>
+                    <h2 style="color:white; margin:0; font-size: 1.5rem;">Olá, Educador(a)!</h2>
+                    <p style="margin:5px 0 0 0; opacity:0.95; font-size: 1rem; line-height: 1.4;">{msg_dia}</p>
+                </div>
+            </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+        
+        # NOTÍCIA IA (Box Dourado)
+        st.markdown(f"""
+        <div class="highlight-card">
+            <i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F6AD55;"></i>
+            <div>
+                <h4 style="margin:0; color:#2D3748;">📢 Destaque do Dia (IA)</h4>
+                <p style="margin:5px 0 0 0; font-size:0.95rem; color:#4A5568;">{destaque}</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    else:
+        st.info("Insira sua Chave API na barra lateral para ver as mensagens personalizadas.")
+
+    st.write(""); st.write("")
     
     # 4 CARDS ORIGINAIS (RICOS E CLICÁVEIS)
     c1, c2, c3, c4 = st.columns(4)
@@ -482,7 +496,7 @@ with tab6: # MONITORAMENTO
 with tab7: # IA
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria IA", unsafe_allow_html=True)
     if st.button("Gerar Plano", type="primary"):
-        res, err = consultar_gpt_inovacao(api_key, st.session_state.dados, st.session_state.pdf_text)
+        res, err = consultar_gpt_relatorio(api_key, st.session_state.dados, st.session_state.pdf_text)
         if res: st.session_state.dados['ia_sugestao'] = res
     if st.session_state.dados['ia_sugestao']: st.text_area("Editor", st.session_state.dados['ia_sugestao'], height=500)
 
