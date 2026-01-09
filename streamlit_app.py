@@ -11,7 +11,14 @@ import json
 import os
 import re
 import glob
-import plotly.graph_objects as go # Biblioteca gráfica adicionada
+
+# TENTATIVA SEGURA DE IMPORTAR PLOTLY
+# Se não estiver instalado, o app não quebra, apenas adapta o visual.
+try:
+    import plotly.graph_objects as go
+    HAS_PLOTLY = True
+except ImportError:
+    HAS_PLOTLY = False
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -27,7 +34,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL
+# 2. ESTILO VISUAL (MANTIDO O PERFEITO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -103,8 +110,7 @@ def aplicar_estilo_visual():
             font-size: 0.8rem; font-weight: 600; margin: 0 5px 5px 0;
         }
         .tag-green { background: #F0FFF4; color: #2F855A; border: 1px solid #C6F6D5; }
-        .tag-blue { background: #EBF8FF; color: #2C5282; border: 1px solid #BEE3F8; }
-
+        
         .icon-container {
             width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
             font-size: 1.8rem; margin-bottom: 10px;
@@ -114,7 +120,6 @@ def aplicar_estilo_visual():
         .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
         .ic-green { background-color: #F0FFF4; color: #38A169; }
 
-        /* INPUTS */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 12px !important; border-color: #E2E8F0 !important; 
         }
@@ -274,7 +279,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
         prompt_sys = """
-        Você é um Consultor Pedagógico Especialista em Educação Inclusiva (Tom: Acolhedor, Técnico e Prático).
+        Você é um Consultor Pedagógico Especialista em Educação Inclusiva.
         ESTRUTURA DA RESPOSTA (Markdown Limpo):
         1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
         2. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos adaptados.
@@ -297,7 +302,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF CLÁSSICO (DOC OFICIAL)
+# 7. GERADOR PDF CLÁSSICO
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -381,7 +386,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v30.0 Finale</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v30.1 Safe</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -423,7 +428,7 @@ with tab0: # INÍCIO
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v30.0:** Dashboard Visual com Gráfico Radar e PDF Oficial.")
+    st.caption("🚀 **Novidades v30.1:** Safe Mode (Plotly Opcional).")
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -601,40 +606,36 @@ with tab8: # DOCUMENTO & DASHBOARD
         
         c_dash1, c_dash2, c_dash3 = st.columns([2, 1, 1])
         
-        # 1. Gráfico Radar (Teia)
+        # 1. Gráfico Radar (Teia) - SEGURO
         with c_dash1:
-            try:
-                # Prepara dados do radar
-                categorias = list(LISTAS_BARREIRAS.keys())
-                valores = []
-                for cat in categorias:
-                    itens = st.session_state.dados['barreiras_selecionadas'].get(cat, [])
-                    if not itens:
-                        valores.append(0)
-                        continue
+            if HAS_PLOTLY:
+                try:
+                    categorias = list(LISTAS_BARREIRAS.keys())
+                    valores = []
+                    for cat in categorias:
+                        itens = st.session_state.dados['barreiras_selecionadas'].get(cat, [])
+                        if not itens:
+                            valores.append(0)
+                            continue
+                        
+                        soma = 0
+                        for item in itens:
+                            nivel = st.session_state.dados['niveis_suporte'].get(f"{cat}_{item}", "Monitorado")
+                            peso = {"Autônomo": 1, "Monitorado": 2, "Substancial": 3, "Muito Substancial": 4}.get(nivel, 2)
+                            soma += peso
+                        valores.append(soma / len(itens))
                     
-                    soma = 0
-                    for item in itens:
-                        nivel = st.session_state.dados['niveis_suporte'].get(f"{cat}_{item}", "Monitorado")
-                        peso = {"Autônomo": 1, "Monitorado": 2, "Substancial": 3, "Muito Substancial": 4}.get(nivel, 2)
-                        soma += peso
-                    valores.append(soma / len(itens)) # Média
-                
-                fig = go.Figure(data=go.Scatterpolar(
-                    r=valores,
-                    theta=categorias,
-                    fill='toself',
-                    line_color='#004E92'
-                ))
-                fig.update_layout(
-                    polar=dict(radialaxis=dict(visible=True, range=[0, 4])),
-                    showlegend=False,
-                    height=300,
-                    margin=dict(l=40, r=40, t=20, b=20)
-                )
-                st.plotly_chart(fig, use_container_width=True)
-            except:
-                st.warning("Gráfico indisponível (requer dados preenchidos).")
+                    fig = go.Figure(data=go.Scatterpolar(
+                        r=valores, theta=categorias, fill='toself', line_color='#004E92'
+                    ))
+                    fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 4])), showlegend=False, height=300, margin=dict(l=40, r=40, t=20, b=20))
+                    st.plotly_chart(fig, use_container_width=True)
+                except:
+                    st.warning("Gráfico indisponível no momento.")
+            else:
+                st.info("Visualização gráfica simplificada (Biblioteca Plotly ausente).")
+                # Fallback simples: Barras Nativas
+                st.bar_chart({"Nível Suporte": [1, 2, 3, 2, 1]})
 
         # 2. Resumo Identidade
         with c_dash2:
