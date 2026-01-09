@@ -27,53 +27,127 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CSS)
+# 2. ESTILO VISUAL "AWARD-WINNING" (NOVO CSS REFINADO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
-        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-        :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
-        div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
-
-        .header-unified {
-            background-color: white; padding: 35px 40px; border-radius: var(--card-radius);
-            border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
-            display: flex; align-items: center; gap: 30px;
+        /* IMPORTANDO FONTES MODERNAS */
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #0F52BA;      /* Azul Safira - Confiança */
+            --accent: #FF6B6B;       /* Coral Suave - Destaque */
+            --bg-page: #F8FAFC;      /* Cinza muito claro - Fundo */
+            --surface: #FFFFFF;      /* Branco - Cartões */
+            --text-main: #1E293B;    /* Cinza Escuro - Texto */
+            --text-light: #64748B;   /* Cinza Médio - Legendas */
+            --border: #E2E8F0;       /* Borda sutil */
         }
-        .header-unified p { color: #004E92; margin: 0; font-size: 1.6rem; font-weight: 800; line-height: 1.2; }
 
-        .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
+        /* RESET GERAL */
+        html, body, [class*="css"] {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-page);
+        }
+
+        /* --- 1. BARRA DE PROGRESSO FLUTUANTE --- */
+        .progress-wrapper {
+            background: var(--surface);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+        .progress-header {
+            display: flex; justify-content: space-between; margin-bottom: 8px;
+            font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .progress-track {
+            background-color: #F1F5F9;
+            height: 10px; border-radius: 10px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, var(--primary) 0%, #3B82F6 100%);
+            border-radius: 10px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- 2. HEADER UNIFICADO (COM EFEITO GLASS) --- */
+        .header-unified {
+            background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+            padding: 30px 40px; border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            display: flex; align-items: center; gap: 25px;
+        }
+        .header-unified p { 
+            color: var(--primary); margin: 0; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em;
+        }
+        .header-sub {
+            color: var(--text-light); font-size: 0.95rem; margin-top: 4px; font-weight: 500;
+        }
+
+        /* --- 3. ABAS (TABS) MAIS ELEGANTES --- */
+        .stTabs [data-baseweb="tab-list"] { gap: 8px; padding-bottom: 5px; }
         .stTabs [data-baseweb="tab"] {
-            height: 42px; border-radius: 20px; padding: 0 25px; background-color: white;
-            border: 1px solid #E2E8F0; font-weight: 700; color: #718096; font-size: 0.85rem; 
-            text-transform: uppercase; transition: all 0.3s ease;
+            height: 44px; border-radius: 10px; background-color: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-light); font-weight: 600; font-size: 0.9rem;
+            transition: all 0.2s ease;
         }
         .stTabs [aria-selected="true"] {
-            background-color: var(--brand-coral) !important; color: white !important;
-            border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+            background-color: var(--primary) !important; color: white !important;
+            border-color: var(--primary) !important;
+            box-shadow: 0 4px 10px rgba(15, 82, 186, 0.2);
         }
 
+        /* --- 4. CARDS DE CONTEÚDO (INÍCIO) --- */
         .rich-card {
-            background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
-            text-align: left; height: 240px; display: flex; flex-direction: column; justify-content: flex-start;
-            text-decoration: none; color: inherit; position: relative; overflow: hidden;
+            background-color: var(--surface); padding: 25px; border-radius: 16px; 
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); 
+            transition: all 0.3s ease; cursor: pointer; height: 220px;
+            display: flex; flex-direction: column; justify-content: center;
+            text-decoration: none; position: relative; overflow: hidden;
         }
-        .rich-card:hover { transform: translateY(-8px); border-color: var(--brand-blue); box-shadow: 0 15px 30px rgba(0,78,146,0.15); }
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
-        .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
-        .rich-icon { font-size: 3rem; color: var(--brand-coral); margin-bottom: 15px; }
+        .rich-card:hover { 
+            transform: translateY(-5px); 
+            border-color: var(--primary); 
+            box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); 
+        }
+        .rich-card h3 { margin: 10px 0 5px 0; font-size: 1.1rem; color: var(--primary); font-weight: 700; }
+        .rich-card p { font-size: 0.9rem; color: var(--text-light); line-height: 1.5; }
+        .rich-icon { font-size: 2.5rem; color: var(--accent); margin-bottom: 10px; }
+
+        /* --- 5. CONTAINERS DE MAPEAMENTO (POTENCIAIS vs BARREIRAS) --- */
+        /* Estilização específica para criar hierarquia visual */
         
-        .highlight-card {
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-left: 6px solid #F6AD55;
-            border-radius: 12px; padding: 20px; margin-top: 15px; margin-bottom: 20px;
-            display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        /* Container Potencialidades (Verde/Esperança) */
+        div[data-testid="stVerticalBlock"] > div.potencia-box {
+            background-color: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px; padding: 20px;
+        }
+        
+        /* Container Barreiras (Laranja/Atenção) */
+        div[data-testid="stVerticalBlock"] > div.barreira-box {
+            background-color: #FFF7ED; border: 1px solid #FFEDD5; border-radius: 12px; padding: 20px;
         }
 
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { border-radius: 12px !important; border-color: #E2E8F0 !important; }
-        div[data-testid="column"] .stButton button { border-radius: 12px !important; font-weight: 800 !important; text-transform: uppercase; height: 50px !important; }
+        /* --- 6. INPUTS E BOTÕES REFINADOS --- */
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { 
+            border-radius: 10px !important; border-color: var(--border) !important; 
+            padding: 10px 12px !important;
+        }
+        .stTextInput input:focus, .stTextArea textarea:focus {
+            border-color: var(--primary) !important; box-shadow: 0 0 0 2px rgba(15, 82, 186, 0.1) !important;
+        }
+        div[data-testid="column"] .stButton button { 
+            border-radius: 10px !important; font-weight: 700 !important; 
+            text-transform: uppercase; height: 50px !important; 
+            letter-spacing: 0.05em;
+        }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -82,7 +156,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 3. LISTAS DE DADOS
+# 3. LISTAS DE DADOS (MANTIDAS EXATAMENTE COMO NO ORIGINAL)
 # ==============================================================================
 LISTA_SERIES = [
     "Educação Infantil", 
@@ -127,8 +201,24 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 5. UTILITÁRIOS E BANCO
+# 5. UTILITÁRIOS (PROGRESSO, BANCO, LOGO)
 # ==============================================================================
+# NOVA FUNÇÃO: CALCULAR PROGRESSO
+def calcular_progresso():
+    pontos = 0
+    total = 7 # Número de etapas chave
+    
+    d = st.session_state.dados
+    if d['nome']: pontos += 1
+    if d['serie']: pontos += 1
+    if d['diagnostico']: pontos += 1
+    if any(d['checklist_evidencias'].values()): pontos += 1
+    if d['hiperfoco']: pontos += 1
+    if any(d['barreiras_selecionadas'].values()): pontos += 1
+    if d['estrategias_ensino'] or d['estrategias_acesso']: pontos += 1
+    
+    return int((pontos / total) * 100)
+
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
 
@@ -309,14 +399,37 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v13.0</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v15.0</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
-# HEADER
+# HEADER & BARRA DE PROGRESSO
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
-st.markdown(f"""<div class="header-unified">{img_html}<div><p style="margin:0;">Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
 
-# ABAS
+# Header Elegante
+st.markdown(f"""
+<div class="header-unified">
+    {img_html}
+    <div>
+        <p>PEI 360º</p>
+        <div class="header-sub">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
+    </div>
+</div>""", unsafe_allow_html=True)
+
+# Barra de Progresso Integrada (Fora das Abas)
+progresso = calcular_progresso()
+st.markdown(f"""
+<div class="progress-wrapper">
+    <div class="progress-header">
+        <span>Progresso do Preenchimento</span>
+        <span>{progresso}%</span>
+    </div>
+    <div class="progress-track">
+        <div class="progress-fill" style="width: {progresso}%;"></div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ABAS (Mantendo a estrutura que você já aprovou)
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 
@@ -326,10 +439,11 @@ with tab0: # INÍCIO
             saudacao = gerar_saudacao_ia(api_key)
             noticia = gerar_noticia_ia(api_key)
         
+        # Saudação mais elegante
         st.markdown(f"""
-        <div style="background: linear-gradient(90deg, #004E92 0%, #000428 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 20px; box-shadow: 0 8px 15px rgba(0,78,146,0.2);">
+        <div style="background: linear-gradient(135deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 16px; color: white; margin-bottom: 25px; box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);">
             <div style="display:flex; gap:15px; align-items:center;">
-                <i class="ri-sparkling-fill" style="font-size: 2rem; color: #FFD700;"></i>
+                <i class="ri-sparkling-fill" style="font-size: 2rem; color: #FCD34D;"></i>
                 <div><h3 style="color:white; margin:0; font-size: 1.3rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.9;">{saudacao}</p></div>
             </div>
         </div>
@@ -343,10 +457,7 @@ with tab0: # INÍCIO
     with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-compass-3-line rich-icon"></i><h3>BNCC</h3><p>Base Nacional Comum Curricular Oficial.</p></div></a>""", unsafe_allow_html=True)
 
     if api_key:
-        st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F6AD55;"></i><div><h4 style="margin:0; color:#2D3748;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#4A5568;">{noticia}</p></div></div>""", unsafe_allow_html=True)
-    
-    st.write(""); st.write("")
-    st.caption("🚀 **Novidades v13.0:** Mapeamento em 2 Containers | Layout Fixo | Ensino Médio.")
+        st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
 
 with tab1: # ESTUDANTE
     st.markdown("### <i class='ri-user-star-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
@@ -362,8 +473,8 @@ with tab1: # ESTUDANTE
     st.session_state.dados['turma'] = c4.text_input("Turma", st.session_state.dados['turma'])
     st.markdown("---")
     c1, c2 = st.columns(2)
-    st.session_state.dados['historico'] = c1.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Resuma a trajetória escolar: retenções, mudanças de escola e avanços recentes.")
-    st.session_state.dados['familia'] = c2.text_area("Contexto Familiar", st.session_state.dados['familia'], help="Quem acompanha os estudos? Há questões familiares impactando?")
+    st.session_state.dados['historico'] = c1.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Resuma a trajetória escolar.")
+    st.session_state.dados['familia'] = c2.text_area("Contexto Familiar", st.session_state.dados['familia'], help="Quem acompanha os estudos?")
     st.session_state.dados['composicao_familiar'] = st.text_input("Composição Familiar", st.session_state.dados['composicao_familiar'])
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico", st.session_state.dados['diagnostico'])
     
@@ -406,22 +517,25 @@ with tab3: # REDE
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'], placeholder="Selecione...")
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS)
+with tab4: # MAPEAMENTO (VISUAL REFINADO)
     st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
     
-    # CONTAINER 1: POTENCIALIDADES
-    with st.container(border=True):
-        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
+    # CONTAINER 1: POTENCIALIDADES (Usando CSS específico 'potencia-box' injetado)
+    with st.container():
+        st.markdown('<div class="potencia-box">', unsafe_allow_html=True)
+        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#10B981'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'], placeholder="Ex: Minecraft, Dinossauros...")
         p_val = [p for p in st.session_state.dados.get('potencias', []) if p in LISTA_POTENCIAS]
         st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=p_val, placeholder="Selecione...")
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    st.divider()
+    st.write("") # Espaçamento
     
-    # CONTAINER 2: BARREIRAS (LAYOUT MANUAL FIXO 3 COLUNAS)
-    with st.container(border=True):
-        st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
+    # CONTAINER 2: BARREIRAS (Usando CSS específico 'barreira-box' injetado)
+    with st.container():
+        st.markdown('<div class="barreira-box">', unsafe_allow_html=True)
+        st.markdown("#### <i class='ri-barricade-line' style='color:#F59E0B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
         c_bar1, c_bar2, c_bar3 = st.columns(3)
         
         def render_cat_barreira(coluna, titulo, chave_json):
@@ -436,16 +550,12 @@ with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS)
                         st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
                 st.write("")
 
-        # Coluna 1: Cognitivo + Sensorial
         render_cat_barreira(c_bar1, "Cognitivo", "Cognitivo")
         render_cat_barreira(c_bar1, "Sensorial/Motor", "Sensorial/Motor")
-        
-        # Coluna 2: Comunicacional + Acadêmico
         render_cat_barreira(c_bar2, "Comunicacional", "Comunicacional")
         render_cat_barreira(c_bar2, "Acadêmico", "Acadêmico")
-        
-        # Coluna 3: Socioemocional
         render_cat_barreira(c_bar3, "Socioemocional", "Socioemocional")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 with tab5: # PLANO (VISUAL CARDS)
     st.markdown("### <i class='ri-tools-line'></i> Plano de Ação Estratégico", unsafe_allow_html=True)
@@ -542,3 +652,5 @@ with tab8: # DOCUMENTO & GESTÃO
         ok, msg = salvar_aluno(st.session_state.dados)
         if ok: st.success(msg); st.rerun()
         else: st.error(msg)
+
+st.markdown("---")
