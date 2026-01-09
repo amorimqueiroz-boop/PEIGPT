@@ -12,14 +12,14 @@ import os
 import re
 
 # ==============================================================================
-# 1. CONFIGURAÇÃO E UTILITÁRIOS
+# 1. CONFIGURAÇÃO INICIAL E UTILITÁRIOS
 # ==============================================================================
 def get_favicon():
     if os.path.exists("iconeaba.png"): return "iconeaba.png"
     return "📘"
 
 st.set_page_config(
-    page_title="PEI 360º | Beta Inovação",
+    page_title="PEI 360º | Pro",
     page_icon=get_favicon(),
     layout="wide",
     initial_sidebar_state="expanded"
@@ -57,7 +57,53 @@ def limpar_texto_pdf(texto):
     texto = re.sub(r'[^\x00-\xff]', '', texto) 
     return texto
 
-# --- CLASSE PDF ---
+# ==============================================================================
+# 2. GERENCIAMENTO DE ESTADO (A CORREÇÃO DO KEYERROR)
+# ==============================================================================
+# Define EXATAMENTE como os dados devem ser
+default_state = {
+    'nome': '', 
+    'nasc': date(2015, 1, 1), 
+    'serie': None, 
+    'turma': '', 
+    'diagnostico': '', 
+    'lista_medicamentos': [], 
+    'composicao_familiar': '', 
+    'historico': '', 
+    'familia': '', 
+    'hiperfoco': '', 
+    'potencias': [],
+    'rede_apoio': [], 
+    'orientacoes_especialistas': '',
+    'checklist_evidencias': {}, 
+    'barreiras_selecionadas': {'Cognitivo': [], 'Comunicacional': [], 'Socioemocional': [], 'Sensorial/Motor': [], 'Acadêmico': []},
+    'niveis_suporte': {}, 
+    'estrategias_acesso': [], 
+    'estrategias_ensino': [], 
+    'estrategias_avaliacao': [], 
+    'ia_sugestao': '',
+    # Campos novos da v5.3
+    'outros_acesso': '', 
+    'outros_ensino': '', 
+    'monitoramento_data': None, 
+    'monitoramento_indicadores': '', 
+    'monitoramento_proximos': ''
+}
+
+# Inicializa ou REPARA o estado (Isso conserta o erro da versão antiga)
+if 'dados' not in st.session_state:
+    st.session_state.dados = default_state
+else:
+    # Rotina de Auto-Reparo: Se faltar alguma chave, cria ela agora
+    for key, val in default_state.items():
+        if key not in st.session_state.dados:
+            st.session_state.dados[key] = val
+
+if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
+
+# ==============================================================================
+# 3. CLASSES E FUNÇÕES LÓGICAS
+# ==============================================================================
 class PDF_V3(FPDF):
     def header(self):
         self.set_draw_color(0, 78, 146); self.set_line_width(0.4)
@@ -79,7 +125,6 @@ class PDF_V3(FPDF):
         self.ln(8); self.set_fill_color(240, 248, 255); self.set_text_color(0, 78, 146)
         self.set_font('Arial', 'B', 11); self.cell(0, 8, f"  {label}", 0, 1, 'L', fill=True); self.ln(4)
 
-# --- GERADOR PDF (COM MONITORAMENTO) ---
 def gerar_pdf_final(dados, tem_anexo):
     pdf = PDF_V3(); pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
     
@@ -127,7 +172,6 @@ def gerar_pdf_final(dados, tem_anexo):
         linhas = dados['ia_sugestao'].split('\n')
         for linha in linhas:
             linha_limpa = limpar_texto_pdf(linha)
-            # Título Numérico (1. a 6.)
             if re.match(r'^[1-6]\.', linha_limpa.strip()) and linha_limpa.strip().isupper():
                 pdf.ln(4); pdf.set_fill_color(240, 248, 255); pdf.set_text_color(0, 78, 146); pdf.set_font('Arial', 'B', 11)
                 pdf.cell(0, 8, f"  {linha_limpa}", 0, 1, 'L', fill=True)
@@ -138,7 +182,7 @@ def gerar_pdf_final(dados, tem_anexo):
                 pdf.multi_cell(0, 6, linha_limpa)
     
     # 5. Monitoramento
-    if dados['monitoramento_data'] or dados['monitoramento_indicadores'] or dados['monitoramento_proximos']:
+    if dados.get('monitoramento_data') or dados.get('monitoramento_indicadores') or dados.get('monitoramento_proximos'):
         pdf.section_title("CRONOGRAMA DE REVISÃO E MONITORAMENTO")
         pdf.set_font("Arial", size=10)
         data_rev = dados['monitoramento_data'].strftime("%d/%m/%Y") if dados['monitoramento_data'] else "Não definida"
@@ -160,7 +204,6 @@ def gerar_docx_final(dados):
     if dados['ia_sugestao']: doc.add_heading('Parecer Técnico', level=1); doc.add_paragraph(dados['ia_sugestao'])
     buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
-# --- FUNÇÃO IA (6 SEÇÕES) ---
 def consultar_gpt_inovacao(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API OpenAI."
     try:
@@ -175,7 +218,6 @@ def consultar_gpt_inovacao(api_key, dados, contexto_pdf=""):
             if itens:
                 mapeamento_texto += f"\n[{cat}]: " + ", ".join([f"{i} ({dados['niveis_suporte'].get(f'{cat}_{i}', 'Monitorado')})" for i in itens])
         
-        # INCLUI OS CAMPOS "OUTROS"
         extra_acesso = f" | Outros: {dados.get('outros_acesso','')}" if dados.get('outros_acesso') else ""
         extra_ensino = f" | Outros: {dados.get('outros_ensino','')}" if dados.get('outros_ensino') else ""
         
@@ -209,7 +251,9 @@ def consultar_gpt_inovacao(api_key, dados, contexto_pdf=""):
         return response.choices[0].message.content, None
     except Exception as e: return None, str(e)
 
-# --- CSS ---
+# ==============================================================================
+# 4. INTERFACE GRÁFICA (V5.3 STANDALONE)
+# ==============================================================================
 st.markdown("""
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -229,27 +273,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- ESTADO INICIAL ---
-default_state = {
-    'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
-    'lista_medicamentos': [], 'composicao_familiar': '', 'historico': '', 'familia': '', 'hiperfoco': '', 'potencias': [],
-    'rede_apoio': [], 'orientacoes_especialistas': '',
-    'checklist_evidencias': {}, 
-    'barreiras_selecionadas': {'Cognitivo': [], 'Comunicacional': [], 'Socioemocional': [], 'Sensorial/Motor': [], 'Acadêmico': []},
-    'niveis_suporte': {}, 
-    'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 'ia_sugestao': '',
-    'outros_acesso': '', 'outros_ensino': '', 'monitoramento_data': None, 'monitoramento_indicadores': '', 'monitoramento_proximos': ''
-}
-
-if 'dados' not in st.session_state: st.session_state.dados = default_state
-else:
-    for key, val in default_state.items():
-        if key not in st.session_state.dados: st.session_state.dados[key] = val
-if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
-
-# ==============================================================================
-# LAYOUT PRINCIPAL (VERSÃO 5.3 PURA)
-# ==============================================================================
 with st.sidebar:
     logo = finding_logo()
     if logo: st.image(logo, width=120)
@@ -258,15 +281,13 @@ with st.sidebar:
     
     st.markdown("---")
     st.caption("📂 Gestão de Rascunhos")
-    # SALVAR
     json_dados = json.dumps(st.session_state.dados, default=str)
     st.download_button("💾 Salvar Rascunho (JSON)", json_dados, "pei_rascunho.json", "application/json", key="save_json")
-    # CARREGAR
     uploaded_json = st.file_uploader("Carregar Rascunho", type="json", key="load_json")
     if uploaded_json:
         try:
             dados_carregados = json.load(uploaded_json)
-            # Converte data string de volta para objeto date
+            # Reverte strings para date objects se necessário
             if 'nasc' in dados_carregados and isinstance(dados_carregados['nasc'], str):
                 dados_carregados['nasc'] = date.fromisoformat(dados_carregados['nasc'])
             if 'monitoramento_data' in dados_carregados and dados_carregados['monitoramento_data']:
@@ -279,13 +300,13 @@ with st.sidebar:
             st.error(f"Erro ao ler arquivo: {e}")
 
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0; margin-top:20px;'><b>PEI 360º Beta 5.3</b><br>Atualizado: {data_atual}<br>Dev: Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0; margin-top:20px;'><b>PEI 360º Beta v5.3</b><br>Atualizado: {data_atual}<br>Dev: Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
 
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 80px;">' if logo_path else ""
 st.markdown(f"""<div class="header-clean">{img_html}<div><p style="margin:0; color:#004E92; font-size:1.3rem; font-weight:800;">Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
 
-# ABAS DA VERSÃO 5.3
+# Definição EXATA das 9 abas para evitar NameError
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento (Novo)", "Consultoria IA", "Documento"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 
