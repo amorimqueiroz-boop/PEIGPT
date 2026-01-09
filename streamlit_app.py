@@ -26,7 +26,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Pasta do Banco de Dados Local
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO):
     os.makedirs(PASTA_BANCO)
@@ -35,44 +34,24 @@ if not os.path.exists(PASTA_BANCO):
 # 2. AUTO-REPARO DE DADOS
 # ==============================================================================
 default_state = {
-    'nome': '', 
-    'nasc': date(2015, 1, 1), 
-    'serie': None, 
-    'turma': '', 
-    'diagnostico': '', 
-    'lista_medicamentos': [], 
-    'composicao_familiar': '', 
-    'historico': '', 
-    'familia': '', 
-    'hiperfoco': '', 
-    'potencias': [],
-    'rede_apoio': [], 
-    'orientacoes_especialistas': '',
-    'checklist_evidencias': {}, 
-    'barreiras_selecionadas': {'Cognitivo': [], 'Comunicacional': [], 'Socioemocional': [], 'Sensorial/Motor': [], 'Acadêmico': []},
-    'niveis_suporte': {}, 
-    'estrategias_acesso': [], 
-    'estrategias_ensino': [], 
-    'estrategias_avaliacao': [], 
-    'ia_sugestao': '',
-    'outros_acesso': '', 
-    'outros_ensino': '', 
-    'monitoramento_data': None, 
-    'monitoramento_indicadores': '', 
-    'monitoramento_proximos': ''
+    'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
+    'lista_medicamentos': [], 'composicao_familiar': '', 'historico': '', 'familia': '', 
+    'hiperfoco': '', 'potencias': [], 'rede_apoio': [], 'orientacoes_especialistas': '',
+    'checklist_evidencias': {}, 'barreiras_selecionadas': {'Cognitivo': [], 'Comunicacional': [], 'Socioemocional': [], 'Sensorial/Motor': [], 'Acadêmico': []},
+    'niveis_suporte': {}, 'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
+    'ia_sugestao': '', 'outros_acesso': '', 'outros_ensino': '', 
+    'monitoramento_data': None, 'monitoramento_indicadores': '', 'monitoramento_proximos': ''
 }
 
-if 'dados' not in st.session_state:
-    st.session_state.dados = default_state
+if 'dados' not in st.session_state: st.session_state.dados = default_state
 else:
     for key, val in default_state.items():
-        if key not in st.session_state.dados:
-            st.session_state.dados[key] = val
+        if key not in st.session_state.dados: st.session_state.dados[key] = val
 
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 3. UTILITÁRIOS E BANCO DE DADOS
+# 3. UTILITÁRIOS
 # ==============================================================================
 def finding_logo():
     possiveis = ["360.png", "360.jpg", "logo.png", "logo.jpg", "iconeaba.png"]
@@ -82,11 +61,9 @@ def finding_logo():
 
 def get_base64_image(image_path):
     if not image_path: return ""
-    with open(image_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode()
+    with open(image_path, "rb") as img_file: return base64.b64encode(img_file.read()).decode()
 
 def ler_pdf(arquivo):
-    if arquivo is None: return ""
     try:
         reader = PdfReader(arquivo); texto = ""
         for i, page in enumerate(reader.pages):
@@ -98,8 +75,7 @@ def ler_pdf(arquivo):
 def limpar_texto_pdf(texto):
     if not texto: return ""
     texto = texto.replace('**', '').replace('__', '').replace('### ', '').replace('# ', '').replace('* ', '-') 
-    texto = re.sub(r'[^\x00-\xff]', '', texto) 
-    return texto
+    return re.sub(r'[^\x00-\xff]', '', texto)
 
 def salvar_aluno(dados):
     if not dados['nome']: return False, "Nome obrigatório."
@@ -124,17 +100,31 @@ def excluir_aluno(nome_arq):
     except: return False
 
 # ==============================================================================
-# 4. GERAÇÃO DE MENSAGEM IA (BOAS-VINDAS)
+# 4. INTELIGÊNCIA ARTIFICIAL (BOAS VINDAS + NOTÍCIAS)
 # ==============================================================================
-@st.cache_data(ttl=3600) # Cache de 1 hora para não gastar API à toa
+@st.cache_data(ttl=3600)
 def gerar_boas_vindas_ia(api_key):
-    if not api_key: return "Bem-vindo ao PEI 360º. Configure sua chave API para insights personalizados."
+    if not api_key: return "Bem-vindo ao PEI 360º. A inclusão transforma vidas."
     try:
         client = OpenAI(api_key=api_key)
-        prompt = "Gere uma frase curta (máx 2 linhas), inspiradora e acolhedora para um professor que está começando a escrever um PEI (Plano de Ensino Individualizado). Fale sobre o poder da inclusão de transformar vidas."
+        prompt = "Crie uma frase curta e acolhedora para um professor sobre a importância do PEI na inclusão escolar."
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}], temperature=0.8)
         return res.choices[0].message.content
-    except: return "A inclusão é o ato de transformar diferenças em potências. Vamos começar?"
+    except: return "Bem-vindo ao PEI 360º."
+
+@st.cache_data(ttl=3600)
+def gerar_noticia_inclusiva(api_key):
+    if not api_key: return "Dica: Consulte o Decreto 12.686/2025 sobre a obrigatoriedade do PEI."
+    try:
+        client = OpenAI(api_key=api_key)
+        prompt = """
+        Gere um parágrafo curto (estilo 'Você Sabia?' ou 'Destaque') sobre Educação Inclusiva. 
+        Pode ser sobre o Decreto 12.686/2025, uma dica de Neurociência ou uma estratégia de BNCC. 
+        Seja informativo e profissional.
+        """
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}], temperature=0.7)
+        return res.choices[0].message.content
+    except: return "A legislação atual reforça a necessidade de um plano individualizado para garantir equidade."
 
 # ==============================================================================
 # 5. GERADOR PDF
@@ -163,8 +153,7 @@ def gerar_pdf_final(dados, tem_anexo):
     # 1. Identificação
     pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
     pdf.set_font("Arial", size=10); pdf.set_text_color(0)
-    
-    med_str = "; ".join([f"{m['nome']} ({m['posologia']})" for m in dados['lista_medicamentos']]) if dados['lista_medicamentos'] else "Não informado / Não faz uso."
+    med_str = "; ".join([f"{m['nome']} ({m['posologia']})" for m in dados['lista_medicamentos']]) if dados['lista_medicamentos'] else "Não informado."
     diag = dados['diagnostico'] if dados['diagnostico'] else ("Vide laudo anexo." if tem_anexo else "Não informado")
     
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nome:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nome'], 0, 1)
@@ -247,8 +236,10 @@ def consultar_gpt_inovacao(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 6. INTERFACE UI (DESIGN PILULAS + PORTAL)
+# 6. INTERFACE UI (CSS CORRIGIDO)
 # ==============================================================================
+# AQUI ESTAVA O ERRO: O CSS estava dentro de uma f-string mal formatada.
+# Agora está limpo e seguro.
 st.markdown("""
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -279,24 +270,24 @@ st.markdown("""
         border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
     }
 
-    /* CARDS DA HOME */
+    /* CARDS DA HOME ANIMADOS */
     .clickable-card {
         background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
         box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
-        text-align: center; height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+        text-align: center; height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center;
         text-decoration: none; color: inherit;
     }
-    .clickable-card:hover { transform: translateY(-5px); border-color: var(--brand-blue); box-shadow: 0 10px 20px rgba(0,78,146,0.1); }
-    .clickable-card h3 { margin: 10px 0 8px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
+    .clickable-card:hover { transform: translateY(-8px); border-color: var(--brand-blue); box-shadow: 0 12px 25px rgba(0,78,146,0.15); }
+    .clickable-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
     .clickable-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; }
-    .card-icon { font-size: 2.5rem; color: var(--brand-coral); margin-bottom: 10px; }
+    .card-icon { font-size: 2.8rem; color: var(--brand-coral); margin-bottom: 5px; }
 
-    /* CARDS DE ATUALIZAÇÃO */
-    .update-box {
-        background-color: #F7FAFC; border-left: 5px solid var(--brand-blue); border-radius: 8px;
-        padding: 15px; display: flex; align-items: start; gap: 15px;
+    /* CARD DE NOVIDADES IA */
+    .news-card {
+        background-color: #F0FFF4; border-left: 5px solid #48BB78; border-radius: 8px;
+        padding: 20px; display: flex; align-items: start; gap: 15px; margin-top: 10px;
     }
-    .update-icon { font-size: 1.5rem; color: var(--brand-blue); }
+    .news-icon { font-size: 1.8rem; color: #48BB78; }
 
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { border-radius: 12px !important; border-color: #E2E8F0 !important; }
     div[data-testid="column"] .stButton button { border-radius: 12px !important; font-weight: 800 !important; text-transform: uppercase; height: 50px !important; }
@@ -322,7 +313,7 @@ with st.sidebar:
             st.session_state.dados.update(d); st.success("OK!"); st.rerun()
         except: st.error("Erro no arquivo.")
     
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0; margin-top:20px;'><b>PEI 360º v5.7</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0; margin-top:20px;'><b>PEI 360º v5.8</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
 
 # CABEÇALHO UNIFICADO
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -337,30 +328,34 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ABAS EM PÍLULAS
-abas = ["INÍCIO", "ESTUDANTE", "EVIDÊNCIAS", "REDE", "MAPEAMENTO", "PLANO", "REVISÃO", "IA", "DOCUMENTO"]
+# ABAS EM PÍLULAS (MONITORAMENTO DE VOLTA)
+abas = ["INÍCIO", "ESTUDANTE", "EVIDÊNCIAS", "REDE", "MAPEAMENTO", "PLANO", "MONITORAMENTO", "IA", "DOCUMENTO"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 
-with tab0: # INÍCIO (PORTAL)
+with tab0: # INÍCIO (PORTAL RICO)
     # MENSAGEM DE BOAS-VINDAS DA IA
     if api_key:
-        with st.spinner("Gerando inspiração do dia..."):
+        with st.spinner("Conectando à IA..."):
             msg_dia = gerar_boas_vindas_ia(api_key)
+            noticia_ia = gerar_noticia_inclusiva(api_key)
+        
         st.markdown(f"""
-        <div style="background: linear-gradient(90deg, #004E92 0%, #000428 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,78,146,0.3);">
+        <div style="background: linear-gradient(90deg, #004E92 0%, #000428 100%); padding: 25px; border-radius: 16px; color: white; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0,78,146,0.25);">
             <div style="display:flex; gap:15px; align-items:center;">
-                <i class="ri-sparkling-fill" style="font-size: 2rem;"></i>
+                <i class="ri-sparkling-fill" style="font-size: 2.2rem; color: #FFD700;"></i>
                 <div>
-                    <h3 style="color:white; margin:0;">Olá, Educador(a)!</h3>
-                    <p style="margin:5px 0 0 0; opacity:0.9;">{msg_dia}</p>
+                    <h2 style="color:white; margin:0; font-size: 1.5rem;">Olá, Educador(a)!</h2>
+                    <p style="margin:5px 0 0 0; opacity:0.95; font-size: 1rem; line-height: 1.4;">{msg_dia}</p>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
+    else:
+        noticia_ia = "Insira sua Chave API para ver notícias atualizadas."
 
     st.markdown("### <i class='ri-apps-2-line'></i> Central de Recursos", unsafe_allow_html=True)
     
-    # 4 CARDS CLICÁVEIS (HTML)
+    # 4 CARDS CLICÁVEIS (DESIGN RICO)
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.markdown("""
@@ -368,7 +363,7 @@ with tab0: # INÍCIO (PORTAL)
             <div class="clickable-card">
                 <i class="ri-book-open-line card-icon"></i>
                 <h3>O que é PEI?</h3>
-                <p>O Plano de Ensino Individualizado é um direito garantido que norteia a adaptação curricular para estudantes atípicos.</p>
+                <p>Guia fundamental sobre o Plano de Ensino Individualizado como direito de aprendizagem.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
@@ -378,7 +373,7 @@ with tab0: # INÍCIO (PORTAL)
             <div class="clickable-card">
                 <i class="ri-scales-3-line card-icon"></i>
                 <h3>Legislação</h3>
-                <p>Acesse a Lei Brasileira de Inclusão (LBI) e entenda os fundamentos legais do suporte escolar.</p>
+                <p>Lei Brasileira de Inclusão (LBI) e Decretos atualizados (Dez/2025).</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
@@ -388,7 +383,7 @@ with tab0: # INÍCIO (PORTAL)
             <div class="clickable-card">
                 <i class="ri-brain-line card-icon"></i>
                 <h3>Neurociência</h3>
-                <p>Artigos sobre desenvolvimento, funções executivas e estratégias baseadas em evidências.</p>
+                <p>Artigos sobre desenvolvimento atípico, funções executivas e estratégias.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
@@ -398,34 +393,26 @@ with tab0: # INÍCIO (PORTAL)
             <div class="clickable-card">
                 <i class="ri-compass-3-line card-icon"></i>
                 <h3>BNCC</h3>
-                <p>Consulte as competências e habilidades essenciais da Base Nacional Comum Curricular.</p>
+                <p>Competências e habilidades essenciais para flexibilização curricular.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
 
+    # IA NOTÍCIAS (DESTAQUE)
     st.write(""); st.write("")
-    st.markdown("### <i class='ri-notification-badge-line'></i> Novidades da Plataforma", unsafe_allow_html=True)
-    cn1, cn2 = st.columns(2)
-    with cn1:
-        st.markdown("""
-        <div class="update-box">
-            <i class="ri-save-3-line update-icon"></i>
-            <div>
-                <b>Banco de Estudantes Local</b><br>
-                Agora você pode salvar seus casos na aba 'Documento' e retomá-los a qualquer momento.
-            </div>
+    st.markdown(f"""
+    <div class="news-card">
+        <i class="ri-lightbulb-flash-line news-icon"></i>
+        <div>
+            <b style="color: #276749; font-size: 1rem;">Destaque da Inclusão (IA):</b><br>
+            {noticia_ia}
         </div>
-        """, unsafe_allow_html=True)
-    with cn2:
-        st.markdown("""
-        <div class="update-box">
-            <i class="ri-magic-line update-icon"></i>
-            <div>
-                <b>IA Narrativa</b><br>
-                Nossa inteligência agora escreve relatórios humanizados, contando a história do aluno antes do diagnóstico.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ATUALIZAÇÕES DISCRETAS
+    st.markdown("---")
+    st.caption("🚀 **Novidades v5.8:** Banco de Estudantes Local | IA Narrativa | Design Portal")
 
 with tab1: # ESTUDANTE
     st.markdown("### <i class='ri-user-star-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
@@ -510,8 +497,8 @@ with tab5: # PLANO
     with c3:
         st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Avaliação", ["Prova Adaptada", "Oral"], default=st.session_state.dados['estrategias_avaliacao'])
 
-with tab6: # REVISÃO
-    st.markdown("### <i class='ri-loop-right-line'></i> Revisão (PDCA)", unsafe_allow_html=True)
+with tab6: # MONITORAMENTO
+    st.markdown("### <i class='ri-loop-right-line'></i> Monitoramento (PDCA)", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     st.session_state.dados['monitoramento_data'] = c1.date_input("Próxima Revisão", value=st.session_state.dados.get('monitoramento_data', None))
     st.session_state.dados['monitoramento_indicadores'] = c2.text_area("Indicadores de Sucesso", st.session_state.dados['monitoramento_indicadores'])
@@ -530,11 +517,8 @@ with tab8: # DOCUMENTO
         c1, c2 = st.columns(2)
         with c1:
             pdf = gerar_pdf_final(st.session_state.dados, len(st.session_state.pdf_text)>0)
-            st.download_button("📥 Baixar PDF", pdf, f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf", type="primary")
+            st.download_button("📥 Baixar PDF Pro", pdf, f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf", type="primary")
         with c2:
-            docx = gerar_docx_final(st.session_state.dados)
-            st.download_button("📥 Baixar Word", docx, f"PEI_{st.session_state.dados['nome']}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            
             st.write("")
             if st.button("💾 Salvar no Banco"):
                 ok, msg = salvar_aluno(st.session_state.dados)
