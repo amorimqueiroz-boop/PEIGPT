@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CSS CORRIGIDO E SEGURO)
+# 2. ESTILO VISUAL (CSS CORRIGIDO PARA NÃO DAR ERRO NA TELA)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -88,29 +88,28 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 3. LISTAS DE DADOS (RIQUEZA RESTAURADA)
+# 3. LISTAS DE DADOS DA VERSÃO BLINDADA (COMPLETAS)
 # ==============================================================================
-# Listas completas como na versão blindada original
 LISTAS_BARREIRAS = {
     "Cognitivo": [
-        "Atenção Sustentada (Foco longo)", "Atenção Alternada (Troca de foco)", "Memória de Trabalho (Reter info)", 
-        "Memória de Curto Prazo", "Controle Inibitório (Impulsividade)", "Flexibilidade Cognitiva (Mudança de regra)", 
-        "Planejamento e Organização", "Velocidade de Processamento", "Raciocínio Lógico/Abstrato"
+        "Atenção Sustentada", "Atenção Alternada", "Memória de Trabalho", "Memória de Curto Prazo",
+        "Controle Inibitório", "Flexibilidade Cognitiva", "Planejamento e Organização",
+        "Velocidade de Processamento", "Raciocínio Lógico/Abstrato", "Generalização do Aprendizado"
     ],
     "Comunicacional": [
         "Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito",
-        "Pragmática (Uso Social/Contexto)", "Articulação/Fonologia (Trocas na fala)", "Comunicação Não-Verbal (Gestos/Olhar)",
-        "Necessidade de Comunicação Alternativa (CAA)"
+        "Pragmática (Uso Social)", "Articulação/Fonologia", "Comunicação Não-Verbal",
+        "Intencionalidade Comunicativa", "Necessidade de CAA"
     ],
     "Socioemocional": [
-        "Regulação Emocional (Choro/Raiva)", "Tolerância à Frustração", "Interação com Pares", 
+        "Regulação Emocional", "Tolerância à Frustração", "Interação com Pares", 
         "Interação com Adultos", "Compreensão de Regras Sociais", "Rigidez de Pensamento",
-        "Autoestima/Autoconfiança", "Agressividade/Impulsividade", "Passividade/Isolamento"
+        "Autoestima", "Agressividade", "Passividade", "Comportamentos Repetitivos"
     ],
     "Sensorial/Motor": [
-        "Coordenação Motora Fina (Escrita/Pintura)", "Coordenação Motora Ampla (Correr/Pular)", 
-        "Hipersensibilidade Auditiva (Barulhos)", "Hipersensibilidade Tátil (Texturas)", "Hipersensibilidade Visual (Luz)",
-        "Busca Sensorial (Agitação)", "Tônus Muscular (Postura)", "Planejamento Motor (Praxia)"
+        "Coordenação Motora Fina", "Coordenação Motora Ampla", 
+        "Hipersensibilidade Auditiva", "Hipersensibilidade Tátil", "Hipersensibilidade Visual",
+        "Busca Sensorial", "Tônus Muscular", "Planejamento Motor (Praxia)", "Noção Espacial"
     ],
     "Acadêmico": [
         "Alfabetização (Decodificação)", "Compreensão Leitora", "Grafia/Legibilidade",
@@ -120,20 +119,18 @@ LISTAS_BARREIRAS = {
 }
 
 LISTA_POTENCIAS = [
-    "Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade/Imaginação",
-    "Habilidades Artísticas (Desenho/Pintura)", "Musicalidade", "Interesse por Tecnologia",
-    "Hiperfoco em Áreas Específicas", "Vocabulário Rico", "Empatia/Cuidado com o Outro",
-    "Liderança", "Habilidades Esportivas", "Persistência/Esforço", "Curiosidade Investigativa"
+    "Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", 
+    "Musicalidade", "Interesse por Tecnologia", "Hiperfoco em Áreas Específicas", "Vocabulário Rico", 
+    "Empatia", "Liderança", "Habilidades Esportivas", "Persistência", "Curiosidade"
 ]
 
 LISTA_PROFISSIONAIS = [
     "Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional (TO)", "Neuropediatra", 
-    "Psiquiatra Infantil", "Psicopedagogo", "Professor de Apoio", 
-    "Acompanhante Terapêutico (AT)", "Equipe Multidisciplinar"
+    "Psiquiatra Infantil", "Psicopedagogo", "Professor de Apoio", "Acompanhante Terapêutico (AT)"
 ]
 
 # ==============================================================================
-# 4. GERENCIAMENTO DE ESTADO (BLINDAGEM)
+# 4. GERENCIAMENTO DE ESTADO
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -147,7 +144,8 @@ default_state = {
     'monitoramento_data': None, 'monitoramento_indicadores': '', 'monitoramento_proximos': ''
 }
 
-if 'dados' not in st.session_state: st.session_state.dados = default_state
+if 'dados' not in st.session_state:
+    st.session_state.dados = default_state
 else:
     for key, val in default_state.items():
         if key not in st.session_state.dados:
@@ -156,7 +154,7 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 5. UTILITÁRIOS E BANCO (JSON)
+# 5. UTILITÁRIOS E BANCO
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
@@ -192,7 +190,7 @@ def salvar_aluno(dados):
     caminho = os.path.join(PASTA_BANCO, nome_arq)
     try:
         with open(caminho, 'w', encoding='utf-8') as f: json.dump(dados, f, default=str, ensure_ascii=False, indent=4)
-        return True, f"Salvo: {dados['nome']}"
+        return True, f"Estudante '{dados['nome']}' salvo com sucesso!"
     except Exception as e: return False, str(e)
 
 def carregar_aluno(nome_arq):
@@ -327,7 +325,7 @@ def gerar_docx_final(dados):
     buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
 # ==============================================================================
-# 8. INTERFACE UI (PRINCIPAL)
+# 8. INTERFACE UI
 # ==============================================================================
 # SIDEBAR
 with st.sidebar:
@@ -341,7 +339,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v9.1</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v9.2</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -425,41 +423,53 @@ with tab2: # EVIDÊNCIAS
         for q in ["Explicação 1:1?", "Frustração?", "Desorganização?"]:
             st.session_state.dados['checklist_evidencias'][q] = st.checkbox(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
 
-with tab3: # REDE (LISTA EXPANDIDA)
+with tab3: # REDE
     st.markdown("### <i class='ri-team-line'></i> Rede de Apoio", unsafe_allow_html=True)
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'])
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPA (LISTAS EXPANDIDAS E COMPLETAS)
+with tab4: # MAPA (RESTAURADO ESTRUTURA BLINDADA)
     st.markdown("### <i class='ri-map-pin-user-line'></i> Potencialidades & Barreiras", unsafe_allow_html=True)
+    
     with st.container(border=True):
+        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'])
         st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=st.session_state.dados['potencias'])
+    
     st.divider()
     
-    cols = st.columns(3); idx = 0
+    st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
+    cols = st.columns(3); idx=0
     for cat_nome, itens_lista in LISTAS_BARREIRAS.items():
-        with cols[idx % 3]:
+        with cols[idx%3]:
             with st.container():
                 st.markdown(f"**{cat_nome}**")
                 sel = st.multiselect("Barreiras", itens_lista, key=f"bar_{cat_nome}", default=st.session_state.dados['barreiras_selecionadas'].get(cat_nome, []))
                 st.session_state.dados['barreiras_selecionadas'][cat_nome] = sel
-                for x in sel: 
-                    st.session_state.dados['niveis_suporte'][f"{cat_nome}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial"], key=f"sl_{cat_nome}_{x}")
-        idx += 1
+                if sel:
+                    st.caption("Nível de Suporte:")
+                    for x in sel: 
+                        st.session_state.dados['niveis_suporte'][f"{cat_nome}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], key=f"sl_{cat_nome}_{x}")
+        idx+=1
 
-with tab5: # PLANO
+with tab5: # PLANO (RESTAURADO ESTRUTURA BLINDADA)
     st.markdown("### <i class='ri-tools-line'></i> Plano de Ação", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.session_state.dados['estrategias_acesso'] = st.multiselect("Acesso", ["Tempo Estendido", "Apoio à Leitura e Escrita"], default=st.session_state.dados['estrategias_acesso'])
-        st.session_state.dados['outros_acesso'] = st.text_input("Outros (Acesso)", st.session_state.dados['outros_acesso'])
+        with st.container(border=True):
+            st.markdown("#### 1. Acesso (DUA)")
+            st.session_state.dados['estrategias_acesso'] = st.multiselect("Recursos", ["Tempo Estendido", "Apoio Leitura/Escrita", "Material Ampliado", "Tecnologia Assistiva", "Sala Silenciosa"], default=st.session_state.dados['estrategias_acesso'])
+            st.session_state.dados['outros_acesso'] = st.text_input("Outros (Acesso)", st.session_state.dados['outros_acesso'])
     with c2:
-        st.session_state.dados['estrategias_ensino'] = st.multiselect("Ensino", ["Pistas Visuais", "Fragmentação"], default=st.session_state.dados['estrategias_ensino'])
-        st.session_state.dados['outros_ensino'] = st.text_input("Outros (Ensino)", st.session_state.dados['outros_ensino'])
+        with st.container(border=True):
+            st.markdown("#### 2. Ensino")
+            st.session_state.dados['estrategias_ensino'] = st.multiselect("Metodologia", ["Fragmentação de Tarefas", "Pistas Visuais", "Mapas Mentais", "Modelagem", "Ensino Híbrido"], default=st.session_state.dados['estrategias_ensino'])
+            st.session_state.dados['outros_ensino'] = st.text_input("Outros (Ensino)", st.session_state.dados['outros_ensino'])
     with c3:
-        st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Avaliação", ["Prova Adaptada", "Oral"], default=st.session_state.dados['estrategias_avaliacao'])
+        with st.container(border=True):
+            st.markdown("#### 3. Avaliação")
+            st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação"], default=st.session_state.dados['estrategias_avaliacao'])
 
 with tab6: # MONITORAMENTO
     st.markdown("### <i class='ri-loop-right-line'></i> Monitoramento (PDCA)", unsafe_allow_html=True)
