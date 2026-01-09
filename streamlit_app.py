@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (AZUL MARINHO + CORAL)
+# 2. ESTILO VISUAL (AZUL INSTITUCIONAL + DESTAQUES EM CORAL)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -36,9 +36,9 @@ def aplicar_estilo_visual():
         
         /* PALETA DE CORES */
         :root { 
-            --brand-blue: #0F52BA; /* Azul Marinho (Ação) */
-            --brand-coral: #FF6B6B; /* Coral (Navegação) */
-            --card-radius: 16px; 
+            --brand-blue: #0F52BA; /* Azul Marinho (Ação, Botões, Toggles) */
+            --brand-coral: #FF6B6B; /* Coral (Abas, Barra de Progresso) */
+            --card-radius: 12px; 
         }
         
         /* LAYOUT */
@@ -53,7 +53,7 @@ def aplicar_estilo_visual():
         }
         .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* ABAS PÍLULA (VERMELHO CORAL) */
+        /* ABAS PÍLULA (VERMELHO CORAL - MANTIDO) */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
             height: 38px; border-radius: 19px !important; background-color: white; 
@@ -65,7 +65,7 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO (VERMELHO CORAL) */
+        /* BARRA DE PROGRESSO (VERMELHO CORAL - MANTIDO) */
         .minimal-track {
             width: 100%; height: 3px; background-color: #EDF2F7; border-radius: 1.5px;
             position: relative; margin: 12px 0 45px 0;
@@ -83,18 +83,28 @@ def aplicar_estilo_visual():
             box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
-        /* CARDS CLÁSSICOS (VOLTA AO MODELO QUE FUNCIONA) */
+        /* CARDS DA TELA INICIAL (CORES RESTAURADAS) */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
-            background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
+            background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            height: 240px; display: flex; flex-direction: column; justify-content: center; text-align: left;
+            height: 260px; display: flex; flex-direction: column; justify-content: center; text-align: left;
             position: relative; overflow: hidden;
         }
         .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
+        
         .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
         .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
-        .rich-icon { font-size: 2.5rem; color: var(--brand-coral); margin-bottom: 15px; }
+        
+        /* ÍCONES COLORIDOS NOS CARDS */
+        .icon-box {
+            width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; margin-bottom: 10px;
+        }
+        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
+        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
+        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
+        .ic-green { background-color: #F0FFF4; color: #38A169; }
 
         /* DASHBOARD METRICS CARDS */
         .dash-highlight {
@@ -112,7 +122,7 @@ def aplicar_estilo_visual():
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 12px !important; border-color: #E2E8F0 !important; 
         }
-        /* Força a cor azul nos botões principais */
+        /* Botões principais */
         div[data-testid="column"] .stButton button { 
             border-radius: 12px !important; font-weight: 800 !important; height: 50px !important; 
             background-color: var(--brand-blue) !important; color: white !important; border: none !important;
@@ -120,6 +130,10 @@ def aplicar_estilo_visual():
         div[data-testid="column"] .stButton button:hover {
             background-color: #0A3D8F !important;
         }
+        
+        /* FORÇAR TOGGLES E CHECKBOXES PARA AZUL */
+        .stToggle div[aria-checked="true"] { background-color: var(--brand-blue) !important; }
+        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
         
         .stToggle { margin-top: 10px; }
     </style>
@@ -274,7 +288,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
-        # Correção segura da medicação
+        # Medicação segura
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
@@ -282,18 +296,18 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         prompt_sys = """
         Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Currículo BNCC.
         
-        DIRETRIZES CRÍTICAS:
-        1. MEDICAÇÃO: Analise se os remédios citados ({meds}) influenciam na atenção ou comportamento.
-        2. BNCC ESTRATÉGICA: Diferencie o que é RECOMPOSIÇÃO (base que falta) do que é PRIORIDADE (série atual).
+        DIRETRIZES:
+        1. MEDICAÇÃO: Analise se os remédios ({meds}) influenciam na atenção/comportamento.
+        2. BNCC: Diferencie RECOMPOSIÇÃO (base) de PRIORIDADE (série atual).
         
-        ESTRUTURA DA RESPOSTA (Markdown Limpo):
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo das potencialidades.
-        2. 💊 FATOR MEDICAMENTOSO: Impacto provável da medicação na aprendizagem (se houver).
+        ESTRUTURA (Markdown Limpo):
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo.
+        2. 💊 FATOR MEDICAMENTOSO: Impacto na aprendizagem (se houver).
         3. 🎯 HABILIDADES DA BNCC (PLANO DUPLO):
-           - RECOMPOSIÇÃO (Anos Anteriores): 2 Habilidades fundamentais para cobrir lacunas.
-           - PRIORIDADES (Série Atual): 2 Habilidades essenciais para o ano letivo.
-        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar "{hiperfoco}" para ensinar essas habilidades?
-        5. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas de ambiente.
+           - RECOMPOSIÇÃO: 2 Habilidades fundamentais.
+           - PRIORIDADES: 2 Habilidades essenciais do ano.
+        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso de "{hiperfoco}".
+        5. 🧩 ADAPTAÇÕES: Ambiente e material.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info)
         
         prompt_user = f"""
@@ -303,7 +317,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        EVIDÊNCIAS DE SALA: {evid}
+        EVIDÊNCIAS: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -403,7 +417,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v34.0 Blue Pro</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v35.0 Blue Polish</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -441,12 +455,12 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # CARDS VERTICAIS CLÁSSICOS (RESTAURADOS)
+    # CARDS COLORIDOS RESTAURADOS
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><i class="ri-book-open-line rich-icon"></i><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><i class="ri-scales-3-line rich-icon"></i><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><i class="ri-brain-line rich-icon"></i><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><i class="ri-compass-3-line rich-icon"></i><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
+    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
 
     if api_key:
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
@@ -472,7 +486,7 @@ with tab1: # ESTUDANTE
     st.session_state.dados['familia'] = c2.text_area("Contexto Familiar (Detalhes)", st.session_state.dados['familia'], help="Dinâmica familiar e apoio.")
     
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
-    st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico (CID se houver)", st.session_state.dados['diagnostico'])
+    st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico", st.session_state.dados['diagnostico']) # REMOVIDO "CID"
     
     # Medicação Melhorada (COM CORREÇÃO DE ERRO DO KEYERROR)
     with st.container(border=True):
