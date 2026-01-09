@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (REFINADO: BARRA FINA & CARDS VIBRANTES)
+# 2. ESTILO VISUAL (BARRA ULTRA-FINA & AJUSTES FINAIS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -35,31 +35,30 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         
-        /* 1. LAYOUT GERAL E FIXES */
+        /* 1. LAYOUT GERAL */
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
-        div[data-baseweb="tab-border"] { display: none !important; }
-        div[data-baseweb="tab-highlight"] { display: none !important; } /* Remove a linha padrão do Streamlit */
+        div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        /* 2. BARRA DE PROGRESSO (FINA E ELEGANTE) */
+        /* 2. BARRA DE PROGRESSO (ULTRA-FINA 3px) */
         .minimal-track {
-            width: 100%; height: 4px; /* Mais fina */
-            background-color: #EDF2F7; border-radius: 2px;
-            position: relative; margin: 10px 0 40px 0; /* Espaçamento ajustado */
+            width: 100%; height: 3px; /* Mais fina ainda */
+            background-color: #EDF2F7; border-radius: 1.5px;
+            position: relative; margin: 12px 0 45px 0;
         }
         .minimal-fill {
             height: 100%; 
-            background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%); /* Gradiente Coral */
-            border-radius: 2px;
+            background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
+            border-radius: 1.5px;
             transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-            box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4);
+            box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
         }
         .minimal-cursor-icon {
-            position: absolute; top: -18px; /* Ajuste vertical do ícone */
-            font-size: 1.6rem; color: #FF6B6B;
+            position: absolute; top: -17px;
+            font-size: 1.5rem; color: #FF6B6B;
             transition: left 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             transform: translateX(-50%); z-index: 10;
             background: white; border-radius: 50%;
-            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.15);
             border: 2px solid white;
         }
@@ -74,7 +73,7 @@ def aplicar_estilo_visual():
             color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;
         }
 
-        /* 4. ABAS PÍLULA (PERFEITAS) */
+        /* 4. ABAS PÍLULA */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
             height: 38px; border-radius: 19px !important; 
@@ -88,21 +87,18 @@ def aplicar_estilo_visual():
             box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* 5. CARDS DA TELA INICIAL (CORRIGIDOS) */
+        /* 5. CARDS RICOS */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-        
         .rich-card {
             background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
             height: 280px; display: flex; flex-direction: column; justify-content: flex-start;
             position: relative; overflow: hidden;
         }
-        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
-        
+        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); border-color: #BEE3F8;}
         .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: #2D3748; font-weight: 800; }
         .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
         
-        /* Ícones Coloridos */
         .icon-container {
             width: 50px; height: 50px; border-radius: 12px; 
             display: flex; align-items: center; justify-content: center;
@@ -185,10 +181,12 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    # Ícones vetoriais que mudam com o progresso
-    if p < 10: icon_class = "ri-checkbox-blank-circle-line"
-    elif p < 100: icon_class = "ri-run-line"
-    else: icon_class = "ri-flag-2-fill"
+    # Ícones vetoriais dinâmicos (5 estágios)
+    if p == 0: icon_class = "ri-map-pin-user-line" # Início
+    elif p < 30: icon_class = "ri-walk-line" # Caminhando
+    elif p < 60: icon_class = "ri-run-line" # Correndo
+    elif p < 100: icon_class = "ri-speed-line" # Acelerando
+    else: icon_class = "ri-trophy-line" # Chegada/Troféu
     
     st.markdown(f"""
     <div class="minimal-track">
@@ -255,7 +253,7 @@ def gerar_saudacao_ia(api_key):
         client = OpenAI(api_key=api_key)
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}], temperature=0.9)
         return res.choices[0].message.content
-    except: return "A inclusão transforma vidas."
+    except: return "A inclusão é um ato de amor e competência."
 
 @st.cache_data(ttl=3600)
 def gerar_noticia_ia(api_key):
@@ -381,7 +379,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v26.0 Polish</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v27.0 Final Polish II</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -414,16 +412,17 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Entenda os conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Conheça a Lei Brasileira de Inclusão (LBI).</p></div></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Base Nacional Comum Curricular Oficial.</p></div></a>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Domine os pilares da inclusão e transforme a trajetória escolar de cada estudante.</p></div></a>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Navegue com segurança pela LBI e garanta os direitos fundamentais do aluno.</p></div></a>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Desvende o cérebro atípico e potencialize a aprendizagem com base científica.</p></div></a>""", unsafe_allow_html=True)
+    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-container ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Conecte o currículo oficial às adaptações necessárias para uma educação equitativa.</p></div></a>""", unsafe_allow_html=True)
 
     if api_key:
-        st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">💡 Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
+        # Removido o emoji 💡 do título h4
+        st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v26.0:** Cards Vibrantes e Barra de Progresso Refinada.")
+    st.caption("🚀 **Novidades v27.0:** Textos Ricos, Barra Ultra-fina e Ícones Dinâmicos.")
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -497,146 +496,4 @@ with tab3: # REDE
 
 with tab4: # MAPEAMENTO
     render_progresso()
-    st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
-    
-    with st.container(border=True):
-        st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#004E92'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
-        c1, c2 = st.columns(2)
-        st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco (Interesse Intenso)", st.session_state.dados['hiperfoco'], placeholder="Ex: Minecraft, Dinossauros, Desenho...")
-        p_val = [p for p in st.session_state.dados.get('potencias', []) if p in LISTA_POTENCIAS]
-        st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=p_val, placeholder="Selecione...")
-    
-    st.divider()
-    
-    with st.container(border=True):
-        st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
-        c_bar1, c_bar2, c_bar3 = st.columns(3)
-        
-        def render_cat_barreira(coluna, titulo, chave_json):
-            with coluna:
-                st.markdown(f"**{titulo}**")
-                itens = LISTAS_BARREIRAS[chave_json]
-                b_salvas = [b for b in st.session_state.dados['barreiras_selecionadas'].get(chave_json, []) if b in itens]
-                sel = st.multiselect("Selecione:", itens, key=f"ms_{chave_json}", default=b_salvas, placeholder="Selecione...", label_visibility="collapsed")
-                st.session_state.dados['barreiras_selecionadas'][chave_json] = sel
-                if sel:
-                    for x in sel:
-                        st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
-                st.write("")
-
-        render_cat_barreira(c_bar1, "Cognitivo", "Cognitivo")
-        render_cat_barreira(c_bar1, "Sensorial/Motor", "Sensorial/Motor")
-        render_cat_barreira(c_bar2, "Comunicacional", "Comunicacional")
-        render_cat_barreira(c_bar2, "Acadêmico", "Acadêmico")
-        render_cat_barreira(c_bar3, "Socioemocional", "Socioemocional")
-
-with tab5: # PLANO
-    render_progresso()
-    st.markdown("### <i class='ri-tools-line'></i> Plano de Ação Estratégico", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        with st.container(border=True):
-            st.markdown("#### 1. Acesso (DUA)")
-            st.session_state.dados['estrategias_acesso'] = st.multiselect("Recursos", ["Tempo Estendido", "Apoio Leitura/Escrita", "Material Ampliado", "Tecnologia Assistiva", "Sala Silenciosa"], default=st.session_state.dados['estrategias_acesso'], placeholder="Selecione...")
-            st.session_state.dados['outros_acesso'] = st.text_input("Prática Personalizada (Acesso)", st.session_state.dados['outros_acesso'])
-    with c2:
-        with st.container(border=True):
-            st.markdown("#### 2. Ensino")
-            st.session_state.dados['estrategias_ensino'] = st.multiselect("Metodologia", ["Fragmentação de Tarefas", "Pistas Visuais", "Mapas Mentais", "Modelagem", "Ensino Híbrido"], default=st.session_state.dados['estrategias_ensino'], placeholder="Selecione...")
-            st.session_state.dados['outros_ensino'] = st.text_input("Prática Pedagógica (Ensino)", st.session_state.dados['outros_ensino'])
-    with c3:
-        with st.container(border=True):
-            st.markdown("#### 3. Avaliação")
-            st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação"], default=st.session_state.dados['estrategias_avaliacao'], placeholder="Selecione...")
-
-with tab6: # MONITORAMENTO
-    render_progresso()
-    st.markdown("### <i class='ri-loop-right-line'></i> Monitoramento e Metas", unsafe_allow_html=True)
-    
-    c1, c2 = st.columns(2)
-    with c1:
-        st.session_state.dados['monitoramento_data'] = st.date_input("Próxima Revisão", value=st.session_state.dados.get('monitoramento_data', None))
-    with c2:
-        st.session_state.dados['status_meta'] = st.selectbox("Status da Meta Atual", ["Não Iniciado", "Em Andamento", "Parcialmente Atingido", "Atingido", "Superado"], index=0, placeholder="Selecione...")
-
-    st.write("")
-    st.markdown("#### Parecer e Próximos Passos")
-    c3, c4 = st.columns(2)
-    with c3:
-        st.session_state.dados['parecer_geral'] = st.selectbox("Parecer Geral", ["Manter Estratégias", "Aumentar Suporte", "Reduzir Suporte (Autonomia)", "Alterar Metodologia", "Encaminhar para Especialista"], index=0, placeholder="Selecione...")
-    with c4:
-        st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
-
-with tab7: # IA
-    render_progresso()
-    st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
-    
-    c1, c2 = st.columns([1, 2])
-    with c1:
-        st.markdown("""
-        <div style="background-color: #F8FAFC; border-radius: 12px; padding: 20px; border: 1px solid #E2E8F0;">
-            <h4 style="color:#0F52BA; margin-top:0;">🤖 Como posso ajudar?</h4>
-            <p style="font-size:0.9rem; color:#64748B;">Vou analisar os dados do estudante (Hiperfoco, Barreiras e Evidências) para sugerir um plano alinhado à BNCC.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.write("")
-        if st.button("✨ GERAR SUGESTÕES PEDAGÓGICAS", type="primary"):
-            res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text)
-            if res: st.session_state.dados['ia_sugestao'] = res; st.balloons()
-            else: st.error(err)
-            
-    with c2:
-        if st.session_state.dados['ia_sugestao']:
-            st.markdown("""<div style="background:#FFF; padding:20px; border-radius:12px; border:1px solid #E2E8F0; box-shadow:0 4px 6px rgba(0,0,0,0.05);">""", unsafe_allow_html=True)
-            st.markdown(st.session_state.dados['ia_sugestao'])
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
-
-with tab8: # DOCUMENTO & GESTÃO
-    st.markdown("### <i class='ri-file-pdf-line'></i> Documento & Gestão", unsafe_allow_html=True)
-    if st.session_state.dados['ia_sugestao']:
-        c1, c2 = st.columns(2)
-        with c1:
-            pdf = gerar_pdf_final(st.session_state.dados, len(st.session_state.pdf_text)>0)
-            st.download_button("📥 Baixar PDF Pro", pdf, f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf", type="primary")
-        with c2:
-            docx = gerar_docx_final(st.session_state.dados)
-            st.download_button("📥 Baixar Word", docx, f"PEI_{st.session_state.dados['nome']}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            
-            st.write("")
-            st.markdown("##### 💾 Gestão de Rascunhos")
-            json_dados = json.dumps(st.session_state.dados, default=str)
-            st.download_button("Baixar Arquivo do Aluno (.json)", json_dados, f"PEI_{st.session_state.dados['nome']}.json", "application/json")
-            
-            uploaded_json = st.file_uploader("Carregar Arquivo do Aluno", type="json")
-            if uploaded_json:
-                try:
-                    d = json.load(uploaded_json)
-                    if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
-                    if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
-                    st.session_state.dados.update(d); st.success("Dados carregados!"); st.rerun()
-                except: st.error("Erro no arquivo.")
-    
-    st.divider()
-    st.markdown("#### 🗂️ Banco de Estudantes (Local)")
-    arquivos = glob.glob(os.path.join(PASTA_BANCO, "*.json"))
-    if not arquivos: 
-        st.caption("Nenhum estudante salvo no servidor local. Use a opção 'Baixar Arquivo' acima para garantir seus dados.")
-    else:
-        for arq in arquivos:
-            nome = os.path.basename(arq).replace(".json", "").replace("_", " ").title()
-            c1, c2, c3 = st.columns([6, 2, 2])
-            c1.markdown(f"👤 **{nome}**")
-            if c2.button("📂 Abrir", key=f"load_{arq}"):
-                d = carregar_aluno(os.path.basename(arq))
-                if d: st.session_state.dados = d; st.success("Carregado!"); st.rerun()
-            if c3.button("🗑️", key=f"del_{arq}"): excluir_aluno(os.path.basename(arq)); st.rerun()
-            
-    if st.button("Salvar no Banco Local"):
-        ok, msg = salvar_aluno(st.session_state.dados)
-        if ok: st.success(msg); st.rerun()
-        else: st.error(msg)
-
-st.markdown("---")
+    st.markdown("### <i class='ri-map-pin-user-line
