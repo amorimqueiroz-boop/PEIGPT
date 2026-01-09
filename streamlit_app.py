@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (TOGGLES + DASHBOARD CARDS)
+# 2. ESTILO VISUAL (TOGGLES + DASHBOARD NATIVO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -93,7 +93,6 @@ def aplicar_estilo_visual():
             border-radius: 12px !important; font-weight: 800 !important; height: 50px !important; 
         }
         
-        /* CUSTOM TOGGLE SWITCH COLOR (Streamlit default is red, let's keep it consistent) */
         .stToggle { margin-top: 10px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -220,8 +219,26 @@ def excluir_aluno(nome_arq):
     except: return False
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (Considerando Medicação)
+# 6. INTELIGÊNCIA ARTIFICIAL (BNCC AVANÇADA & MEDICAÇÃO)
 # ==============================================================================
+@st.cache_data(ttl=3600)
+def gerar_saudacao_ia(api_key):
+    if not api_key: return "Bem-vindo ao PEI 360º."
+    try:
+        client = OpenAI(api_key=api_key)
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}], temperature=0.9)
+        return res.choices[0].message.content
+    except: return "A inclusão transforma vidas."
+
+@st.cache_data(ttl=3600)
+def gerar_noticia_ia(api_key):
+    if not api_key: return "Dica: Mantenha o PEI sempre atualizado."
+    try:
+        client = OpenAI(api_key=api_key)
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta sobre legislação de inclusão ou neurociência (máx 2 frases)."}], temperature=0.7)
+        return res.choices[0].message.content
+    except: return "O cérebro aprende durante toda a vida."
+
 def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API."
     try:
@@ -229,35 +246,37 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
-        # Prepara string de medicação detalhada
+        # LÓGICA DE CORREÇÃO DO ERRO DA MEDICAÇÃO
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
-            meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Observações: {m.get('obs', 'Nenhuma')}" for m in dados['lista_medicamentos']])
+            # Uso o .get('obs', '') para garantir que não quebre em registros antigos
+            meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
         prompt_sys = """
-        Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Farmacologia Educacional.
+        Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Currículo BNCC.
         
         DIRETRIZES CRÍTICAS:
-        1. Considere a MEDICAÇÃO do aluno. Se houver (ex: Ritalina, Risperidona), mencione como ela pode afetar a atenção, sono ou comportamento na sala.
-        2. Conecte o Hiperfoco ({hiperfoco}) às habilidades da BNCC.
+        1. MEDICAÇÃO: Analise se os remédios citados ({meds}) influenciam na atenção ou comportamento.
+        2. BNCC ESTRATÉGICA: Diferencie o que é RECOMPOSIÇÃO (base que falta) do que é PRIORIDADE (série atual).
         
         ESTRUTURA DA RESPOSTA (Markdown Limpo):
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial (Cite potências).
-        2. 💊 FATOR MEDICAMENTOSO & COMPORTAMENTO: Análise breve sobre o impacto da medicação na rotina escolar (se houver).
-        3. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos adaptados.
-        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar o interesse para engajar?
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo das potencialidades.
+        2. 💊 FATOR MEDICAMENTOSO: Impacto provável da medicação na aprendizagem (se houver).
+        3. 🎯 HABILIDADES DA BNCC (PLANO DUPLO):
+           - RECOMPOSIÇÃO (Anos Anteriores): 2 Habilidades fundamentais para cobrir lacunas.
+           - PRIORIDADES (Série Atual): 2 Habilidades essenciais para o ano letivo.
+        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar "{hiperfoco}" para ensinar essas habilidades?
         5. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas de ambiente.
-        """.format(hiperfoco=dados['hiperfoco'])
+        """.format(hiperfoco=dados['hiperfoco'], meds=meds_info)
         
         prompt_user = f"""
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
         DIAGNÓSTICO: {dados['diagnostico']}
-        FAMÍLIA: {familia}
         MEDICAÇÃO: {meds_info}
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        EVIDÊNCIAS: {evid}
+        EVIDÊNCIAS DE SALA: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -290,7 +309,16 @@ def gerar_pdf_final(dados, tem_anexo):
     pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
     pdf.set_font("Arial", size=10); pdf.set_text_color(0)
     
-    med_str = "; ".join([f"{m['nome']} ({m['posologia']})" for m in dados['lista_medicamentos']]) if dados['lista_medicamentos'] else "Não informado."
+    # Tratamento seguro para medicação antiga
+    med_list = []
+    if dados['lista_medicamentos']:
+        for m in dados['lista_medicamentos']:
+            obs = m.get('obs', '')
+            txt = f"{m['nome']} ({m['posologia']})"
+            if obs: txt += f" [Obs: {obs}]"
+            med_list.append(txt)
+    
+    med_str = "; ".join(med_list) if med_list else "Não informado."
     fam_str = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado."
     
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nome:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nome'], 0, 1)
@@ -302,7 +330,7 @@ def gerar_pdf_final(dados, tem_anexo):
 
     evid = [k.replace('?', '') for k, v in dados['checklist_evidencias'].items() if v]
     if evid:
-        pdf.section_title("2. PONTOS DE ATENÇÃO")
+        pdf.section_title("2. PONTOS DE ATENÇÃO (EVIDÊNCIAS)")
         pdf.set_font("Arial", size=10); pdf.multi_cell(0, 6, limpar_texto_pdf('; '.join(evid) + '.'))
 
     if any(dados['barreiras_selecionadas'].values()):
@@ -349,7 +377,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v31.0 Pro</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v32.0 Robust</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -368,13 +396,8 @@ tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 with tab0: # INÍCIO
     if api_key:
         with st.spinner("Gerando inspiração..."):
-            try:
-                client = OpenAI(api_key=api_key)
-                saudacao = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}]).choices[0].message.content
-                noticia = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta sobre legislação de inclusão ou neurociência."}]).choices[0].message.content
-            except:
-                saudacao = "A inclusão transforma vidas."
-                noticia = "O PEI é um direito garantido por lei."
+            saudacao = gerar_saudacao_ia(api_key)
+            noticia = gerar_noticia_ia(api_key)
         
         st.markdown(f"""
         <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);">
@@ -418,7 +441,7 @@ with tab1: # ESTUDANTE
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico (CID se houver)", st.session_state.dados['diagnostico'])
     
-    # Medicação Melhorada com Observações
+    # Medicação Melhorada (COM CORREÇÃO DE ERRO)
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
@@ -434,14 +457,19 @@ with tab1: # ESTUDANTE
             if st.session_state.dados['lista_medicamentos']:
                 st.markdown("**Lista Atual:**")
                 for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
-                    st.info(f"💊 **{m['nome']}** ({m['posologia']}) - *Obs: {m['obs']}*")
+                    # CORREÇÃO CRÍTICA AQUI: .get('obs', '') impede o KeyError
+                    obs_txt = m.get('obs', '')
+                    display_txt = f"💊 **{m['nome']}** ({m['posologia']})"
+                    if obs_txt: display_txt += f" - *Obs: {obs_txt}*"
+                    
+                    st.info(display_txt)
                     if st.button("Remover", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
     
     with st.expander("📎 Anexar Laudo"):
         up = st.file_uploader("PDF", type="pdf"); 
         if up: st.session_state.pdf_text = ler_pdf(up)
 
-with tab2: # EVIDÊNCIAS (AGORA COM TOGGLES)
+with tab2: # EVIDÊNCIAS
     render_progresso()
     st.markdown("### <i class='ri-search-eye-line'></i> Coleta de Evidências", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
@@ -564,7 +592,7 @@ with tab7: # IA
 with tab8: # DOCUMENTO & DASHBOARD NATIVO
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     
-    if st.session_state.dados['nome']:
+    if st.session_state.dados['nome']: # Só mostra se tiver nome
         # DASHBOARD 100% NATIVO (SEM PLOTLY)
         st.markdown("#### 📊 Visão Geral do Aluno")
         
@@ -585,19 +613,15 @@ with tab8: # DOCUMENTO & DASHBOARD NATIVO
         st.markdown("##### 🧬 Nível de Suporte por Área")
         col_dna1, col_dna2 = st.columns(2)
         
-        # Calcula intensidade (0 a 100) para cada área baseada na quantidade de barreiras selecionadas
         areas = list(LISTAS_BARREIRAS.keys())
         for i, area in enumerate(areas):
             qtd = len(st.session_state.dados['barreiras_selecionadas'][area])
-            # Simples normalização: 5 barreiras = 100% da barra (só visual)
             valor = min(qtd * 20, 100) 
-            
-            # Distribui nas colunas
             target_col = col_dna1 if i < 3 else col_dna2
             target_col.caption(f"{area} ({qtd} itens)")
             target_col.progress(valor)
 
-        st.divider()
+    st.divider()
 
     # ÁREA DE DOWNLOAD
     if st.session_state.dados['ia_sugestao']:
