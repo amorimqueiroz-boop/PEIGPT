@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (BASE BLINDADA + LINHA VERMELHA)
+# 2. ESTILO VISUAL (ABAS PÍLULA + BARRA MINIMALISTA)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -39,7 +39,36 @@ def aplicar_estilo_visual():
         .block-container { padding-top: 1rem !important; padding-bottom: 2rem !important; }
         div[data-baseweb="tab-border"] { display: none !important; }
         
-        /* BARRA DE PROGRESSO (VERMELHA MINIMALISTA) */
+        /* -----------------------------------------------------------
+           ABAS ESTILO PÍLULA (RESTAURADO)
+        ----------------------------------------------------------- */
+        .stTabs [data-baseweb="tab-list"] { 
+            gap: 10px; 
+            background-color: transparent;
+            padding: 10px 0;
+        }
+        .stTabs [data-baseweb="tab"] {
+            height: 40px;
+            border-radius: 20px !important; /* Arredondamento Pílula */
+            background-color: white;
+            border: 1px solid #E2E8F0;
+            color: #718096;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0 20px; /* Espaço lateral interno */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: var(--brand-coral) !important;
+            color: white !important;
+            border-color: var(--brand-coral) !important;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        }
+
+        /* -----------------------------------------------------------
+           BARRA DE PROGRESSO (VERMELHA MINIMALISTA)
+        ----------------------------------------------------------- */
         .minimal-track {
             width: 100%; height: 4px; background-color: #EDF2F7; border-radius: 2px;
             position: relative; margin: 0 0 25px 0;
@@ -64,7 +93,7 @@ def aplicar_estilo_visual():
             color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;
         }
 
-        /* CARDS (ESTÁVEIS) */
+        /* CARDS */
         .rich-card {
             background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; cursor: pointer;
@@ -74,28 +103,17 @@ def aplicar_estilo_visual():
         .rich-card:hover { transform: translateY(-5px); border-color: var(--brand-blue); }
         .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
         .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
-        .rich-icon { 
-            font-size: 2.5rem; color: var(--brand-coral); margin-bottom: 10px;
-        }
+        .rich-icon { font-size: 2.5rem; color: var(--brand-coral); margin-bottom: 10px; }
         
-        /* ABAS */
-        .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; }
-        .stTabs [data-baseweb="tab"] {
-            height: 40px; border-radius: 10px; border: 1px solid #E2E8F0; font-weight: 700; color: #718096;
-        }
-        .stTabs [aria-selected="true"] {
-            background-color: var(--brand-coral) !important; color: white !important; border-color: var(--brand-coral) !important;
-        }
-
-        /* INPUTS */
+        /* INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
-            border-radius: 10px !important; border-color: #E2E8F0 !important; 
+            border-radius: 12px !important; border-color: #E2E8F0 !important; 
         }
         div[data-testid="column"] .stButton button { 
-            border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; 
+            border-radius: 12px !important; font-weight: 800 !important; height: 50px !important; 
         }
         
-        /* CORES DE DESTAQUE PARA IA E NOTÍCIAS */
+        /* DESTAQUE */
         .highlight-card {
             background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-left: 6px solid #F6AD55;
             border-radius: 12px; padding: 20px; margin-top: 15px; margin-bottom: 20px;
@@ -109,7 +127,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 3. LISTAS DE DADOS (COM FAMÍLIA INCLUSIVA)
+# 3. LISTAS DE DADOS
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -127,7 +145,7 @@ LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", 
 # LISTA FAMILIAR INCLUSIVA (PERMITE DUPLA MATERNIDADE/PATERNIDADE)
 LISTA_FAMILIA = [
     "Mãe", "Pai", 
-    "Mãe (2ª)", "Pai (2º)", # Opções para famílias homoparentais
+    "Mãe (2ª)", "Pai (2º)", 
     "Avó", "Avô", 
     "Irmão(s)", 
     "Tio(a)", 
@@ -258,7 +276,6 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     try:
         client = OpenAI(api_key=api_key)
         
-        # Contexto humanizado para a IA
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
@@ -266,9 +283,9 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         Você é um Consultor Pedagógico Especialista em Educação Inclusiva (Tom: Acolhedor, Técnico e Prático).
         Sua missão é ajudar o professor a ver o potencial do aluno e traçar caminhos claros.
         
-        ESTRUTURA DA RESPOSTA (Markdown Limpo e Organizado):
+        ESTRUTURA DA RESPOSTA (Markdown Limpo):
         1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial focando nas potências.
-        2. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos claros e adaptados ao nível dele.
+        2. 🎯 OBJETIVOS DE APRENDIZAGEM (BNCC): 3 objetivos claros e adaptados.
         3. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar o interesse ({hiperfoco}) para engajar?
         4. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas de ambiente e material.
         """.format(hiperfoco=dados['hiperfoco'])
@@ -278,15 +295,10 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         DIAGNÓSTICO: {dados['diagnostico']}
         FAMÍLIA: {familia}
         CONTEXTO FAMILIAR: {dados['familia']}
-        
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
-        
-        BARREIRAS SELECIONADAS:
-        {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        
-        EVIDÊNCIAS DE SALA:
-        {evid}
+        BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
+        EVIDÊNCIAS: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -378,9 +390,9 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v23.0 Inclusive</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v24.0 Restored</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
-# HEADER LIMPO (LOGO + SUBTÍTULO)
+# HEADER LIMPO
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 110px;">' if logo_path else ""
 
@@ -420,7 +432,7 @@ with tab0: # INÍCIO
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">💡 Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v23.0:** Família Inclusiva (Dupla Maternidade/Paternidade) e IA Humanizada.")
+    st.caption("🚀 **Novidades v24.0:** Retorno das Abas Pílula e Checkbox de Escola.")
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -442,12 +454,12 @@ with tab1: # ESTUDANTE
     st.session_state.dados['historico'] = c1.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Resuma a trajetória escolar.")
     st.session_state.dados['familia'] = c2.text_area("Contexto Familiar (Detalhes)", st.session_state.dados['familia'], help="Dinâmica familiar e apoio.")
     
-    # Composição Familiar Inclusiva (Tag + Texto)
+    # Composição Familiar Inclusiva (Tag)
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
     
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico (CID se houver)", st.session_state.dados['diagnostico'])
     
-    # Medicação Simplificada (Toggle)
+    # Medicação com Checkbox de Escola
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
@@ -461,8 +473,14 @@ with tab1: # ESTUDANTE
             if st.session_state.dados['lista_medicamentos']:
                 st.markdown("**Lista Atual:**")
                 for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
-                    st.info(f"{m['nome']} ({m['posologia']})")
-                    if st.button("Remover", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
+                    c_a, c_b, c_c, c_d = st.columns([3, 3, 2, 1])
+                    with c_a: st.info(f"**{m['nome']}**")
+                    with c_b: st.caption(m['posologia'])
+                    with c_c: 
+                        # Checkbox "Na Escola"
+                        m['escola'] = st.checkbox("Toma na escola?", value=m['escola'], key=f"esc_{i}")
+                    with c_d: 
+                        if st.button("🗑️", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
     
     with st.expander("📎 Anexar Laudo"):
         up = st.file_uploader("PDF", type="pdf"); 
