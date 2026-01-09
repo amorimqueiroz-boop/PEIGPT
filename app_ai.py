@@ -13,421 +13,219 @@ import re
 import glob
 
 # ==============================================================================
-# 1. CONFIGURAÇÃO E IDENTIDADE VISUAL
+# 1. CONFIGURAÇÃO VISUAL "REVOLUTION" (PRETO E DOURADO)
 # ==============================================================================
-def get_favicon():
-    return "📘"
-
 st.set_page_config(
-    page_title="PEI 360º | Architect Edition",
-    page_icon=get_favicon(),
+    page_title="PEI REVOLUTION",
+    page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-def aplicar_estilo_visual():
+def aplicar_estilo_revolution():
     estilo = """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         
+        /* VARIÁVEIS DE COR REVOLUTION */
         :root {
-            --primary: #004E92;
-            --secondary: #FF6B6B;
-            --success: #38A169;
-            --bg-light: #F7FAFC;
+            --bg-dark: #1A202C;
+            --primary-gold: #D69E2E;
+            --accent-blue: #3182CE;
+            --card-white: #FFFFFF;
         }
 
-        html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: #1A202C; }
-        
-        /* HEADER */
-        .header-unified {
-            background: white; padding: 2rem; border-radius: 16px;
-            border: 1px solid #E2E8F0; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-            display: flex; align-items: center; gap: 20px; margin-bottom: 30px;
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
         }
-        
-        /* CARDS CUSTOMIZADOS */
-        div[data-testid="stVerticalBlock"] > div[style*="background-color"] {
+
+        /* HEADER DIFERENCIADO (PRETO) */
+        .header-revolution {
+            background: linear-gradient(90deg, #1A202C 0%, #2D3748 100%);
+            padding: 2rem;
             border-radius: 12px;
+            border-bottom: 4px solid var(--primary-gold);
+            color: white;
+            margin-bottom: 25px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        
+        .header-revolution h1 {
+            color: white !important; font-weight: 800; margin: 0; font-size: 2rem;
+        }
+        .header-revolution span {
+            background: var(--primary-gold); color: #1A202C; 
+            padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;
         }
 
-        /* DESIGN DA ABA 4 - SEPARAÇÃO VISUAL */
-        .potential-card {
-            border-left: 5px solid var(--success); background-color: #F0FFF4; padding: 20px; border-radius: 8px;
+        /* CARDS DE MAPEAMENTO (NOVO LAYOUT) */
+        .map-card {
+            padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            height: 100%; transition: transform 0.2s;
         }
-        .barrier-card {
-            border-left: 5px solid var(--secondary); background-color: #FFF5F5; padding: 20px; border-radius: 8px;
+        .map-card:hover { transform: translateY(-3px); }
+        
+        .card-potencia {
+            background-color: #F0FFF4; border-left: 6px solid #48BB78;
+        }
+        .card-barreira {
+            background-color: #FFF5F5; border-left: 6px solid #F56565;
         }
 
-        /* TAB SELECTOR */
-        .stTabs [data-baseweb="tab-list"] { gap: 8px; background-color: transparent; }
+        /* ABAS ESTILIZADAS */
+        .stTabs [data-baseweb="tab-list"] { gap: 10px; }
         .stTabs [data-baseweb="tab"] {
-            height: 45px; border-radius: 8px; background-color: white; 
-            border: 1px solid #E2E8F0; color: #718096; font-weight: 600;
+            background-color: white; border-radius: 6px; border: 1px solid #E2E8F0;
         }
         .stTabs [aria-selected="true"] {
-            background-color: var(--primary) !important; color: white !important;
-        }
-
-        /* BOTÕES E INPUTS */
-        .stButton button {
-            border-radius: 8px !important; font-weight: 700 !important; 
-            text-transform: uppercase; height: 48px !important;
-            transition: all 0.3s ease;
-        }
-        .stTextInput input, .stSelectbox div, .stTextArea textarea {
-            border-radius: 8px !important; border-color: #CBD5E0 !important;
+            background-color: #1A202C !important; color: var(--primary-gold) !important;
+            border-color: #1A202C !important;
         }
     </style>
     """
     st.markdown(estilo, unsafe_allow_html=True)
 
-aplicar_estilo_visual()
+aplicar_estilo_revolution()
 
 # ==============================================================================
-# 2. DADOS E LISTAS
+# 2. ESTRUTURA DE DADOS
 # ==============================================================================
-LISTA_SERIES = [
-    "Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", 
-    "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", 
-    "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (Ensino Médio)", 
-    "2ª Série (Ensino Médio)", "3ª Série (Ensino Médio)"
-]
+LISTA_SERIES = ["Educação Infantil", "1º Ano Fund I", "2º Ano Fund I", "3º Ano Fund I", "4º Ano Fund I", "5º Ano Fund I", "6º Ano Fund II", "7º Ano Fund II", "8º Ano Fund II", "9º Ano Fund II", "1ª Série EM", "2ª Série EM", "3ª Série EM"]
 
 LISTAS_BARREIRAS = {
-    "Cognitivo": ["Atenção Sustentada", "Memória de Trabalho", "Flexibilidade Cognitiva", "Velocidade de Processamento", "Raciocínio Abstrato"],
-    "Comunicacional": ["Linguagem Expressiva", "Linguagem Receptiva", "Pragmática Social", "Interpretação de Texto", "Vocabulário"],
-    "Socioemocional": ["Regulação Emocional", "Tolerância à Frustração", "Interação Social", "Rigidez Mental", "Autoestima"],
-    "Sensorial/Motor": ["Coordenação Fina", "Hipersensibilidade Auditiva", "Hipersensibilidade Visual", "Busca Sensorial", "Planejamento Motor"],
-    "Acadêmico": ["Decodificação Leitora", "Produção Textual", "Cálculo Matemático", "Resolução de Problemas", "Organização de Estudos"]
+    "Cognitivo": ["Atenção", "Memória", "Flexibilidade", "Velocidade Processamento"],
+    "Comunicacional": ["Fala", "Compreensão", "Socialização", "Vocabulário"],
+    "Socioemocional": ["Regulação", "Frustração", "Interação", "Rigidez"],
+    "Sensorial": ["Auditivo", "Visual", "Tátil", "Motor Fino"],
+    "Acadêmico": ["Leitura", "Escrita", "Matemática", "Organização"]
 }
 
-LISTA_POTENCIAS = ["Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", "Musicalidade", "Tecnologia", "Hiperfoco", "Liderança", "Esportes", "Persistência", "Curiosidade Investigativa"]
+LISTA_POTENCIAS = ["Memória Visual", "Música", "Tecnologia", "Desenho", "Esportes", "Liderança", "Cálculo Mental", "Oralidade", "Hiperfoco"]
 
-# ==============================================================================
-# 3. GERENCIAMENTO DE ESTADO (STATE MANAGEMENT)
-# ==============================================================================
 default_state = {
-    'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
-    'lista_medicamentos': [], 'historico': '', 'familia': '', 
-    'hiperfoco': '', 'potencias': [], 'rede_apoio': [], 'orientacoes_especialistas': '',
-    'checklist_evidencias': {}, 
-    'barreiras_selecionadas': {k: [] for k in LISTAS_BARREIRAS.keys()},
+    'nome': '', 'nasc': date(2015, 1, 1), 'serie': LISTA_SERIES[0], 'turma': '', 'diagnostico': '', 
+    'hiperfoco': '', 'potencias': [], 
+    'barreiras_selecionadas': {k: [] for k in LISTAS_BARREIRAS},
     'niveis_suporte': {}, 
-    'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
-    'ia_sugestao': '', 'outros_acesso': '', 'outros_ensino': '', 
-    'monitoramento_data': None, 
-    'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': []
+    'ia_sugestao': '', 'pdf_text': ''
 }
 
 if 'dados' not in st.session_state: st.session_state.dados = default_state
-else:
-    for key, val in default_state.items():
-        if key not in st.session_state.dados: st.session_state.dados[key] = val
-
-if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 4. INTELIGÊNCIA ARTIFICIAL (O "CÉREBRO" REVISADO)
+# 3. LÓGICA DE IA (PEDAGOGIA AVANÇADA)
 # ==============================================================================
-def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
-    if not api_key: return None, "⚠️ Configure a Chave API OpenAI."
+def consultar_ia_revolution(api_key, dados):
+    if not api_key: return "⚠️ Insira a API Key na barra lateral."
+    
+    # Montagem do Prompt de Alta Precisão
+    barreiras_txt = ""
+    for k, v in dados['barreiras_selecionadas'].items():
+        if v: barreiras_txt += f"\n- {k}: {', '.join(v)}"
+        
+    prompt_sys = """
+    Você é o Coordenador Pedagógico Sênior de uma escola de referência.
+    Sua tarefa: Criar um PEI (Plano de Ensino Individualizado) estratégico.
+    
+    REGRA DE OURO - O HIPERFOCO:
+    Você DEVE usar o Hiperfoco do aluno como ponte para ensinar as habilidades em defasagem.
+    Exemplo: Se o hiperfoco é "Carros" e a dificuldade é "Matemática", sugira problemas de velocidade/distância.
+    
+    ESTRUTURA DA RESPOSTA:
+    1. 🎯 OBJETIVOS DE APRENDIZAGEM (Conectados à BNCC)
+    2. 💡 ESTRATÉGIAS DE ENSINO (Usando o Hiperfoco: {hiperfoco})
+    3. 🛠️ ADAPTAÇÕES DE MATERIAIS E AVALIAÇÃO
+    """.format(hiperfoco=dados['hiperfoco'])
+    
+    prompt_user = f"""
+    Aluno: {dados['nome']} ({dados['serie']})
+    Diagnóstico: {dados['diagnostico']}
+    Potências: {', '.join(dados['potencias'])}
+    Barreiras: {barreiras_txt}
+    """
+    
     try:
         client = OpenAI(api_key=api_key)
-        
-        # Construção rica do contexto
-        evidencias = ", ".join([k for k, v in dados['checklist_evidencias'].items() if v])
-        barreiras_detalhadas = ""
-        for cat, itens in dados['barreiras_selecionadas'].items():
-            if itens:
-                barreiras_detalhadas += f"\n- {cat}: " + ", ".join([f"{i} (Suporte: {dados['niveis_suporte'].get(f'{cat}_{i}', 'Monitorado')})" for i in itens])
-
-        system_prompt = """
-        Você é um Especialista Sênior em Educação Inclusiva e Currículo (BNCC).
-        Sua missão é criar um Plano de Ensino Individualizado (PEI) de alta precisão.
-        
-        DIRETRIZES PEDAGÓGICAS:
-        1. RECOMPOSIÇÃO: Se o aluno tem barreiras acadêmicas severas, sugira habilidades da BNCC de anos anteriores (Recomposição de Aprendizagem) conectadas ao tema da série atual.
-        2. HIPERFOCO: Use OBRIGATORIAMENTE o interesse do aluno (Hiperfoco) como alavanca metodológica nas estratégias de ensino.
-        3. TOM: Técnico, acolhedor e focado em potencialidades, não apenas déficits.
-        
-        FORMATO DA RESPOSTA (Markdown):
-        1. SÍNTESE DO PERFIL (Breve análise biopsicossocial)
-        2. HABILIDADES ALVO (BNCC - Código e Descrição Adaptada)
-        3. ESTRATÉGIAS DE ENSINO MEDIADAS PELO HIPERFOCO (Como usar o interesse dele para ensinar?)
-        4. ADAPTAÇÕES DE ACESSO E AVALIAÇÃO (Práticas)
-        """
-        
-        user_prompt = f"""
-        ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
-        DIAGNÓSTICO: {dados['diagnostico']}
-        HIPERFOCO/INTERESSES: {dados['hiperfoco']}
-        
-        POTENCIALIDADES: {', '.join(dados['potencias'])}
-        
-        BARREIRAS E NÍVEL DE SUPORTE:
-        {barreiras_detalhadas}
-        
-        EVIDÊNCIAS OBSERVADAS:
-        {evidencias}
-        
-        CONTEXTO LAUDO (Trecho):
-        {contexto_pdf[:3000]}
-        """
-        
-        res = client.chat.completions.create(
-            model="gpt-4o", 
-            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
-            temperature=0.7
+        resp = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}]
         )
-        return res.choices[0].message.content, None
-    except Exception as e: return None, str(e)
+        return resp.choices[0].message.content
+    except Exception as e: return f"Erro na IA: {e}"
 
 # ==============================================================================
-# 5. MOTOR PDF PROFISSIONAL (VISUAL EXECUTIVO)
+# 4. INTERFACE
 # ==============================================================================
-class PDF_Premium(FPDF):
-    def header(self):
-        # Faixa Lateral
-        self.set_fill_color(0, 78, 146) # Azul Brand
-        self.rect(0, 0, 10, 297, 'F')
-        
-        # Logo e Título
-        self.set_xy(20, 15)
-        self.set_font('Arial', 'B', 18)
-        self.set_text_color(0, 78, 146)
-        self.cell(0, 10, 'PLANO DE ENSINO INDIVIDUALIZADO', 0, 1)
-        
-        self.set_xy(20, 23)
-        self.set_font('Arial', '', 10)
-        self.set_text_color(100)
-        self.cell(0, 5, 'Documento Oficial de Planejamento Pedagógico | Confidencial', 0, 1)
-        self.line(20, 32, 200, 32)
-        self.ln(15)
 
-    def footer(self):
-        self.set_y(-15)
-        self.set_font('Arial', 'I', 8)
-        self.set_text_color(128)
-        self.cell(0, 10, f'Gerado via PEI 360 - Página {self.page_no()}', 0, 0, 'R')
-
-    def chapter_title(self, label):
-        self.ln(5)
-        self.set_fill_color(240, 244, 248) # Cinza muito leve
-        self.set_text_color(0, 78, 146)
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, f"  {label}", 0, 1, 'L', fill=True)
-        self.ln(4)
-
-    def card_body(self, titulo, conteudo):
-        self.set_font('Arial', 'B', 10)
-        self.set_text_color(50)
-        self.cell(0, 6, titulo, 0, 1)
-        self.set_font('Arial', '', 10)
-        self.set_text_color(0)
-        self.multi_cell(0, 6, conteudo)
-        self.ln(3)
-
-def gerar_pdf_premium(dados):
-    pdf = PDF_Premium()
-    pdf.add_page()
-    
-    # 1. Identificação
-    pdf.chapter_title("1. IDENTIFICAÇÃO DO ESTUDANTE")
-    pdf.card_body("Nome Completo:", dados['nome'])
-    pdf.card_body("Série/Turma:", f"{dados['serie']} - {dados['turma']}")
-    pdf.card_body("Diagnóstico:", dados['diagnostico'])
-    
-    # 2. Perfil de Aprendizagem (Tabela Visual)
-    pdf.chapter_title("2. PERFIL DE APRENDIZAGEM")
-    
-    # Potencialidades
-    pdf.set_fill_color(220, 252, 231) # Verde claro
-    pdf.set_text_color(22, 101, 52)   # Verde escuro
-    pdf.set_font('Arial', 'B', 10)
-    potencias_str = ", ".join(dados['potencias']) if dados['potencias'] else "Em investigação"
-    pdf.multi_cell(0, 8, f" POTENCIALIDADES & HIPERFOCO: {dados['hiperfoco']} | {potencias_str}", 0, 'L', True)
-    pdf.ln(2)
-    
-    # Barreiras
-    if any(dados['barreiras_selecionadas'].values()):
-        pdf.set_text_color(0)
-        pdf.set_font('Arial', 'B', 10)
-        pdf.cell(0, 8, "MAPEAMENTO DE BARREIRAS E SUPORTE:", 0, 1)
-        pdf.set_font('Arial', '', 9)
-        
-        for cat, itens in dados['barreiras_selecionadas'].items():
-            if itens:
-                pdf.set_font('Arial', 'B', 9)
-                pdf.cell(40, 6, f"  {cat}:", 0, 0)
-                pdf.set_font('Arial', '', 9)
-                
-                detalhes = []
-                for item in itens:
-                    nivel = dados['niveis_suporte'].get(f"{cat}_{item}", "-")
-                    detalhes.append(f"{item} ({nivel})")
-                
-                pdf.multi_cell(0, 6, ", ".join(detalhes))
-    
-    # 3. Plano e Sugestão IA
-    if dados['ia_sugestao']:
-        pdf.add_page()
-        pdf.chapter_title("3. PLANO DE AÇÃO E ESTRATÉGIAS (IA)")
-        texto_limpo = re.sub(r'[^\x00-\xff]', '', dados['ia_sugestao'])
-        texto_limpo = texto_limpo.replace('**', '').replace('###', '')
-        pdf.set_font('Arial', '', 10)
-        pdf.multi_cell(0, 6, texto_limpo)
-        
-    return pdf.output(dest='S').encode('latin-1', 'replace')
-
-# ==============================================================================
-# 6. UI PRINCIPAL
-# ==============================================================================
 # Sidebar
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3426/3426653.png", width=80) # Placeholder logo
-    st.title("PEI 360º")
-    st.caption("Ecossistema de Inteligência Pedagógica")
-    
-    api_key = st.text_input("Chave OpenAI", type="password")
-    st.markdown("---")
-    
-    # Gestão de Arquivos (Simulação Local)
-    st.markdown("### 📂 Meus Alunos")
-    PASTA_BANCO = "banco_alunos"
-    if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
-    
-    arquivos = glob.glob(os.path.join(PASTA_BANCO, "*.json"))
-    for arq in arquivos:
-        nome_arq = os.path.basename(arq).replace(".json", "").replace("_", " ").title()
-        c1, c2 = st.columns([4, 1])
-        c1.text(nome_arq)
-        if c2.button("Abrir", key=arq):
-            st.session_state.dados = json.load(open(arq))
-            st.rerun()
+    st.header("⚙️ Configuração")
+    api_key = st.text_input("OpenAI API Key", type="password")
+    st.info("💡 Dica: Para ver as mudanças no servidor, limpe o cache do navegador ou do Streamlit.")
 
-# Header Principal
+# Header "Black Revolution"
 st.markdown("""
-<div class="header-unified">
-    <div style="font-size: 2.5rem; color: #004E92;">📘</div>
+<div class="header-revolution">
     <div>
-        <h2 style="margin:0; color:#2D3748;">Planejamento Educacional Individualizado</h2>
-        <p style="margin:0; color:#718096; font-size:0.9rem;">Versão Architect • Foco em Potencialidades</p>
+        <h1>PEI 360º</h1>
+        <p style="opacity: 0.8; margin-top:5px">Sistema de Inteligência Inclusiva</p>
     </div>
+    <span>VERSÃO REVOLUTION 2.0</span>
 </div>
 """, unsafe_allow_html=True)
 
 # Abas
-tabs = st.tabs(["Início", "Aluno", "Mapeamento (Novo)", "Estratégias", "IA & Documento"])
+tab1, tab2, tab3, tab4 = st.tabs(["1. Identificação", "2. Mapeamento 360º", "3. Plano IA", "4. Documento"])
 
-with tabs[0]: # Início
-    st.markdown("### Bem-vindo ao Novo Padrão")
-    c1, c2, c3 = st.columns(3)
-    c1.info("🧠 **IA Recompõe Aprendizagem:** Agora a IA busca habilidades de anos anteriores.")
-    c2.success("✨ **Foco no Potencial:** Interface dedicada para Hiperfoco e Habilidades.")
-    c3.warning("📄 **PDF Executivo:** Documentos prontos para a gestão escolar.")
+with tab1:
+    col1, col2 = st.columns([2, 1])
+    st.session_state.dados['nome'] = col1.text_input("Nome do Estudante", st.session_state.dados['nome'])
+    st.session_state.dados['serie'] = col2.selectbox("Série", LISTA_SERIES, index=0)
+    st.session_state.dados['diagnostico'] = st.text_area("Diagnóstico Clínico", st.session_state.dados['diagnostico'])
 
-with tabs[1]: # Aluno
-    c1, c2 = st.columns([2, 1])
-    st.session_state.dados['nome'] = c1.text_input("Nome do Estudante", st.session_state.dados['nome'])
-    st.session_state.dados['serie'] = c2.selectbox("Série Atual", LISTA_SERIES)
-    st.session_state.dados['diagnostico'] = st.text_area("Diagnóstico / Laudo", st.session_state.dados['diagnostico'], height=100)
+with tab2:
+    st.markdown("### 🧭 Mapeamento de Forças e Desafios")
+    st.caption("Observe como separamos visualmente o que impulsiona do que limita o aluno.")
     
-    with st.expander("Carregar PDF do Laudo (Opcional)"):
-        pdf_file = st.file_uploader("Anexar Laudo", type="pdf")
-        if pdf_file:
-            reader = PdfReader(pdf_file)
-            st.session_state.pdf_text = "".join([p.extract_text() for p in reader.pages[:4]])
-
-with tabs[2]: # MAPEAMENTO REVOLUCIONÁRIO
-    st.markdown("### 🧭 Bússola de Aprendizagem")
-    st.write("Identifique as forças motoras e as barreiras limitantes.")
+    c_pot, c_bar = st.columns(2)
     
-    col_pot, col_bar = st.columns(2)
-    
-    # COLUNA DA ESQUERDA: POTÊNCIA (VERDE/AZUL)
-    with col_pot:
-        st.markdown('<div class="potential-card">', unsafe_allow_html=True)
-        st.markdown("#### 🚀 Potencialidades & Hiperfoco")
-        st.caption("O que engaja este aluno? O que ele faz bem?")
+    # CARD POTÊNCIA (VERDE)
+    with c_pot:
+        st.markdown('<div class="map-card card-potencia">', unsafe_allow_html=True)
+        st.markdown("### 🚀 Potencialidades & Hiperfoco")
+        st.markdown("Use isso para engajar o aluno!")
         
-        st.session_state.dados['hiperfoco'] = st.text_input("Hiperfoco (Interesse Intenso)", st.session_state.dados['hiperfoco'], placeholder="Ex: Dinossauros, Minecraft, Desenho...")
-        
-        # Filtra lista para não bugar o multiselect
-        defaults_p = [x for x in st.session_state.dados['potencias'] if x in LISTA_POTENCIAS]
-        st.session_state.dados['potencias'] = st.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=defaults_p)
+        st.session_state.dados['hiperfoco'] = st.text_input("Hiperfoco (Paixão do aluno)", st.session_state.dados['hiperfoco'], placeholder="Ex: Dinossauros, Futebol...")
+        st.session_state.dados['potencias'] = st.multiselect("Habilidades Fortes", LISTA_POTENCIAS, default=st.session_state.dados['potencias'])
         st.markdown('</div>', unsafe_allow_html=True)
-
-    # COLUNA DA DIREITA: BARREIRAS (LARANJA/VERMELHO)
-    with col_bar:
-        st.markdown('<div class="barrier-card">', unsafe_allow_html=True)
-        st.markdown("#### 🚧 Barreiras e Suportes")
-        st.caption("Onde precisamos atuar? Qual o nível de ajuda?")
         
-        categoria_barreira = st.selectbox("Selecione a Área para Mapear:", list(LISTAS_BARREIRAS.keys()))
+    # CARD BARREIRA (VERMELHO)
+    with c_bar:
+        st.markdown('<div class="map-card card-barreira">', unsafe_allow_html=True)
+        st.markdown("### 🚧 Barreiras de Acesso")
+        st.markdown("Onde o aluno precisa de suporte?")
         
-        itens_possiveis = LISTAS_BARREIRAS[categoria_barreira]
-        defaults_b = [x for x in st.session_state.dados['barreiras_selecionadas'][categoria_barreira] if x in itens_possiveis]
+        cat = st.selectbox("Área de Dificuldade", list(LISTAS_BARREIRAS.keys()))
+        sel = st.multiselect(f"Barreiras em {cat}", LISTAS_BARREIRAS[cat], key=f"bar_{cat}")
+        st.session_state.dados['barreiras_selecionadas'][cat] = sel
         
-        selecao_atual = st.multiselect(f"Barreiras em: {categoria_barreira}", itens_possiveis, default=defaults_b)
-        st.session_state.dados['barreiras_selecionadas'][categoria_barreira] = selecao_atual
-        
-        # UI Limpa para Sliders (Só aparece se selecionar)
-        if selecao_atual:
+        if sel:
             st.markdown("---")
-            st.markdown("**Calibrar Nível de Suporte:**")
-            for item in selecao_atual:
-                chave = f"{categoria_barreira}_{item}"
-                valor_atual = st.session_state.dados['niveis_suporte'].get(chave, "Monitorado")
-                st.session_state.dados['niveis_suporte'][chave] = st.select_slider(
-                    f"Suporte para '{item}'", 
-                    options=["Leve", "Monitorado", "Substancial", "Intenso"],
-                    value=valor_atual
-                )
+            for item in sel:
+                st.slider(f"Nível de Suporte: {item}", 1, 3, 2, key=f"sl_{item}")
         st.markdown('</div>', unsafe_allow_html=True)
 
-with tabs[3]: # Estratégias
-    st.markdown("### 🛠️ Caixa de Ferramentas")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.multiselect("Estratégias de Ensino", ["Pistas Visuais", "Material Concreto", "Gamificação", "Fragmentação"], key="strat_ens")
-    with c2:
-        st.multiselect("Adaptação de Avaliação", ["Tempo Estendido", "Prova Oral", "Ledor", "Sala Separada"], key="strat_aval")
+with tab3:
+    st.markdown("### 🤖 Consultoria Pedagógica IA")
+    if st.button("GERAR ESTRATÉGIAS REVOLUTION", type="primary"):
+        with st.spinner("A IA está analisando o Hiperfoco..."):
+            res = consultar_ia_revolution(api_key, st.session_state.dados)
+            st.session_state.dados['ia_sugestao'] = res
+            
+    if st.session_state.dados['ia_sugestao']:
+        st.markdown(st.session_state.dados['ia_sugestao'])
 
-with tabs[4]: # IA e Documento
-    st.markdown("### 🤖 Consultoria & Exportação")
-    
-    col_act, col_view = st.columns([1, 2])
-    
-    with col_act:
-        st.markdown("""
-        **Gerar PEI Inteligente:**
-        A IA irá cruzar o **Hiperfoco** ({}) com as **Barreiras** para sugerir estratégias.
-        """.format(st.session_state.dados['hiperfoco'] if st.session_state.dados['hiperfoco'] else "..."))
-        
-        if st.button("✨ GERAR PEI AGORA", type="primary"):
-            res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text)
-            if res: st.session_state.dados['ia_sugestao'] = res
-            elif err: st.error(err)
-            
-        st.markdown("---")
-        st.markdown("**Exportar:**")
-        
-        if st.session_state.dados['nome']:
-            pdf_bytes = gerar_pdf_premium(st.session_state.dados)
-            st.download_button("📥 Baixar PDF Premium", pdf_bytes, "PEI_Premium.pdf", "application/pdf")
-            
-            # Botão Salvar JSON
-            json_str = json.dumps(st.session_state.dados, default=str)
-            nome_safe = re.sub(r'[^a-zA-Z0-9]', '_', st.session_state.dados['nome'])
-            
-            # Salvar Local (Simulação)
-            with open(os.path.join(PASTA_BANCO, f"{nome_safe}.json"), "w") as f:
-                f.write(json_str)
-            st.toast("Salvo no banco local!")
-
-    with col_view:
-        if st.session_state.dados['ia_sugestao']:
-            st.text_area("Prévia do Conteúdo", st.session_state.dados['ia_sugestao'], height=500)
-        else:
-            st.info("Preencha os dados nas abas anteriores e clique em Gerar para ver a mágica.")
+with tab4:
+    st.markdown("### 📄 Exportação")
+    st.warning("Funcionalidade de PDF simplificada nesta versão de teste visual.")
+    st.json(st.session_state.dados)
