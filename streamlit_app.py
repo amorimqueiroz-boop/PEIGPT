@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (ABAS PÍLULA + BARRA MINIMALISTA)
+# 2. ESTILO VISUAL (FIX ABAS + ÍCONES VETORIAIS + CORES VIBRANTES)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -35,57 +35,36 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
         
-        /* FIX DE LAYOUT */
+        /* FIX DE LAYOUT E REMOÇÃO DA "LINHA FANTASMA" */
         .block-container { padding-top: 1rem !important; padding-bottom: 2rem !important; }
         div[data-baseweb="tab-border"] { display: none !important; }
+        div[data-baseweb="tab-highlight"] { visibility: hidden !important; } /* Oculta a linha padrão */
         
-        /* -----------------------------------------------------------
-           ABAS ESTILO PÍLULA (RESTAURADO)
-        ----------------------------------------------------------- */
-        .stTabs [data-baseweb="tab-list"] { 
-            gap: 10px; 
-            background-color: transparent;
-            padding: 10px 0;
-        }
-        .stTabs [data-baseweb="tab"] {
-            height: 40px;
-            border-radius: 20px !important; /* Arredondamento Pílula */
-            background-color: white;
-            border: 1px solid #E2E8F0;
-            color: #718096;
-            font-weight: 700;
-            font-size: 0.85rem;
-            padding: 0 20px; /* Espaço lateral interno */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            transition: all 0.3s ease;
-        }
-        .stTabs [aria-selected="true"] {
-            background-color: var(--brand-coral) !important;
-            color: white !important;
-            border-color: var(--brand-coral) !important;
-            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
-        }
-
-        /* -----------------------------------------------------------
-           BARRA DE PROGRESSO (VERMELHA MINIMALISTA)
-        ----------------------------------------------------------- */
+        /* BARRA DE PROGRESSO COM ÍCONE VETORIAL */
         .minimal-track {
-            width: 100%; height: 4px; background-color: #EDF2F7; border-radius: 2px;
-            position: relative; margin: 0 0 25px 0;
+            width: 100%; height: 6px; background-color: #EDF2F7; border-radius: 3px;
+            position: relative; margin: 5px 0 35px 0; /* Espaço ajustado */
         }
         .minimal-fill {
-            height: 100%; background-color: var(--brand-coral); border-radius: 2px;
-            transition: width 0.5s ease;
-            box-shadow: 0 2px 4px rgba(255, 107, 107, 0.25);
+            height: 100%; background: linear-gradient(90deg, var(--brand-coral) 0%, #FF8E53 100%);
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 2px 5px rgba(255, 107, 107, 0.3);
         }
-        .minimal-cursor {
-            position: absolute; top: -14px; font-size: 1.4rem;
-            transition: left 0.5s ease; transform: translateX(-50%); z-index: 10;
+        .minimal-cursor-icon {
+            position: absolute; top: -16px; 
+            font-size: 1.8rem; /* Ícone maior */
+            color: var(--brand-coral);
+            transition: left 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateX(-50%); z-index: 10;
+            background: white; border-radius: 50%; /* Fundo branco para destacar o ícone */
+            width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         /* HEADER */
         .header-unified {
-            background-color: white; padding: 25px 40px; border-radius: 16px;
+            background-color: white; padding: 20px 40px; border-radius: 16px;
             border: 1px solid #E2E8F0; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px;
             display: flex; align-items: center; gap: 25px;
         }
@@ -93,31 +72,49 @@ def aplicar_estilo_visual():
             color: #004E92; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;
         }
 
-        /* CARDS */
-        .rich-card {
-            background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; cursor: pointer;
-            text-align: left; height: 220px; display: flex; flex-direction: column; justify-content: flex-start;
-            text-decoration: none; color: inherit; position: relative;
+        /* ABAS ESTILO PÍLULA (PERFEITAS) */
+        .stTabs [data-baseweb="tab-list"] { gap: 12px; flex-wrap: wrap; }
+        .stTabs [data-baseweb="tab"] {
+            height: 42px; border-radius: 21px !important; 
+            background-color: white; border: 1px solid #E2E8F0;
+            color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 25px;
+            transition: all 0.2s ease;
         }
-        .rich-card:hover { transform: translateY(-5px); border-color: var(--brand-blue); }
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
-        .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
-        .rich-icon { font-size: 2.5rem; color: var(--brand-coral); margin-bottom: 10px; }
+        .stTabs [aria-selected="true"] {
+            background-color: var(--brand-coral) !important; color: white !important; 
+            border-color: var(--brand-coral) !important;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* CARDS MULTICOLORIDOS (INÍCIO) */
+        .rich-card {
+            background-color: white; padding: 30px; border-radius: 20px; border: 1px solid #EDF2F7;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
+            text-align: left; height: 260px; display: flex; flex-direction: column; justify-content: flex-start;
+            text-decoration: none; color: inherit; position: relative; overflow: hidden;
+        }
+        .rich-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
         
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.25rem; color: #2D3748; font-weight: 800; }
+        .rich-card p { font-size: 0.95rem; color: #718096; line-height: 1.6; }
+        
+        /* Ícones Específicos */
+        .icon-box {
+            width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; margin-bottom: 15px;
+        }
+        .icon-blue { background-color: #EBF8FF; color: #3182CE; }
+        .icon-gold { background-color: #FFFFF0; color: #D69E2E; }
+        .icon-pink { background-color: #FFF5F7; color: #D53F8C; }
+        .icon-green { background-color: #F0FFF4; color: #38A169; }
+
         /* INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 12px !important; border-color: #E2E8F0 !important; 
         }
         div[data-testid="column"] .stButton button { 
-            border-radius: 12px !important; font-weight: 800 !important; height: 50px !important; 
-        }
-        
-        /* DESTAQUE */
-        .highlight-card {
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border-left: 6px solid #F6AD55;
-            border-radius: 12px; padding: 20px; margin-top: 15px; margin-bottom: 20px;
-            display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-radius: 12px !important; font-weight: 800 !important; height: 55px !important; 
         }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -141,17 +138,7 @@ LISTAS_BARREIRAS = {
 
 LISTA_POTENCIAS = ["Memória Visual", "Musicalidade", "Tecnologia", "Hiperfoco", "Liderança", "Esportes", "Desenho", "Cálculo Mental", "Oralidade", "Criatividade"]
 LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", "Neuropediatra", "Psiquiatra", "Psicopedagogo", "Professor de Apoio", "AT"]
-
-# LISTA FAMILIAR INCLUSIVA (PERMITE DUPLA MATERNIDADE/PATERNIDADE)
-LISTA_FAMILIA = [
-    "Mãe", "Pai", 
-    "Mãe (2ª)", "Pai (2º)", 
-    "Avó", "Avô", 
-    "Irmão(s)", 
-    "Tio(a)", 
-    "Padrasto", "Madrasta", 
-    "Tutor Legal", "Abrigo Institucional"
-]
+LISTA_FAMILIA = ["Mãe", "Pai", "Mãe (2ª)", "Pai (2º)", "Avó", "Avô", "Irmão(s)", "Tio(a)", "Padrasto", "Madrasta", "Tutor Legal", "Abrigo Institucional"]
 
 # ==============================================================================
 # 4. GERENCIAMENTO DE ESTADO
@@ -194,11 +181,15 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    emoji = "🚦" if p < 15 else ("🏃" if p < 80 else "🏁")
+    # Lógica de Ícones Vetoriais (Remix Icons)
+    if p < 15: icon_class = "ri-checkbox-blank-circle-line"
+    elif p < 100: icon_class = "ri-run-line"
+    else: icon_class = "ri-rocket-2-fill"
+    
     st.markdown(f"""
     <div class="minimal-track">
         <div class="minimal-fill" style="width: {p}%;"></div>
-        <div class="minimal-cursor" style="left: {p}%;">{emoji}</div>
+        <div class="minimal-cursor-icon" style="left: {p}%;"><i class="{icon_class}"></i></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -251,7 +242,7 @@ def excluir_aluno(nome_arq):
     except: return False
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (HUMANIZADA)
+# 6. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -275,7 +266,6 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API."
     try:
         client = OpenAI(api_key=api_key)
-        
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
@@ -390,9 +380,9 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v24.0 Restored</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v25.0 Polished</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
-# HEADER LIMPO
+# HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 110px;">' if logo_path else ""
 
@@ -413,26 +403,26 @@ with tab0: # INÍCIO
             noticia = gerar_noticia_ia(api_key)
         
         st.markdown(f"""
-        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 20px; box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);">
-            <div style="display:flex; gap:15px; align-items:center;">
-                <i class="ri-sparkling-fill" style="font-size: 2rem; color: #FCD34D;"></i>
-                <div><h3 style="color:white; margin:0; font-size: 1.3rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.9;">{saudacao}</p></div>
+        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);">
+            <div style="display:flex; gap:20px; align-items:center;">
+                <div style="background:rgba(255,255,255,0.2); padding:12px; border-radius:50%;"><i class="ri-sparkling-2-fill" style="font-size: 2rem; color: #FFD700;"></i></div>
+                <div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-book-open-line rich-icon"></i><h3>O que é PEI?</h3><p>Conceitos fundamentais da Educação Inclusiva.</p></div></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-scales-3-line rich-icon"></i><h3>Legislação</h3><p>Lei Brasileira de Inclusão (LBI) e Decretos.</p></div></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-brain-line rich-icon"></i><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" style="text-decoration:none;"><div class="rich-card"><i class="ri-compass-3-line rich-icon"></i><h3>BNCC</h3><p>Base Nacional Comum Curricular Oficial.</p></div></a>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card"><div class="icon-box icon-blue"><i class="ri-book-read-line"></i></div><h3>O que é PEI?</h3><p>Descubra os pilares essenciais do Planejamento Educacional Individualizado.</p></a>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card"><div class="icon-box icon-gold"><i class="ri-government-line"></i></div><h3>Legislação</h3><p>Consulte a Lei Brasileira de Inclusão (LBI) e garanta os direitos do aluno.</p></a>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card"><div class="icon-box icon-pink"><i class="ri-brain-fill"></i></div><h3>Neurociência</h3><p>Entenda o cérebro e os processos de aprendizagem atípica.</p></a>""", unsafe_allow_html=True)
+    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card"><div class="icon-box icon-green"><i class="ri-plant-fill"></i></div><h3>BNCC</h3><p>Alinhe as adaptações curriculares com a Base Nacional Comum.</p></a>""", unsafe_allow_html=True)
 
     if api_key:
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">💡 Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v24.0:** Retorno das Abas Pílula e Checkbox de Escola.")
+    st.caption("🚀 **Novidades v25.0:** Cores Vibrantes, Ícones Vetoriais e UX Polido.")
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -454,12 +444,9 @@ with tab1: # ESTUDANTE
     st.session_state.dados['historico'] = c1.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Resuma a trajetória escolar.")
     st.session_state.dados['familia'] = c2.text_area("Contexto Familiar (Detalhes)", st.session_state.dados['familia'], help="Dinâmica familiar e apoio.")
     
-    # Composição Familiar Inclusiva (Tag)
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
-    
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico (CID se houver)", st.session_state.dados['diagnostico'])
     
-    # Medicação com Checkbox de Escola
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
@@ -476,9 +463,7 @@ with tab1: # ESTUDANTE
                     c_a, c_b, c_c, c_d = st.columns([3, 3, 2, 1])
                     with c_a: st.info(f"**{m['nome']}**")
                     with c_b: st.caption(m['posologia'])
-                    with c_c: 
-                        # Checkbox "Na Escola"
-                        m['escola'] = st.checkbox("Toma na escola?", value=m['escola'], key=f"esc_{i}")
+                    with c_c: m['escola'] = st.checkbox("Na Escola?", value=m['escola'], key=f"esc_{i}")
                     with c_d: 
                         if st.button("🗑️", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
     
@@ -581,7 +566,7 @@ with tab6: # MONITORAMENTO
     with c4:
         st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
 
-with tab7: # IA (MAIS ACOLHEDORA)
+with tab7: # IA
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
     
