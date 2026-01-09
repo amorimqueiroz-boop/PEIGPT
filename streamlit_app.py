@@ -26,13 +26,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Cria pasta local
+# Pasta do Banco de Dados Local
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO):
     os.makedirs(PASTA_BANCO)
 
 # ==============================================================================
-# 2. SISTEMA DE AUTO-REPARO
+# 2. AUTO-REPARO DE DADOS
 # ==============================================================================
 default_state = {
     'nome': '', 
@@ -72,32 +72,7 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 3. FUNÇÕES DE BANCO DE DADOS
-# ==============================================================================
-def salvar_aluno(dados):
-    if not dados['nome']: return False, "Nome obrigatório."
-    nome_arq = re.sub(r'[^a-zA-Z0-9]', '_', dados['nome'].lower()) + ".json"
-    caminho = os.path.join(PASTA_BANCO, nome_arq)
-    try:
-        with open(caminho, 'w', encoding='utf-8') as f: json.dump(dados, f, default=str, ensure_ascii=False, indent=4)
-        return True, f"Salvo: {dados['nome']}"
-    except Exception as e: return False, str(e)
-
-def carregar_aluno(nome_arq):
-    caminho = os.path.join(PASTA_BANCO, nome_arq)
-    try:
-        with open(caminho, 'r', encoding='utf-8') as f: d = json.load(f)
-        if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
-        if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
-        return d
-    except: return None
-
-def excluir_aluno(nome_arq):
-    try: os.remove(os.path.join(PASTA_BANCO, nome_arq)); return True
-    except: return False
-
-# ==============================================================================
-# 4. UTILITÁRIOS E PDF
+# 3. UTILITÁRIOS E BANCO DE DADOS
 # ==============================================================================
 def finding_logo():
     possiveis = ["360.png", "360.jpg", "logo.png", "logo.jpg", "iconeaba.png"]
@@ -122,9 +97,48 @@ def ler_pdf(arquivo):
 
 def limpar_texto_pdf(texto):
     if not texto: return ""
-    texto = texto.replace('**', '').replace('__', '').replace('### ', '').replace('# ', '').replace('* ', '-')
-    return re.sub(r'[^\x00-\xff]', '', texto)
+    texto = texto.replace('**', '').replace('__', '').replace('### ', '').replace('# ', '').replace('* ', '-') 
+    texto = re.sub(r'[^\x00-\xff]', '', texto) 
+    return texto
 
+def salvar_aluno(dados):
+    if not dados['nome']: return False, "Nome obrigatório."
+    nome_arq = re.sub(r'[^a-zA-Z0-9]', '_', dados['nome'].lower()) + ".json"
+    caminho = os.path.join(PASTA_BANCO, nome_arq)
+    try:
+        with open(caminho, 'w', encoding='utf-8') as f: json.dump(dados, f, default=str, ensure_ascii=False, indent=4)
+        return True, f"Salvo: {dados['nome']}"
+    except Exception as e: return False, str(e)
+
+def carregar_aluno(nome_arq):
+    caminho = os.path.join(PASTA_BANCO, nome_arq)
+    try:
+        with open(caminho, 'r', encoding='utf-8') as f: d = json.load(f)
+        if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
+        if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
+        return d
+    except: return None
+
+def excluir_aluno(nome_arq):
+    try: os.remove(os.path.join(PASTA_BANCO, nome_arq)); return True
+    except: return False
+
+# ==============================================================================
+# 4. GERAÇÃO DE MENSAGEM IA (BOAS-VINDAS)
+# ==============================================================================
+@st.cache_data(ttl=3600) # Cache de 1 hora para não gastar API à toa
+def gerar_boas_vindas_ia(api_key):
+    if not api_key: return "Bem-vindo ao PEI 360º. Configure sua chave API para insights personalizados."
+    try:
+        client = OpenAI(api_key=api_key)
+        prompt = "Gere uma frase curta (máx 2 linhas), inspiradora e acolhedora para um professor que está começando a escrever um PEI (Plano de Ensino Individualizado). Fale sobre o poder da inclusão de transformar vidas."
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}], temperature=0.8)
+        return res.choices[0].message.content
+    except: return "A inclusão é o ato de transformar diferenças em potências. Vamos começar?"
+
+# ==============================================================================
+# 5. GERADOR PDF
+# ==============================================================================
 class PDF_V3(FPDF):
     def header(self):
         self.set_draw_color(0, 78, 146); self.set_line_width(0.4)
@@ -150,7 +164,7 @@ def gerar_pdf_final(dados, tem_anexo):
     pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
     pdf.set_font("Arial", size=10); pdf.set_text_color(0)
     
-    med_str = "; ".join([f"{m['nome']} ({m['posologia']})" for m in dados['lista_medicamentos']]) if dados['lista_medicamentos'] else "Não informado."
+    med_str = "; ".join([f"{m['nome']} ({m['posologia']})" for m in dados['lista_medicamentos']]) if dados['lista_medicamentos'] else "Não informado / Não faz uso."
     diag = dados['diagnostico'] if dados['diagnostico'] else ("Vide laudo anexo." if tem_anexo else "Não informado")
     
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nome:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nome'], 0, 1)
@@ -233,7 +247,7 @@ def consultar_gpt_inovacao(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 5. UI PRINCIPAL (DESIGN PORTAL)
+# 6. INTERFACE UI (DESIGN PILULAS + PORTAL)
 # ==============================================================================
 st.markdown("""
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -243,30 +257,49 @@ st.markdown("""
     :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
     div[data-baseweb="tab-highlight"] { background-color: transparent !important; }
     
-    /* CARDS CLICÁVEIS (Efeito Chique) */
+    /* CABEÇALHO UNIFICADO */
+    .header-unified {
+        background-color: white; padding: 25px 40px; border-radius: var(--card-radius);
+        border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 30px;
+        display: flex; align-items: center; gap: 20px;
+    }
+    .header-unified h1 { color: var(--brand-blue); margin: 0; font-size: 1.8rem; font-weight: 800; line-height: 1.2; }
+    .header-unified p { color: #718096; margin: 0; font-size: 1rem; font-weight: 600; }
+
+    /* ABAS ESTILO PÍLULA (PILLS) */
+    .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
+    .stTabs [data-baseweb="tab"] {
+        height: 45px; border-radius: 25px; /* Arredondado */
+        padding: 0 25px; background-color: white; border: 1px solid #E2E8F0;
+        font-weight: 700; color: #718096; font-size: 0.9rem; text-transform: uppercase;
+        transition: all 0.3s ease;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: var(--brand-coral) !important; color: white !important;
+        border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+    }
+
+    /* CARDS DA HOME */
     .clickable-card {
         background-color: white; padding: 25px; border-radius: 16px; border: 1px solid #E2E8F0;
         box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
-        text-align: center; height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+        text-align: center; height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center;
         text-decoration: none; color: inherit;
     }
-    .clickable-card:hover {
-        transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,78,146,0.1); border-color: var(--brand-blue);
-    }
-    .clickable-card h3 { margin: 10px 0 5px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 700; }
-    .clickable-card p { font-size: 0.85rem; color: #718096; line-height: 1.3; }
+    .clickable-card:hover { transform: translateY(-5px); border-color: var(--brand-blue); box-shadow: 0 10px 20px rgba(0,78,146,0.1); }
+    .clickable-card h3 { margin: 10px 0 8px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
+    .clickable-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; }
     .card-icon { font-size: 2.5rem; color: var(--brand-coral); margin-bottom: 10px; }
 
-    /* CARD DE NOVIDADES */
-    .news-card {
-        background-color: #F7FAFC; padding: 20px; border-radius: 12px; border-left: 4px solid var(--brand-blue);
-        margin-top: 10px; font-size: 0.9rem;
+    /* CARDS DE ATUALIZAÇÃO */
+    .update-box {
+        background-color: #F7FAFC; border-left: 5px solid var(--brand-blue); border-radius: 8px;
+        padding: 15px; display: flex; align-items: start; gap: 15px;
     }
+    .update-icon { font-size: 1.5rem; color: var(--brand-blue); }
 
-    .header-clean { background-color: white; padding: 35px 40px; border-radius: var(--card-radius); border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 30px; display: flex; align-items: center; gap: 30px; }
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; padding-bottom: 10px; flex-wrap: wrap; }
-    .stTabs [data-baseweb="tab"] { height: 40px; border-radius: 20px; padding: 0 20px; background-color: white; border: 1px solid #E2E8F0; font-weight: 700; color: #718096; font-size: 0.8rem; text-transform: uppercase; }
-    .stTabs [aria-selected="true"] { background-color: var(--brand-coral) !important; color: white !important; border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.2); }
+    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { border-radius: 12px !important; border-color: #E2E8F0 !important; }
+    div[data-testid="column"] .stButton button { border-radius: 12px !important; font-weight: 800 !important; text-transform: uppercase; height: 50px !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -285,32 +318,57 @@ with st.sidebar:
         try:
             d = json.load(uploaded_json)
             if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
-            if 'monitoramento_data' in d and d['monitoramento_data']: d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
+            if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
             st.session_state.dados.update(d); st.success("OK!"); st.rerun()
         except: st.error("Erro no arquivo.")
     
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0; margin-top:20px;'><b>PEI 360º v5.6</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0; margin-top:20px;'><b>PEI 360º v5.7</b><br>Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
 
+# CABEÇALHO UNIFICADO
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
-img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 80px;">' if logo_path else ""
-st.markdown(f"""<div class="header-clean">{img_html}<div><p style="margin:0; color:#004E92; font-size:1.3rem; font-weight:800;">Ecossistema de Inteligência Pedagógica e Inclusiva</p></div></div>""", unsafe_allow_html=True)
+img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 60px;">' if logo_path else ""
+st.markdown(f"""
+<div class="header-unified">
+    {img_html}
+    <div>
+        <h1>PEI 360º</h1>
+        <p>Ecossistema de Inteligência Pedagógica e Inclusiva</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-# ABAS TEXTUAIS (SEM EMOJIS, MAIÚSCULAS)
+# ABAS EM PÍLULAS
 abas = ["INÍCIO", "ESTUDANTE", "EVIDÊNCIAS", "REDE", "MAPEAMENTO", "PLANO", "REVISÃO", "IA", "DOCUMENTO"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 
 with tab0: # INÍCIO (PORTAL)
-    st.markdown("### <i class='ri-dashboard-fill'></i> Fundamentos & Recursos", unsafe_allow_html=True)
+    # MENSAGEM DE BOAS-VINDAS DA IA
+    if api_key:
+        with st.spinner("Gerando inspiração do dia..."):
+            msg_dia = gerar_boas_vindas_ia(api_key)
+        st.markdown(f"""
+        <div style="background: linear-gradient(90deg, #004E92 0%, #000428 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,78,146,0.3);">
+            <div style="display:flex; gap:15px; align-items:center;">
+                <i class="ri-sparkling-fill" style="font-size: 2rem;"></i>
+                <div>
+                    <h3 style="color:white; margin:0;">Olá, Educador(a)!</h3>
+                    <p style="margin:5px 0 0 0; opacity:0.9;">{msg_dia}</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("### <i class='ri-apps-2-line'></i> Central de Recursos", unsafe_allow_html=True)
     
     # 4 CARDS CLICÁVEIS (HTML)
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.markdown("""
-        <a href="https://diversa.org.br/educacao-inclusiva/o-que-e-educacao-inclusiva/" target="_blank" style="text-decoration:none;">
+        <a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" style="text-decoration:none;">
             <div class="clickable-card">
                 <i class="ri-book-open-line card-icon"></i>
                 <h3>O que é PEI?</h3>
-                <p>Conceitos fundamentais da Educação Inclusiva.</p>
+                <p>O Plano de Ensino Individualizado é um direito garantido que norteia a adaptação curricular para estudantes atípicos.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
@@ -320,7 +378,7 @@ with tab0: # INÍCIO (PORTAL)
             <div class="clickable-card">
                 <i class="ri-scales-3-line card-icon"></i>
                 <h3>Legislação</h3>
-                <p>Lei Brasileira de Inclusão (LBI) e Decretos.</p>
+                <p>Acesse a Lei Brasileira de Inclusão (LBI) e entenda os fundamentos legais do suporte escolar.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
@@ -330,7 +388,7 @@ with tab0: # INÍCIO (PORTAL)
             <div class="clickable-card">
                 <i class="ri-brain-line card-icon"></i>
                 <h3>Neurociência</h3>
-                <p>Artigos sobre desenvolvimento atípico.</p>
+                <p>Artigos sobre desenvolvimento, funções executivas e estratégias baseadas em evidências.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
@@ -340,26 +398,32 @@ with tab0: # INÍCIO (PORTAL)
             <div class="clickable-card">
                 <i class="ri-compass-3-line card-icon"></i>
                 <h3>BNCC</h3>
-                <p>Base Nacional Comum Curricular Oficial.</p>
+                <p>Consulte as competências e habilidades essenciais da Base Nacional Comum Curricular.</p>
             </div>
         </a>
         """, unsafe_allow_html=True)
 
     st.write(""); st.write("")
-    st.markdown("### <i class='ri-notification-3-line'></i> Atualizações do Sistema", unsafe_allow_html=True)
+    st.markdown("### <i class='ri-notification-badge-line'></i> Novidades da Plataforma", unsafe_allow_html=True)
     cn1, cn2 = st.columns(2)
     with cn1:
         st.markdown("""
-        <div class="news-card">
-            <b>🆕 Versão 5.6 Lançada!</b><br>
-            Agora contamos com o "Banco de Estudantes" para salvar seus casos localmente e o novo layout Portal.
+        <div class="update-box">
+            <i class="ri-save-3-line update-icon"></i>
+            <div>
+                <b>Banco de Estudantes Local</b><br>
+                Agora você pode salvar seus casos na aba 'Documento' e retomá-los a qualquer momento.
+            </div>
         </div>
         """, unsafe_allow_html=True)
     with cn2:
         st.markdown("""
-        <div class="news-card">
-            <b>✨ IA Narrativa</b><br>
-            A inteligência artificial agora escreve o relatório contando a história do aluno, humanizando o documento.
+        <div class="update-box">
+            <i class="ri-magic-line update-icon"></i>
+            <div>
+                <b>IA Narrativa</b><br>
+                Nossa inteligência agora escreve relatórios humanizados, contando a história do aluno antes do diagnóstico.
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
