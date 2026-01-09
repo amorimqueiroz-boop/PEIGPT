@@ -17,47 +17,35 @@ import random
 # 1. CONFIGURAÇÃO INICIAL
 # ==============================================================================
 def get_favicon():
-    if os.path.exists("iconeaba.png"): return "iconeaba.png"
-    return "📘"
+    return "👾"
 
 st.set_page_config(
-    page_title="PEI 360º",
+    page_title="PEI 360º Gamified",
     page_icon=get_favicon(),
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ==============================================================================
-# 2. SISTEMA DE GAMIFICAÇÃO (NOVIDADE)
+# 2. SISTEMA DE GAMIFICAÇÃO (PIXEL ART)
 # ==============================================================================
-# Inicializa o tema da sessão apenas uma vez para não ficar mudando enquanto digita
+# Sorteia o tema apenas uma vez por sessão
 if 'tema_jogo' not in st.session_state:
-    st.session_state.tema_jogo = random.choice(['dino', 'student', 'builder'])
+    st.session_state.tema_jogo = random.choice(['dino', 'hero', 'builder'])
 
-def get_icone_progresso(progresso):
+def get_avatar_url():
     tema = st.session_state.tema_jogo
-    
-    # Definição dos Sprites (Emojis) por Tema
-    sprites = {
-        'dino':     {0: '🥚', 25: '🐣', 50: '🦖', 75: '🦕', 100: '🐲'},
-        'student':  {0: '🎒', 25: '🚶', 50: '🏃', 75: '📖', 100: '🎓'},
-        'builder':  {0: '🧱', 25: '🏗️', 50: '🏠', 75: '🏡', 100: '🏰'}
+    # GIFs de Pixel Art (Links públicos estáveis)
+    urls = {
+        'dino': "https://media.tenor.com/fSsxHOga_B8AAAAi/dino-chrome.gif", # Dino clássico correndo
+        'hero': "https://media.tenor.com/fDWqG7J9bVQAAAAi/8-bit-walking.gif", # Heroi RPG andando
+        'builder': "https://media.tenor.com/GfSXjy8qD8MAAAAi/miner-minecraft.gif" # Minecraft style
     }
-    
-    # Define o estágio baseado na %
-    if progresso == 100: estagio = 100
-    elif progresso >= 75: estagio = 75
-    elif progresso >= 50: estagio = 50
-    elif progresso >= 25: estagio = 25
-    else: estagio = 0
-    
-    return sprites[tema][estagio]
+    return urls.get(tema, urls['dino'])
 
 def calcular_progresso():
-    # Itens obrigatórios para considerar "Preenchido"
     pontos = 0
-    total_pontos = 7 # Nome, Serie, Diag, Evidencias, Hiperfoco, Barreiras, Estrategias
-    
+    total_pontos = 7 
     d = st.session_state.dados
     if d['nome']: pontos += 1
     if d['serie']: pontos += 1
@@ -69,86 +57,111 @@ def calcular_progresso():
     
     return int((pontos / total_pontos) * 100)
 
+def renderizar_barra_gamificada():
+    progresso = calcular_progresso()
+    avatar = get_avatar_url()
+    
+    # HTML/CSS Injetado localmente para performance
+    st.markdown(f"""
+    <style>
+        .pixel-track {{
+            width: 100%;
+            height: 4px;
+            background-color: #E2E8F0;
+            border-radius: 2px;
+            position: relative;
+            margin: 30px 0 20px 0;
+            display: flex;
+            align-items: center;
+        }}
+        .pixel-fill {{
+            height: 100%;
+            width: {progresso}%;
+            background: linear-gradient(90deg, #48BB78 0%, #0F52BA 100%);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }}
+        .pixel-avatar {{
+            position: absolute;
+            left: {max(0, progresso - 3)}%; /* Ajuste para centralizar */
+            bottom: 6px; /* Fica em cima da linha */
+            width: 40px;
+            height: 40px;
+            image-rendering: pixelated; /* Garante o visual 8-bit */
+            transition: left 0.5s ease;
+            z-index: 10;
+        }}
+        .pixel-badge {{
+            position: absolute;
+            right: 0;
+            top: -25px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #0F52BA;
+            background: #EBF8FF;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #BEE3F8;
+        }}
+    </style>
+    
+    <div class="pixel-track">
+        <div class="pixel-badge">LEVEL {int(progresso/20) + 1} • {progresso}%</div>
+        <img src="{avatar}" class="pixel-avatar">
+        <div class="pixel-fill"></div>
+    </div>
+    """, unsafe_allow_html=True)
+
 # ==============================================================================
-# 3. ESTILO VISUAL (BASE BLINDADA + BARRA GAMIFICADA)
+# 3. ESTILO VISUAL (BASE BLINDADA)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); /* Fonte Retro Opcional */
-
-        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-        :root { --brand-blue: #004E92; --brand-coral: #FF6B6B; --card-radius: 16px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
-        /* BARRA DE PROGRESSO GAMIFICADA */
-        .game-hud {
-            background-color: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            border: 2px solid #E2E8F0;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 0px #CBD5E0; /* Sombra sólida estilo pixel art */
-        }
-        .hud-header {
-            display: flex; justify-content: space-between; align-items: center;
-            font-weight: 800; color: #4A5568; font-size: 0.8rem; text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-        .track-container {
-            position: relative;
-            height: 30px;
-            background-color: #EDF2F7;
-            border-radius: 15px;
-            margin-top: 10px;
-        }
-        .character-icon {
-            position: absolute;
-            top: -15px;
-            font-size: 2rem;
-            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efeito de pulo */
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #48BB78 0%, #38A169 100%);
-            border-radius: 15px;
-            transition: width 0.5s ease;
-            opacity: 0.3;
-        }
+        html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: #2D3748; }
+        :root { --primary: #0F52BA; --secondary: #FF6B6B; --card-radius: 12px; }
 
-        /* COMPONENTES ORIGINAIS BLINDADOS */
+        /* HEADER */
         .header-unified {
-            background-color: white; padding: 35px 40px; border-radius: var(--card-radius);
-            border: 1px solid #EDF2F7; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px;
-            display: flex; align-items: center; gap: 30px;
+            background-color: white; padding: 25px; border-radius: var(--card-radius);
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px;
+            display: flex; align-items: center; gap: 20px;
         }
-        .header-unified p { color: #004E92; margin: 0; font-size: 1.6rem; font-weight: 800; line-height: 1.2; }
+        .header-unified h1 { color: var(--primary); margin: 0; font-size: 1.5rem; font-weight: 800; }
+        .header-unified p { color: #718096; margin: 0; font-size: 0.9rem; }
 
-        .stTabs [data-baseweb="tab-list"] { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; }
+        /* ABAS */
+        .stTabs [data-baseweb="tab-list"] { gap: 5px; }
         .stTabs [data-baseweb="tab"] {
-            height: 42px; border-radius: 20px; padding: 0 25px; background-color: white;
-            border: 1px solid #E2E8F0; font-weight: 700; color: #718096; font-size: 0.85rem; 
-            text-transform: uppercase; transition: all 0.3s ease;
+            height: 40px; border-radius: 8px; background-color: white;
+            border: 1px solid #E2E8F0; font-weight: 600; color: #718096; font-size: 0.85rem;
         }
         .stTabs [aria-selected="true"] {
-            background-color: var(--brand-coral) !important; color: white !important;
-            border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+            background-color: var(--primary) !important; color: white !important;
         }
 
+        /* CARDS */
         .rich-card {
-            background-color: white; padding: 30px; border-radius: 16px; border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; cursor: pointer;
-            text-align: left; height: 240px; display: flex; flex-direction: column; justify-content: flex-start;
-            text-decoration: none; color: inherit; position: relative; overflow: hidden;
+            background-color: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease; cursor: pointer;
+            text-align: left; height: 180px; display: flex; flex-direction: column; justify-content: center;
+            text-decoration: none; color: inherit;
         }
-        .rich-card:hover { transform: translateY(-8px); border-color: var(--brand-blue); box-shadow: 0 15px 30px rgba(0,78,146,0.15); }
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.2rem; color: var(--brand-blue); font-weight: 800; }
-        .rich-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
-        .rich-icon { font-size: 3rem; color: var(--brand-coral); margin-bottom: 15px; }
+        .rich-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+        .rich-card h3 { margin: 10px 0 5px 0; font-size: 1.1rem; color: var(--primary); font-weight: 700; }
+        .rich-icon { font-size: 2rem; color: var(--secondary); margin-bottom: 10px; }
         
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { border-radius: 12px !important; border-color: #E2E8F0 !important; }
-        div[data-testid="column"] .stButton button { border-radius: 12px !important; font-weight: 800 !important; text-transform: uppercase; height: 50px !important; }
+        /* INPUTS */
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { 
+            border-radius: 8px !important; border-color: #E2E8F0 !important; 
+        }
+        div[data-testid="column"] .stButton button { 
+            border-radius: 8px !important; font-weight: 700 !important; text-transform: uppercase; 
+        }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -159,23 +172,17 @@ aplicar_estilo_visual()
 # ==============================================================================
 # 4. LISTAS DE DADOS
 # ==============================================================================
-LISTA_SERIES = [
-    "Educação Infantil", 
-    "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)",
-    "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)",
-    "1ª Série (Ensino Médio)", "2ª Série (Ensino Médio)", "3ª Série (Ensino Médio)"
-]
+LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
 LISTAS_BARREIRAS = {
-    "Cognitivo": ["Atenção Sustentada", "Atenção Alternada", "Memória de Trabalho", "Memória de Curto Prazo", "Controle Inibitório", "Flexibilidade Cognitiva", "Planejamento e Organização", "Velocidade de Processamento", "Raciocínio Lógico/Abstrato"],
-    "Comunicacional": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Vocabulário Restrito", "Pragmática (Uso Social)", "Articulação/Fonologia", "Comunicação Não-Verbal", "Necessidade de Comunicação Alternativa"],
-    "Socioemocional": ["Regulação Emocional", "Tolerância à Frustração", "Interação com Pares", "Interação com Adultos", "Compreensão de Regras Sociais", "Rigidez de Pensamento", "Autoestima", "Agressividade"],
-    "Sensorial/Motor": ["Coordenação Motora Fina", "Coordenação Motora Ampla", "Hipersensibilidade Auditiva", "Hipersensibilidade Tátil", "Hipersensibilidade Visual", "Busca Sensorial", "Tônus Muscular", "Planejamento Motor"],
-    "Acadêmico": ["Alfabetização (Decodificação)", "Compreensão Leitora", "Grafia/Legibilidade", "Produção Textual", "Raciocínio Lógico-Matemático", "Cálculo/Operações", "Resolução de Problemas"]
+    "Cognitivo": ["Atenção Sustentada", "Memória Operacional", "Flexibilidade", "Velocidade Processamento"],
+    "Comunicacional": ["Expressão Verbal", "Compreensão", "Pragmática", "Vocabulário"],
+    "Socioemocional": ["Regulação Emocional", "Frustração", "Interação Pares", "Autoestima"],
+    "Sensorial/Motor": ["Coordenação Fina", "Hipersensibilidade", "Busca Sensorial", "Planejamento Motor"],
+    "Acadêmico": ["Leitura", "Escrita", "Cálculo", "Interpretação", "Organização"]
 }
 
-LISTA_POTENCIAS = ["Memória Visual", "Memória Auditiva", "Raciocínio Lógico", "Criatividade", "Habilidades Artísticas", "Musicalidade", "Tecnologia", "Hiperfoco", "Vocabulário Rico", "Empatia", "Liderança", "Esportes", "Persistência", "Curiosidade"]
-
+LISTA_POTENCIAS = ["Memória Visual", "Musicalidade", "Tecnologia", "Hiperfoco", "Liderança", "Esportes", "Desenho", "Cálculo Mental", "Oralidade", "Criatividade"]
 LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", "Neuropediatra", "Psiquiatra", "Psicopedagogo", "Professor de Apoio", "AT"]
 
 # ==============================================================================
@@ -202,13 +209,13 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 6. UTILITÁRIOS E BANCO
+# 6. UTILITÁRIOS (BANCO, PDF, IA)
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
 
 def finding_logo():
-    possiveis = ["360.png", "360.jpg", "logo.png", "logo.jpg", "iconeaba.png"]
+    possiveis = ["360.png", "logo.png", "iconeaba.png"]
     for nome in possiveis:
         if os.path.exists(nome): return nome
     return None
@@ -252,27 +259,6 @@ def excluir_aluno(nome_arq):
     try: os.remove(os.path.join(PASTA_BANCO, nome_arq)); return True
     except: return False
 
-# ==============================================================================
-# 7. INTELIGÊNCIA ARTIFICIAL
-# ==============================================================================
-@st.cache_data(ttl=3600)
-def gerar_saudacao_ia(api_key):
-    if not api_key: return "Bem-vindo ao PEI 360º."
-    try:
-        client = OpenAI(api_key=api_key)
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta inspiradora para professor sobre inclusão."}], temperature=0.8)
-        return res.choices[0].message.content
-    except: return "A inclusão transforma vidas."
-
-@st.cache_data(ttl=3600)
-def gerar_noticia_ia(api_key):
-    if not api_key: return "Dica: Consulte a Lei Brasileira de Inclusão."
-    try:
-        client = OpenAI(api_key=api_key)
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta sobre legislação de inclusão ou neurociência (máx 2 frases)."}], temperature=0.7)
-        return res.choices[0].message.content
-    except: return "O PEI é um direito garantido por lei."
-
 def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API."
     try:
@@ -295,7 +281,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 8. GERADOR PDF
+# 7. GERADOR PDF
 # ==============================================================================
 class PDF_V3(FPDF):
     def header(self):
@@ -374,7 +360,7 @@ def gerar_docx_final(dados):
     buffer = BytesIO(); doc.save(buffer); buffer.seek(0); return buffer
 
 # ==============================================================================
-# 9. INTERFACE UI (PRINCIPAL)
+# 8. INTERFACE UI (PRINCIPAL)
 # ==============================================================================
 # SIDEBAR
 with st.sidebar:
@@ -388,25 +374,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v16.0 - Gamified</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
-
-# BARRA DE PROGRESSO GAMIFICADA (FORA DAS ABAS)
-progresso = calcular_progresso()
-icone = get_icone_progresso(progresso)
-
-# HTML da Barra de Progresso
-st.markdown(f"""
-<div class="game-hud">
-    <div class="hud-header">
-        <span><i class="ri-gamepad-line"></i> Jornada do Aluno</span>
-        <span>{progresso}% Concluído</span>
-    </div>
-    <div class="track-container">
-        <div class="character-icon" style="left: {max(0, progresso-3)}%;">{icone}</div>
-        <div class="progress-fill" style="width: {progresso}%;"></div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v17.0</b><br>Gamified Edition<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -443,9 +411,10 @@ with tab0: # INÍCIO
         st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F6AD55;"></i><div><h4 style="margin:0; color:#2D3748;">Destaque do Dia (IA)</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#4A5568;">{noticia}</p></div></div>""", unsafe_allow_html=True)
     
     st.write(""); st.write("")
-    st.caption("🚀 **Novidades v16.0:** Gamificação da Jornada do Professor.")
+    st.caption("🚀 **Novidades v17.0:** Barra de Progresso Gamificada 8-Bit (Acompanhe sua jornada!).")
 
 with tab1: # ESTUDANTE
+    renderizar_barra_gamificada() # BARRA DE PROGRESSO AQUI (EMBAIXO DA ABA)
     st.markdown("### <i class='ri-user-star-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns([3, 2, 2, 1])
     st.session_state.dados['nome'] = c1.text_input("Nome Completo", st.session_state.dados['nome'])
@@ -483,6 +452,7 @@ with tab1: # ESTUDANTE
         if up: st.session_state.pdf_text = ler_pdf(up)
 
 with tab2: # EVIDÊNCIAS
+    renderizar_barra_gamificada()
     st.markdown("### <i class='ri-search-eye-line'></i> Coleta de Evidências", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -499,11 +469,13 @@ with tab2: # EVIDÊNCIAS
             st.session_state.dados['checklist_evidencias'][q] = st.checkbox(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
 
 with tab3: # REDE
+    renderizar_barra_gamificada()
     st.markdown("### <i class='ri-team-line'></i> Rede de Apoio", unsafe_allow_html=True)
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'], placeholder="Selecione...")
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações", st.session_state.dados['orientacoes_especialistas'])
 
 with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS - BLINDADO)
+    renderizar_barra_gamificada()
     st.markdown("### <i class='ri-map-pin-user-line'></i> Mapeamento Integral", unsafe_allow_html=True)
     
     # CONTAINER 1: POTENCIALIDADES
@@ -516,7 +488,7 @@ with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS - BLINDADO)
     
     st.divider()
     
-    # CONTAINER 2: BARREIRAS (LAYOUT MANUAL FIXO 3 COLUNAS)
+    # CONTAINER 2: BARREIRAS
     with st.container(border=True):
         st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
         c_bar1, c_bar2, c_bar3 = st.columns(3)
@@ -533,18 +505,14 @@ with tab4: # MAPEAMENTO (VISUAL IDÊNTICO AOS PRINTS - BLINDADO)
                         st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
                 st.write("")
 
-        # Coluna 1: Cognitivo + Sensorial
         render_cat_barreira(c_bar1, "Cognitivo", "Cognitivo")
         render_cat_barreira(c_bar1, "Sensorial/Motor", "Sensorial/Motor")
-        
-        # Coluna 2: Comunicacional + Acadêmico
         render_cat_barreira(c_bar2, "Comunicacional", "Comunicacional")
         render_cat_barreira(c_bar2, "Acadêmico", "Acadêmico")
-        
-        # Coluna 3: Socioemocional
         render_cat_barreira(c_bar3, "Socioemocional", "Socioemocional")
 
 with tab5: # PLANO (VISUAL CARDS)
+    renderizar_barra_gamificada()
     st.markdown("### <i class='ri-tools-line'></i> Plano de Ação Estratégico", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -563,6 +531,7 @@ with tab5: # PLANO (VISUAL CARDS)
             st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação"], default=st.session_state.dados['estrategias_avaliacao'], placeholder="Selecione...")
 
 with tab6: # MONITORAMENTO (CLICÁVEL)
+    renderizar_barra_gamificada()
     st.markdown("### <i class='ri-loop-right-line'></i> Monitoramento e Metas", unsafe_allow_html=True)
     st.info("Preencha os dados abaixo para gerar o ciclo de revisão do PEI.")
     
@@ -581,6 +550,7 @@ with tab6: # MONITORAMENTO (CLICÁVEL)
         st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras (Multipla escolha)", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
 
 with tab7: # IA
+    renderizar_barra_gamificada()
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria IA", unsafe_allow_html=True)
     c1, c2 = st.columns([1, 2])
     with c1:
