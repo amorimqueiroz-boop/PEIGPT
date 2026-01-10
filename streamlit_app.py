@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (BARRA INTELIGENTE + AVATAR + BNCC BOX)
+# 2. ESTILO VISUAL (APPLE AVATAR + BARRA DINÂMICA)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -52,7 +52,7 @@ def aplicar_estilo_visual():
         }
         .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* ABAS (Clean) */
+        /* ABAS CLEAN */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
         .stTabs [data-baseweb="tab"] {
             height: 38px; border-radius: 19px !important; background-color: white; 
@@ -64,13 +64,14 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO (LÓGICA DE COR NO PYTHON) */
+        /* BARRA DE PROGRESSO (CSS BASE) - A COR VEM DO PYTHON */
         .minimal-track {
-            width: 100%; height: 4px; background-color: #EDF2F7; border-radius: 2px;
+            width: 100%; height: 4px; background-color: #E2E8F0; border-radius: 2px;
             position: relative; margin: 0 0 40px 0;
         }
         .minimal-fill {
-            height: 100%; border-radius: 2px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease;
+            height: 100%; border-radius: 2px; 
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; /* Transição suave de cor */
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .minimal-cursor-icon {
@@ -79,28 +80,29 @@ def aplicar_estilo_visual():
             filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
         }
 
-        /* DASHBOARD HERO COM AVATAR */
+        /* DASHBOARD HERO + APPLE AVATAR */
         .dash-hero {
             background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%);
-            border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);
+            border-radius: 20px; padding: 30px; margin-bottom: 20px;
+            color: white; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25); position: relative;
         }
-        .dash-avatar-circle {
-            width: 60px; height: 60px; border-radius: 50%; 
-            background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4);
+        .apple-avatar {
+            width: 70px; height: 70px; border-radius: 50%;
+            background: linear-gradient(135deg, #E0E7FF 0%, #FFFFFF 100%);
+            color: #0F52BA; font-weight: 800; font-size: 2rem;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; font-weight: 800; color: white; margin-right: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.5);
         }
 
-        /* BNCC BOX NO DASHBOARD */
-        .bncc-box {
-            background: #F0FFF4; border: 1px solid #C6F6D5; border-radius: 12px; padding: 20px;
-            margin-top: 20px; border-left: 5px solid #38A169;
+        /* BNCC TAGS */
+        .bncc-tag {
+            background: #2D3748; color: #FFF; padding: 4px 10px; border-radius: 6px;
+            font-family: 'Courier New', monospace; font-weight: 700; font-size: 0.85rem;
+            margin: 0 5px 5px 0; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .bncc-title { color: #22543D; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 
-        /* Donut Charts */
+        /* DONUT CHART */
         .donut-card {
             background: white; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -116,7 +118,7 @@ def aplicar_estilo_visual():
         .donut-value { position: absolute; z-index: 2; font-size: 1.6rem; font-weight: 800; color: #2D3748; }
         .donut-label { text-transform: uppercase; font-size: 0.75rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; }
 
-        /* Info Cards */
+        /* INFO CARDS */
         .info-card {
             background: #F8FAFC; border-radius: 12px; padding: 15px; border-left: 5px solid #CBD5E0;
             margin-bottom: 10px; display: flex; align-items: center; gap: 15px;
@@ -151,7 +153,6 @@ def aplicar_estilo_visual():
             background-color: var(--brand-blue) !important; color: white !important; border: none !important;
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
-        
         div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
         div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
@@ -236,6 +237,14 @@ def limpar_texto_pdf(texto):
     texto = texto.replace('**', '').replace('__', '').replace('### ', '').replace('## ', '').replace('# ', '')
     return re.sub(r'[^\x00-\xff]', '', texto)
 
+# --- NOVA FUNÇÃO: EXTRAIR CÓDIGOS BNCC DO TEXTO DA IA ---
+def extrair_codigos_bncc(texto):
+    # Regex para capturar códigos como EF01LP01, EM13LGG102, EI03EO01
+    padrao = r'\b[A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}\b'
+    if not texto: return []
+    codigos = re.findall(padrao, texto)
+    return list(set(codigos)) # Remove duplicatas
+
 def salvar_aluno(dados):
     if not dados['nome']: return False, "Nome obrigatório."
     nome_arq = re.sub(r'[^a-zA-Z0-9]', '_', dados['nome'].lower()) + ".json"
@@ -273,9 +282,9 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    # Lógica de Chegada
+    # Lógica de Chegada e Cor
     icon = "🌱"
-    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja padrão
+    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja Padrão
     
     if p >= 20: icon = "🚶"
     if p >= 50: icon = "🏃"
@@ -323,32 +332,29 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
+        # --- PROMPT ULTRA BLINDADO PARA BNCC ---
         prompt_sys = """
         Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
         
-        ORDEM SUPREMA (OBRIGATÓRIO):
-        Separe as habilidades POR COMPONENTE CURRICULAR (Linguagens, Matemática, Ciências da Natureza, Ciências Humanas).
-        Cite SEMPRE o CÓDIGO ALFANUMÉRICO da BNCC (ex: EF35LP03).
+        DIRETRIZ MANDATÓRIA:
+        VOCÊ PRECISA INCLUIR UMA SEÇÃO CHAMADA "CÓDIGOS BNCC" NO SEU RESUMO, CITANDO OS CÓDIGOS ALFANUMÉRICOS EXPLICITAMENTE (Ex: EF03LP01). NÃO FAÇA UM PLANO SEM CÓDIGOS.
         
-        ESTRUTURA DO RELATÓRIO:
-        1. 🌟 PERFIL: Resumo biopsicossocial.
-        2. 🎯 MATRIZ DE HABILIDADES BNCC (Obrigatório citar CÓDIGOS):
-           - LINGUAGENS (Português/Arte):
-             * [CÓDIGO] Descrição (Recomposição)
-             * [CÓDIGO] Descrição (Ano Atual)
-           - MATEMÁTICA:
-             * [CÓDIGO] Descrição
-           - OUTRAS ÁREAS (Ciências/História/Geo):
-             * [CÓDIGO] Descrição
-        3. 💊 MEDICAMENTOS: Impacto na sala de aula ({meds}).
-        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso de "{hiperfoco}".
-        5. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
+        ESTRUTURA OBRIGATÓRIA:
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo.
+        2. 💊 ANÁLISE MEDICAMENTOSA: Se houver remédios, explique o impacto.
+        3. 🎯 MATRIZ CURRICULAR (BNCC):
+           - Cite a COMPETÊNCIA GERAL.
+           - Liste HABILIDADES DE RECOMPOSIÇÃO (Anos Anteriores) com CÓDIGOS.
+           - Liste HABILIDADES DO ANO CORRENTE ({serie}) com CÓDIGOS.
+        4. 💡 ESTRATÉGIAS COM HIPERFOCO ({hiperfoco}).
+        5. 🧩 ADAPTAÇÕES.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
         DIAGNÓSTICO: {dados['diagnostico']}
         MEDICAÇÃO: {meds_info}
+        POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
         EVIDÊNCIAS: {evid}
@@ -454,7 +460,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v49.0 Masterpiece</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v50.0 Golden</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -644,8 +650,8 @@ with tab8: # DASHBOARD
         st.markdown(f"""
         <div class="dash-hero">
             <div style="display:flex; align-items:center; gap:20px;">
-                <div class="dash-avatar-circle">{init_avatar}</div>
-                <div class="dash-info"><h1>{st.session_state.dados['nome']}</h1><p>{st.session_state.dados['serie']}</p></div>
+                <div class="apple-avatar">{init_avatar}</div>
+                <div style="color:white;"><h1>{st.session_state.dados['nome']}</h1><p>{st.session_state.dados['serie']}</p></div>
             </div>
             <div>
                 <div style="text-align:right; font-size:0.8rem; opacity:0.8;">STATUS</div>
@@ -654,6 +660,7 @@ with tab8: # DASHBOARD
         </div>
         """, unsafe_allow_html=True)
         
+        # ROW 1: CÍRCULOS
         c_kpi1, c_kpi2, c_kpi3 = st.columns(3)
         with c_kpi1:
             n_pot = len(st.session_state.dados['potencias'])
@@ -669,6 +676,7 @@ with tab8: # DASHBOARD
 
         st.write("")
         
+        # ROW 2: ALERTAS
         c_info1, c_info2 = st.columns(2)
         with c_info1:
             if st.session_state.dados['lista_medicamentos']:
@@ -682,26 +690,32 @@ with tab8: # DASHBOARD
             else:
                 st.markdown("""<div class="info-card" style="border-left-color:#CBD5E0; background:#F7FAFC;"><i class="ri-user-unfollow-line" style="color:#A0AEC0; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#718096;">Rede de Apoio não informada</div></div></div>""", unsafe_allow_html=True)
 
-        # BOX DA BNCC (VISUALIZAÇÃO DESTAQUE)
+        # ROW 3: BNCC EXTRACTED
         if st.session_state.dados['ia_sugestao']:
-            st.markdown("""
-            <div class="bncc-box">
-                <div class="bncc-title"><i class="ri-compass-3-fill"></i> Matriz de Habilidades (BNCC)</div>
-                <p style="font-size:0.9rem; color:#276749;">
-                    A IA gerou uma matriz curricular personalizada. Verifique os códigos (Ex: EF35LP03) no relatório detalhado abaixo ou na aba "IA".
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+            codigos_bncc = extrair_codigos_bncc(st.session_state.dados['ia_sugestao'])
+            if codigos_bncc:
+                st.markdown("""
+                <div style="margin-top:20px; padding:15px; border:1px solid #CBD5E0; border-radius:12px; background:white;">
+                    <div style="font-weight:800; color:#2D3748; margin-bottom:10px;">🎯 Matriz BNCC (Extraída)</div>
+                    <div>
+                """, unsafe_allow_html=True)
+                for code in codigos_bncc:
+                    st.markdown(f'<span class="bncc-tag">{code}</span>', unsafe_allow_html=True)
+                st.markdown("</div></div>", unsafe_allow_html=True)
+            else:
+                st.info("ℹ️ Gere o plano na aba IA para ver os códigos da BNCC aqui.")
 
         st.write("")
-        st.markdown("##### 🧬 Nível de Suporte por Área")
+        
+        # ROW 4: BARRAS
+        st.markdown("##### 🧬 DNA de Suporte")
         dna_c1, dna_c2 = st.columns(2)
         areas = list(LISTAS_BARREIRAS.keys())
         for i, area in enumerate(areas):
             qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
             val = min(qtd * 20, 100)
             target = dna_c1 if i < 3 else dna_c2
-            target.caption(f"{area} ({qtd} barreiras)")
+            target.caption(f"{area} ({qtd})")
             target.progress(val)
 
     st.divider()
