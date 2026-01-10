@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (AZUL INSTITUCIONAL + CORAL DESTAQUE)
+# 2. ESTILO VISUAL (AZUL MARINHO + CORAL + LAYOUTS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -34,7 +34,6 @@ def aplicar_estilo_visual():
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         
-        /* PALETA */
         :root { 
             --brand-blue: #0F52BA; 
             --brand-coral: #FF6B6B; 
@@ -52,7 +51,7 @@ def aplicar_estilo_visual():
         }
         .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* ABAS PÍLULA */
+        /* ABAS */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
             height: 38px; border-radius: 19px !important; background-color: white; 
@@ -82,12 +81,12 @@ def aplicar_estilo_visual():
             box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
-        /* CARDS VERTICAIS (TELA INICIAL) */
+        /* CARDS DA HOME */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            height: 250px; display: flex; flex-direction: column; 
+            height: 260px; display: flex; flex-direction: column; 
             align-items: center; justify-content: center; text-align: center;
             position: relative; overflow: hidden;
         }
@@ -97,7 +96,7 @@ def aplicar_estilo_visual():
         
         .icon-box {
             width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; margin-bottom: 10px;
+            font-size: 1.8rem; margin-bottom: 15px;
         }
         .ic-blue { background-color: #EBF8FF; color: #3182CE; }
         .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
@@ -113,13 +112,12 @@ def aplicar_estilo_visual():
         .dash-header { font-size: 0.8rem; text-transform: uppercase; color: #A0AEC0; font-weight: 700; margin-bottom: 10px; }
         .dash-content { font-size: 1.4rem; color: #2D3748; font-weight: 800; }
         .dash-sub { font-size: 0.9rem; color: #718096; margin-top: 5px; }
-        
         .hf-tag {
             background: #E6FFFA; color: #2C7A7B; padding: 5px 15px; border-radius: 20px;
             font-weight: 700; font-size: 1rem; border: 1px solid #B2F5EA; display: inline-block;
         }
 
-        /* INPUTS & BOTÕES */
+        /* INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 10px !important; border-color: #E2E8F0 !important; 
         }
@@ -129,11 +127,17 @@ def aplicar_estilo_visual():
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         
-        /* FORÇAR AZUL NOS CONTROLES */
+        /* AZUL FORÇADO EM TOGGLES E CHECKS */
         div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
         div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
         .stToggle { margin-top: 10px; }
+        
+        /* Highlight da IA */
+        .ia-box {
+            background: #F7FAFC; border-radius: 12px; padding: 25px; border: 1px solid #E2E8F0;
+            display: flex; align-items: center; gap: 20px;
+        }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -182,7 +186,7 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 5. UTILITÁRIOS (SALVAR/CARREGAR)
+# 5. UTILITÁRIOS
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
@@ -259,7 +263,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL
+# 6. INTELIGÊNCIA ARTIFICIAL (BLINDADA)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -290,22 +294,33 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
+        # --- BLINDAGEM DO PROMPT PARA BNCC E ANOS ANTERIORES ---
         prompt_sys = """
-        Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Currículo BNCC.
+        Você é um Consultor Pedagógico Sênior Especialista em Educação Inclusiva e Currículo.
         
-        DIRETRIZES:
+        DIRETRIZES OBRIGATÓRIAS (NÃO IGNORE):
         1. MEDICAÇÃO: Analise se os remédios ({meds}) influenciam na atenção/comportamento.
-        2. BNCC: Diferencie RECOMPOSIÇÃO (base) de PRIORIDADE (série atual).
         
-        ESTRUTURA (Markdown Limpo):
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
-        2. 💊 FATOR MEDICAMENTOSO: Impacto na aprendizagem (se houver).
-        3. 🎯 HABILIDADES DA BNCC (PLANO DUPLO):
-           - RECOMPOSIÇÃO: 2 Habilidades fundamentais.
-           - PRIORIDADES: 2 Habilidades essenciais do ano.
-        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso de "{hiperfoco}".
-        5. 🧩 ADAPTAÇÕES: Ambiente e material.
-        """.format(hiperfoco=dados['hiperfoco'], meds=meds_info)
+        2. ESTRUTURA DE HABILIDADES (BNCC):
+           Você DEVE dividir os objetivos em DOIS BLOCOS distintos:
+           
+           A) HABILIDADES DE RECOMPOSIÇÃO (ANOS ANTERIORES):
+              - Identifique lacunas e pré-requisitos que o aluno precisa consolidar.
+              - Cite códigos da BNCC de anos anteriores, se aplicável.
+              
+           B) HABILIDADES DO ANO ATUAL (PRIORITÁRIAS):
+              - Liste habilidades essenciais da série atual ({serie}).
+              - ABRANJA MÚLTIPLOS COMPONENTES (Não fique só em Português/Matemática. Inclua Ciências, Arte, etc., se fizer sentido com o Hiperfoco).
+        
+        ESTRUTURA FINAL DO RELATÓRIO (Markdown Limpo):
+        1. 🌟 VISÃO GERAL: Resumo biopsicossocial e Potencialidades.
+        2. 💊 FATOR MEDICAMENTOSO: Análise farmacológica breve.
+        3. 🎯 PLANEJAMENTO CURRICULAR (BNCC):
+           - RECOMPOSIÇÃO: [Lista de objetivos de base]
+           - ANO ATUAL (TODOS OS COMPONENTES): [Lista de objetivos prioritários]
+        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso prático de "{hiperfoco}".
+        5. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
+        """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
@@ -314,7 +329,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        EVIDÊNCIAS: {evid}
+        EVIDÊNCIAS DE SALA: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -322,7 +337,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF CLASSIC
+# 7. GERADOR PDF CLÁSSICO
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -421,7 +436,7 @@ with st.sidebar:
         
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v39.0 Empower</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v40.0 Optimized</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -459,7 +474,7 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # CARDS VERTICAIS (CLÁSSICOS)
+    # CARDS VERTICAIS CLÁSSICOS COM ÍCONES COLORIDOS
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
     with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
@@ -492,7 +507,7 @@ with tab1: # ESTUDANTE
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico", st.session_state.dados['diagnostico'])
     
-    # Medicação Melhorada
+    # Medicação Melhorada (COM CORREÇÃO DE ERRO DO KEYERROR)
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
@@ -508,7 +523,7 @@ with tab1: # ESTUDANTE
             if st.session_state.dados['lista_medicamentos']:
                 st.markdown("**Lista Atual:**")
                 for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
-                    # .get() previne erro em arquivos antigos
+                    # CORREÇÃO SEGURA: .get('obs', '')
                     display_txt = f"💊 **{m['nome']}** ({m['posologia']})"
                     if m.get('obs'): display_txt += f" - *Obs: {m['obs']}*"
                     
@@ -614,56 +629,55 @@ with tab6: # MONITORAMENTO
     with c4:
         st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
 
-with tab7: # IA (AGORA COM CALIBRAGEM E EDITOR)
+with tab7: # IA (LAYOUT OTIMIZADO)
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
     
-    c1, c2 = st.columns([1, 2])
-    with c1:
-        st.markdown("""
-        <div style="background-color: #F8FAFC; border-radius: 12px; padding: 20px; border: 1px solid #E2E8F0;">
-            <h4 style="color:#0F52BA; margin-top:0;">🤖 Como posso ajudar?</h4>
-            <p style="font-size:0.9rem; color:#64748B;">Vou analisar os dados do estudante (Hiperfoco, Barreiras, Medicação e Evidências) para sugerir um plano alinhado à BNCC.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.write("")
-        if st.button("✨ GERAR SUGESTÕES PEDAGÓGICAS", type="primary"):
-            res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text)
-            if res: st.session_state.dados['ia_sugestao'] = res; st.balloons()
-            else: st.error(err)
-            
-    with c2:
-        if st.session_state.dados['ia_sugestao']:
-            # 1. EXPANDER DE CALIBRAGEM
-            with st.expander("🔍 Detalhes da Calibragem (Lógica da IA)"):
-                st.markdown("""
-                **Como este plano foi construído:**
-                * **Filtro Vygotsky:** Identificação da Zona de Desenvolvimento Proximal baseada nas barreiras.
-                * **Análise Farmacológica:** Verificação do impacto da medicação informada na aprendizagem.
-                * **Alinhamento BNCC:** Seleção de habilidades de recomposição e do ano corrente.
-                """)
-            
-            # 2. VISUALIZAÇÃO FORMATADA (O QUE O USUÁRIO JÁ GOSTAVA)
-            st.markdown(st.session_state.dados['ia_sugestao'])
-            
-            st.divider()
-            
-            # 3. EDITOR DE TEXTO (AUTONOMIA DO PROFESSOR)
-            st.info("📝 **Personalize o Relatório:** A IA cria o rascunho, mas sua experiência define o plano final. Edite abaixo se necessário.")
-            
-            # O truque aqui é atualizar o session_state com o valor do text_area
-            novo_texto = st.text_area("Editor de Conteúdo", value=st.session_state.dados['ia_sugestao'], height=400, key="editor_ia")
-            st.session_state.dados['ia_sugestao'] = novo_texto
-            
-        else:
-            st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
+    # CONTAINER SUPERIOR (INSTRUÇÃO + BOTÃO)
+    with st.container():
+        c_info, c_btn = st.columns([3, 1])
+        with c_info:
+            st.markdown("""
+            <div class="ia-box">
+                <i class="ri-sparkling-fill" style="font-size: 2rem; color: #0F52BA;"></i>
+                <div>
+                    <h4 style="margin:0; color:#0F52BA;">IA Pedagógica</h4>
+                    <p style="margin:0; font-size:0.9rem;">Análise cruzada de Hiperfoco, Medicação e BNCC.</p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        with c_btn:
+            st.write("") # Espaço para alinhar
+            if st.button("✨ GERAR PLANO", type="primary"):
+                res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text)
+                if res: st.session_state.dados['ia_sugestao'] = res; st.balloons()
+                else: st.error(err)
+    
+    st.divider()
 
-with tab8: # DASHBOARD COMPLETO (REAJUSTADO)
+    # RESULTADO EM LARGURA TOTAL
+    if st.session_state.dados['ia_sugestao']:
+        with st.expander("🔍 Detalhes da Calibragem (Lógica da IA)"):
+            st.markdown("""
+            **Como este plano foi construído:**
+            * **Filtro Vygotsky:** Identificação da Zona de Desenvolvimento Proximal.
+            * **Análise Farmacológica:** Impacto da medicação na aprendizagem.
+            * **Alinhamento BNCC:** Habilidades de recomposição vs. ano corrente.
+            """)
+        
+        st.markdown(st.session_state.dados['ia_sugestao'])
+        
+        st.info("📝 **Personalize:** O texto acima é editável. Ajuste conforme sua observação.")
+        novo_texto = st.text_area("Editor de Conteúdo", value=st.session_state.dados['ia_sugestao'], height=400, key="editor_ia")
+        st.session_state.dados['ia_sugestao'] = novo_texto
+    else:
+        st.info("Preencha as abas anteriores e clique em 'GERAR PLANO' para receber a consultoria.")
+
+with tab8: # DASHBOARD WIDGETS
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     
     if st.session_state.dados['nome']:
-        # DASHBOARD WIDGETS (VISUAL CORRIGIDO)
+        # DASHBOARD VISUAL
         st.markdown("#### 📊 Painel Geral do Aluno")
         
         c_m1, c_m2, c_m3 = st.columns(3)
@@ -719,7 +733,7 @@ with tab8: # DASHBOARD COMPLETO (REAJUSTADO)
 
     st.divider()
 
-    # ÁREA DE DOWNLOAD (UPLOAD REMOVIDO DAQUI)
+    # ÁREA DE DOWNLOAD
     if st.session_state.dados['ia_sugestao']:
         c1, c2 = st.columns(2)
         with c1:
