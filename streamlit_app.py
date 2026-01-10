@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CENTRALIZAÇÃO + DONUTS + HARMONIA)
+# 2. ESTILO VISUAL (CLEAN TABS + DASHBOARD HÍBRIDO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -42,6 +42,9 @@ def aplicar_estilo_visual():
         
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
         
+        /* REMOVER LINHAS PADRÃO DO STREAMLIT NAS ABAS */
+        div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
+        
         /* HEADER */
         .header-unified {
             background-color: white; padding: 25px 40px; border-radius: 16px;
@@ -50,16 +53,11 @@ def aplicar_estilo_visual():
         }
         .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* ABAS CENTRALIZADAS E COM ÍCONES */
-        .stTabs [data-baseweb="tab-list"] { 
-            gap: 8px; 
-            flex-wrap: wrap; 
-            justify-content: center; /* CENTRALIZAÇÃO AQUI */
-            margin-bottom: 20px;
-        }
+        /* ABAS PÍLULA (LIMPAS E ELEGANTES) */
+        .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
         .stTabs [data-baseweb="tab"] {
-            height: 40px; border-radius: 20px !important; background-color: white; 
-            border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.9rem; padding: 0 25px;
+            height: 38px; border-radius: 19px !important; background-color: white; 
+            border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 25px;
             transition: all 0.2s ease;
         }
         .stTabs [aria-selected="true"] {
@@ -67,7 +65,7 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO */
+        /* BARRA DE PROGRESSO FINA */
         .minimal-track {
             width: 100%; height: 4px; background-color: #EDF2F7; border-radius: 2px;
             position: relative; margin: 0 0 40px 0;
@@ -75,43 +73,15 @@ def aplicar_estilo_visual():
         .minimal-fill {
             height: 100%; background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
             border-radius: 2px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 5px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
         }
         .minimal-cursor-icon {
-            position: absolute; top: -24px; font-size: 2rem; 
+            position: absolute; top: -23px; font-size: 2rem; 
             transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
         }
 
-        /* GRÁFICOS DONUT (CSS PURO - NÃO QUEBRA) */
-        .donut-card {
-            background: white; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-        }
-        .css-donut {
-            width: 100px; height: 100px; border-radius: 50%;
-            background: conic-gradient(var(--fill-color) var(--p), #EDF2F7 0);
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 15px; position: relative;
-        }
-        .css-donut::after {
-            content: ""; position: absolute; width: 80px; height: 80px; border-radius: 50%; background: white;
-        }
-        .donut-value {
-            position: absolute; z-index: 2; font-size: 1.8rem; font-weight: 800; color: #2D3748;
-        }
-        .donut-label { text-transform: uppercase; font-size: 0.75rem; color: #718096; font-weight: 700; letter-spacing: 1px; }
-
-        /* CARDS DE INFORMAÇÃO (ALERTAS) */
-        .info-card {
-            background: #F8FAFC; border-radius: 12px; padding: 15px; border-left: 5px solid #CBD5E0;
-            margin-bottom: 10px; display: flex; align-items: center; gap: 15px;
-        }
-        .ic-warn { border-left-color: #DD6B20; background: #FFFAF0; }
-        .ic-success { border-left-color: #38A169; background: #F0FFF4; }
-        
-        /* CARDS DA HOME */
+        /* CARDS DA HOME (VERTICAL) */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
@@ -123,11 +93,51 @@ def aplicar_estilo_visual():
         .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
         .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
         .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
+        
         .icon-box { width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 10px; }
         .ic-blue { background-color: #EBF8FF; color: #3182CE; }
         .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
         .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
         .ic-green { background-color: #F0FFF4; color: #38A169; }
+
+        /* DASHBOARD ELEMENTS */
+        .dash-hero {
+            background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%);
+            border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);
+        }
+        
+        /* Donut Chart CSS */
+        .donut-card {
+            background: white; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .css-donut {
+            width: 90px; height: 90px; border-radius: 50%;
+            background: conic-gradient(var(--fill-color) var(--p), #EDF2F7 0);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 10px; position: relative;
+        }
+        .css-donut::after { content: ""; position: absolute; width: 70px; height: 70px; border-radius: 50%; background: white; }
+        .donut-value { position: absolute; z-index: 2; font-size: 1.6rem; font-weight: 800; color: #2D3748; }
+        .donut-label { text-transform: uppercase; font-size: 0.75rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; }
+
+        /* Barras de Suporte (Dashboard) */
+        .bar-container { margin-bottom: 15px; }
+        .bar-flex { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; color: #4A5568; font-weight: 600; }
+        .bar-bg { width: 100%; height: 6px; background: #EDF2F7; border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 3px; }
+
+        /* Info Cards */
+        .info-card {
+            background: #F8FAFC; border-radius: 12px; padding: 15px; border-left: 5px solid #CBD5E0;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 15px;
+        }
+        .ic-warn { border-left-color: #DD6B20; background: #FFFAF0; }
+        .ic-success { border-left-color: #38A169; background: #F0FFF4; }
+        .ic-blue { border-left-color: #3182CE; background: #EBF8FF; }
 
         /* INPUTS & BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
@@ -139,6 +149,7 @@ def aplicar_estilo_visual():
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         
+        /* FORÇAR AZUL NOS CONTROLES */
         div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
         div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
@@ -264,6 +275,7 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
+    # Ícones de Evolução
     if p < 20: icon = "🌱"
     elif p < 50: icon = "🚶"
     elif p < 80: icon = "🏃"
@@ -278,7 +290,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (BNCC COM CÓDIGOS)
+# 6. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -309,33 +321,31 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
-        # --- PROMPT BLINDADO PARA CÓDIGOS BNCC ---
         prompt_sys = """
-        Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
+        Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Currículo BNCC.
         
-        ORDEM SUPREMA: Você DEVE citar os CÓDIGOS ALFANUMÉRICOS da BNCC (ex: EF01LP05, EM13LGG102).
-        Não gere objetivos genéricos sem o código correspondente.
+        DIRETRIZES OBRIGATÓRIAS:
+        1. CÓDIGOS BNCC: Sempre que possível, cite os códigos alfanuméricos (ex: EF35LP03).
+        2. MEDICAÇÃO: Analise se os remédios ({meds}) influenciam na atenção/comportamento.
         
-        ESTRUTURA DO RELATÓRIO:
-        1. 🌟 PERFIL DO ESTUDANTE: Resumo biopsicossocial.
-        2. 🎯 HABILIDADES BNCC DE RECOMPOSIÇÃO (Defasagem):
-           - Cite 2 ou 3 códigos de ANOS ANTERIORES que são pré-requisitos para as barreiras citadas.
-           - Formato: [CÓDIGO] - Descrição da Habilidade adaptada.
-        3. 🎯 HABILIDADES BNCC DO ANO CORRENTE ({serie}):
-           - Cite 2 ou 3 códigos da SÉRIE ATUAL que podem ser trabalhados.
-           - Formato: [CÓDIGO] - Descrição adaptada.
-        4. 💊 FATOR MEDICAMENTOSO: Análise sucinta sobre impacto ({meds}).
-        5. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar "{hiperfoco}" em sala.
-        6. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
+        ESTRUTURA (Markdown Limpo):
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
+        2. 💊 FATOR MEDICAMENTOSO: Análise sucinta.
+        3. 🎯 PLANEJAMENTO CURRICULAR (BNCC):
+           - RECOMPOSIÇÃO (Defasagem): [CÓDIGO] - Descrição.
+           - ANO ATUAL (Prioritário): [CÓDIGO] - Descrição.
+        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso prático de "{hiperfoco}".
+        5. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
         DIAGNÓSTICO: {dados['diagnostico']}
         MEDICAÇÃO: {meds_info}
+        POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        EVIDÊNCIAS: {evid}
+        EVIDÊNCIAS DE SALA: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -384,7 +394,7 @@ def gerar_pdf_final(dados, tem_anexo):
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Família:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, fam_str)
     evid = [k.replace('?', '') for k, v in dados['checklist_evidencias'].items() if v]
     if evid:
-        pdf.section_title("2. PONTOS DE ATENÇÃO (EVIDÊNCIAS)")
+        pdf.section_title("2. PONTOS DE ATENÇÃO")
         pdf.set_font("Arial", size=10); pdf.multi_cell(0, 6, limpar_texto_pdf('; '.join(evid) + '.'))
     if any(dados['barreiras_selecionadas'].values()):
         pdf.section_title("3. MAPEAMENTO DE SUPORTE")
@@ -422,6 +432,7 @@ with st.sidebar:
     if logo: st.image(logo, width=120)
     if 'OPENAI_API_KEY' in st.secrets: api_key = st.secrets['OPENAI_API_KEY']; st.success("✅ OpenAI OK")
     else: api_key = st.text_input("Chave OpenAI:", type="password")
+    
     st.markdown("### 📂 Carregar Backup")
     uploaded_json = st.file_uploader("Arquivo .json", type="json")
     if uploaded_json:
@@ -431,14 +442,16 @@ with st.sidebar:
             if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
             st.session_state.dados.update(d); st.success("Carregado!")
         except: st.error("Erro no arquivo.")
+        
     st.markdown("---")
     if st.button("💾 Salvar no Sistema", use_container_width=True):
         ok, msg = salvar_aluno(st.session_state.dados)
         if ok: st.success(msg)
         else: st.error(msg)
+        
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v47.0 Quantum Leap</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v48.0 Harmony</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -450,8 +463,8 @@ st.markdown(f"""
     <span>Ecossistema de Inteligência Pedagógica e Inclusiva</span>
 </div>""", unsafe_allow_html=True)
 
-# ABAS (CENTRALIZADAS)
-abas = ["🏠 Início", "👤 Estudante", "👁️ Evidências", "🤝 Rede", "🗺️ Mapeamento", "🛠️ Plano", "📈 Monitoramento", "🤖 IA", "📄 Documento"]
+# ABAS (VOLTAR AO TEXTO PURO)
+abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 
 with tab0: # INÍCIO
@@ -464,8 +477,16 @@ with tab0: # INÍCIO
             except:
                 saudacao = "A inclusão transforma vidas."
                 noticia = "O PEI é um direito garantido por lei."
-        st.markdown(f"""<div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);"><div style="display:flex; gap:20px; align-items:center;"><div style="background:rgba(255,255,255,0.2); padding:12px; border-radius:50%;"><i class="ri-sparkling-2-fill" style="font-size: 2rem; color: #FFD700;"></i></div><div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div></div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);">
+            <div style="display:flex; gap:20px; align-items:center;">
+                <div style="background:rgba(255,255,255,0.2); padding:12px; border-radius:50%;"><i class="ri-sparkling-2-fill" style="font-size: 2rem; color: #FFD700;"></i></div>
+                <div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div>
+            </div>
+        </div>""", unsafe_allow_html=True)
+    
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
+    
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
     with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
@@ -588,7 +609,7 @@ with tab6: # MONITORAMENTO
     with c3: st.session_state.dados['parecer_geral'] = st.selectbox("Parecer Geral", ["Manter Estratégias", "Aumentar Suporte", "Reduzir Suporte (Autonomia)", "Alterar Metodologia", "Encaminhar para Especialista"], index=0)
     with c4: st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"])
 
-with tab7: # IA
+with tab7: # IA (2 COLUNAS)
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
     col_left, col_right = st.columns([1, 2])
@@ -614,7 +635,7 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD (QUANTUM LEAP - CÍRCULOS)
+with tab8: # DASHBOARD HÍBRIDO (DONUTS + BARRAS)
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
         st.markdown(f"""
@@ -640,7 +661,7 @@ with tab8: # DASHBOARD (QUANTUM LEAP - CÍRCULOS)
 
         st.write("")
         
-        # ROW 2: ALERTAS E REDE
+        # ROW 2: ALERTAS
         c_info1, c_info2 = st.columns(2)
         with c_info1:
             if st.session_state.dados['lista_medicamentos']:
@@ -654,6 +675,19 @@ with tab8: # DASHBOARD (QUANTUM LEAP - CÍRCULOS)
                 st.markdown(f"""<div class="info-card ic-blue" style="border-left-color:#3182CE; background:#EBF8FF;"><i class="ri-team-fill" style="color:#3182CE; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#2C5282;">Rede de Apoio Ativa</div><div style="font-size:0.85rem; color:#2A4365;">{rede_txt}</div></div></div>""", unsafe_allow_html=True)
             else:
                 st.markdown("""<div class="info-card" style="border-left-color:#CBD5E0; background:#F7FAFC;"><i class="ri-user-unfollow-line" style="color:#A0AEC0; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#718096;">Rede de Apoio não informada</div></div></div>""", unsafe_allow_html=True)
+
+        st.write("")
+        
+        # ROW 3: BARRAS DETALHADAS (DNA DO SUPORTE)
+        st.markdown("##### 🧬 Nível de Suporte por Área")
+        dna_c1, dna_c2 = st.columns(2)
+        areas = list(LISTAS_BARREIRAS.keys())
+        for i, area in enumerate(areas):
+            qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
+            val = min(qtd * 20, 100)
+            target = dna_c1 if i < 3 else dna_c2
+            target.caption(f"{area} ({qtd} barreiras)")
+            target.progress(val)
 
     st.divider()
     if st.session_state.dados['ia_sugestao']:
