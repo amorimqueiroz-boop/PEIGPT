@@ -322,7 +322,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF
+# 7. GERADOR PDF CLASSIC
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -421,7 +421,7 @@ with st.sidebar:
         
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v38.0 Sidebar Manager</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v39.0 Empower</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -614,7 +614,7 @@ with tab6: # MONITORAMENTO
     with c4:
         st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
 
-with tab7: # IA
+with tab7: # IA (AGORA COM CALIBRAGEM E EDITOR)
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
     
@@ -635,11 +635,31 @@ with tab7: # IA
             
     with c2:
         if st.session_state.dados['ia_sugestao']:
+            # 1. EXPANDER DE CALIBRAGEM
+            with st.expander("🔍 Detalhes da Calibragem (Lógica da IA)"):
+                st.markdown("""
+                **Como este plano foi construído:**
+                * **Filtro Vygotsky:** Identificação da Zona de Desenvolvimento Proximal baseada nas barreiras.
+                * **Análise Farmacológica:** Verificação do impacto da medicação informada na aprendizagem.
+                * **Alinhamento BNCC:** Seleção de habilidades de recomposição e do ano corrente.
+                """)
+            
+            # 2. VISUALIZAÇÃO FORMATADA (O QUE O USUÁRIO JÁ GOSTAVA)
             st.markdown(st.session_state.dados['ia_sugestao'])
+            
+            st.divider()
+            
+            # 3. EDITOR DE TEXTO (AUTONOMIA DO PROFESSOR)
+            st.info("📝 **Personalize o Relatório:** A IA cria o rascunho, mas sua experiência define o plano final. Edite abaixo se necessário.")
+            
+            # O truque aqui é atualizar o session_state com o valor do text_area
+            novo_texto = st.text_area("Editor de Conteúdo", value=st.session_state.dados['ia_sugestao'], height=400, key="editor_ia")
+            st.session_state.dados['ia_sugestao'] = novo_texto
+            
         else:
             st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
 
-with tab8: # DASHBOARD WIDGETS
+with tab8: # DASHBOARD COMPLETO (REAJUSTADO)
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     
     if st.session_state.dados['nome']:
