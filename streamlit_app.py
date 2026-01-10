@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (AZUL MARINHO FORÇADO + CORAL DESTAQUE)
+# 2. ESTILO VISUAL (CORREÇÃO DE CORES E LAYOUT)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -35,8 +35,8 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         
         :root { 
-            --brand-blue: #0F52BA; /* Azul Institucional */
-            --brand-coral: #FF6B6B; /* Destaque */
+            --brand-blue: #0F52BA; /* Azul Marinho */
+            --brand-coral: #FF6B6B; /* Vermelho Coral */
         }
         
         /* LAYOUT */
@@ -65,12 +65,12 @@ def aplicar_estilo_visual():
 
         /* BARRA DE PROGRESSO (VERMELHO CORAL) */
         .minimal-track {
-            width: 100%; height: 4px; background-color: #EDF2F7; border-radius: 2px;
+            width: 100%; height: 3px; background-color: #EDF2F7; border-radius: 1.5px;
             position: relative; margin: 12px 0 45px 0;
         }
         .minimal-fill {
             height: 100%; background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
-            border-radius: 2px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 1.5px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
         }
         .minimal-cursor-icon {
@@ -81,37 +81,46 @@ def aplicar_estilo_visual():
             box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
-        /* CARDS DA HOME (RETANGULARES COM ÍCONE LATERAL) */
-        a.rich-card-link { text-decoration: none; color: inherit; display: block; }
+        /* CARDS DA HOME (VOLTA AO VERTICAL BONITO) */
+        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
-            background-color: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            min-height: 120px; display: flex; align-items: center; gap: 20px;
+            background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
+            height: 250px; display: flex; flex-direction: column; 
+            align-items: center; /* Centraliza Horizontalmente */
+            justify-content: center; /* Centraliza Verticalmente */
+            text-align: center;
             position: relative; overflow: hidden;
         }
-        .rich-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.06); border-color: #BEE3F8;}
-        .rich-card h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: #2D3748; font-weight: 800; }
+        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
+        
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
         .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
         
+        /* Ícones Coloridos (Centralizados) */
         .icon-box {
-            min-width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem;
+            width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; margin-bottom: 10px;
         }
         .ic-blue { background-color: #EBF8FF; color: #3182CE; }
         .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
         .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
         .ic-green { background-color: #F0FFF4; color: #38A169; }
 
-        /* DASHBOARD METRICS (Compacto) */
-        .dash-card {
-            background-color: #F8FAFC; padding: 15px; border-radius: 12px; border: 1px solid #E2E8F0;
-            text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;
+        /* DASHBOARD WIDGETS (ESTRUTURADOS) */
+        .dash-widget {
+            background-color: white; border-radius: 12px; border: 1px solid #E2E8F0;
+            padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
-        .dash-label { font-size: 0.75rem; text-transform: uppercase; color: #718096; font-weight: 700; margin-bottom: 5px; }
-        .dash-value { font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
-        .dash-tag { 
-            background: white; color: #2F855A; padding: 4px 12px; border-radius: 15px; 
-            font-weight: 700; font-size: 0.9rem; border: 1px solid #C6F6D5; display: inline-block;
+        .dash-header { font-size: 0.8rem; text-transform: uppercase; color: #A0AEC0; font-weight: 700; margin-bottom: 10px; }
+        .dash-content { font-size: 1.4rem; color: #2D3748; font-weight: 800; }
+        .dash-sub { font-size: 0.9rem; color: #718096; margin-top: 5px; }
+        
+        /* Tag de Hiperfoco */
+        .hf-tag {
+            background: #E6FFFA; color: #2C7A7B; padding: 5px 15px; border-radius: 20px;
+            font-weight: 700; font-size: 1rem; border: 1px solid #B2F5EA; display: inline-block;
         }
 
         /* INPUTS E BOTÕES (AZUL MARINHO) */
@@ -124,11 +133,19 @@ def aplicar_estilo_visual():
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         
-        /* FORÇAR TOGGLES E CHECKBOXES PARA AZUL (Substitui o vermelho padrão) */
-        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
-        .stToggle label[data-testid="stWidgetLabel"] { color: #2D3748; font-weight: 600; }
-        /* Hack para o Toggle Switch ficar azul (varia dependendo da versão do Streamlit, mas isso cobre a maioria) */
-        span[class*="st-"] { --primary-color: #0F52BA !important; }
+        /* FORÇAR TOGGLES E CHECKBOXES PARA AZUL */
+        /* Checkbox checado */
+        div[data-baseweb="checkbox"] div[class*="checked"] { 
+            background-color: var(--brand-blue) !important; 
+            border-color: var(--brand-blue) !important; 
+        }
+        /* Toggle (Switch) checado */
+        div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] {
+            background-color: var(--brand-blue) !important;
+        }
+        .stToggle p { font-weight: 600; color: #2D3748; }
+        
+        .stToggle { margin-top: 10px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -281,7 +298,6 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
-        # Correção segura da medicação
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
@@ -289,18 +305,18 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         prompt_sys = """
         Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Currículo BNCC.
         
-        DIRETRIZES CRÍTICAS:
-        1. MEDICAÇÃO: Analise se os remédios citados ({meds}) influenciam na atenção ou comportamento.
-        2. BNCC ESTRATÉGICA: Diferencie o que é RECOMPOSIÇÃO (base que falta) do que é PRIORIDADE (série atual).
+        DIRETRIZES:
+        1. MEDICAÇÃO: Analise se os remédios ({meds}) influenciam na atenção/comportamento.
+        2. BNCC: Diferencie RECOMPOSIÇÃO (base) de PRIORIDADE (série atual).
         
-        ESTRUTURA DA RESPOSTA (Markdown Limpo):
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo das potencialidades.
-        2. 💊 FATOR MEDICAMENTOSO: Impacto provável da medicação na aprendizagem (se houver).
+        ESTRUTURA (Markdown Limpo):
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
+        2. 💊 FATOR MEDICAMENTOSO: Impacto na aprendizagem (se houver).
         3. 🎯 HABILIDADES DA BNCC (PLANO DUPLO):
-           - RECOMPOSIÇÃO (Anos Anteriores): 2 Habilidades fundamentais para cobrir lacunas.
-           - PRIORIDADES (Série Atual): 2 Habilidades essenciais para o ano letivo.
-        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Como usar "{hiperfoco}" para ensinar essas habilidades?
-        5. 🧩 ADAPTAÇÕES NA SALA: Sugestões práticas de ambiente.
+           - RECOMPOSIÇÃO: 2 Habilidades fundamentais.
+           - PRIORIDADES: 2 Habilidades essenciais do ano.
+        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso de "{hiperfoco}".
+        5. 🧩 ADAPTAÇÕES: Ambiente e material.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info)
         
         prompt_user = f"""
@@ -310,7 +326,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        EVIDÊNCIAS DE SALA: {evid}
+        EVIDÊNCIAS: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -410,7 +426,7 @@ with st.sidebar:
     st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v36.0 Definitive</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v37.0 Restore</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -448,6 +464,7 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
+    # CARDS VERTICAIS RESTAURADOS
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
     with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
@@ -480,7 +497,7 @@ with tab1: # ESTUDANTE
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico", st.session_state.dados['diagnostico'])
     
-    # Medicação Melhorada (COM BLINDAGEM)
+    # Medicação Melhorada (COM CORREÇÃO DE ERRO DO KEYERROR)
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
@@ -627,33 +644,67 @@ with tab7: # IA
         else:
             st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
 
-with tab8: # DASHBOARD COMPLETO (REAJUSTADO)
+with tab8: # DASHBOARD COMPLETO (RESTAURADO E WIDGETIZADO)
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     
     if st.session_state.dados['nome']:
-        # DASHBOARD NATIVO (SEM PLOTLY)
-        st.markdown("#### 📊 Visão Geral do Aluno")
+        # DASHBOARD WIDGETS
+        st.markdown("#### 📊 Painel Geral do Aluno")
         
-        # 1. Cartões de Métricas (Agora com design mais compacto)
         c_m1, c_m2, c_m3 = st.columns(3)
-        with c_m1:
-            st.markdown('<div class="dash-card"><div class="dash-label">Potencialidades</div><div class="dash-value">{}</div></div>'.format(len(st.session_state.dados['potencias'])), unsafe_allow_html=True)
-        with c_m2:
-            barreiras_total = sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values())
-            st.markdown('<div class="dash-card"><div class="dash-label">Barreiras Mapeadas</div><div class="dash-value">{}</div></div>'.format(barreiras_total), unsafe_allow_html=True)
-        with c_m3:
-            status_pei = "Pronto" if st.session_state.dados['ia_sugestao'] else "Em Construção"
-            st.markdown('<div class="dash-card"><div class="dash-label">Status Documento</div><div class="dash-value" style="font-size:1.2rem;">{}</div></div>'.format(status_pei), unsafe_allow_html=True)
         
-        st.write("")
-        st.markdown("##### 🔑 Destaques")
-        c_d1, c_d2 = st.columns(2)
-        with c_d1:
+        # WIDGET 1: IDENTIDADE
+        with c_m1:
+            st.markdown(f"""
+            <div class="dash-widget">
+                <div>
+                    <div class="dash-header">Estudante</div>
+                    <div class="dash-content">{st.session_state.dados['nome'].split()[0]}</div>
+                    <div class="dash-sub">{st.session_state.dados['serie']}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        # WIDGET 2: HIPERFOCO
+        with c_m2:
             hf = st.session_state.dados['hiperfoco'] or "Não informado"
-            st.info(f"**Hiperfoco:** {hf}")
-        with c_d2:
+            st.markdown(f"""
+            <div class="dash-widget">
+                <div>
+                    <div class="dash-header">Chave de Acesso (Hiperfoco)</div>
+                    <div class="hf-tag">{hf}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        # WIDGET 3: MONITORAMENTO
+        with c_m3:
             drev = st.session_state.dados.get('monitoramento_data')
-            st.success(f"**Revisão:** {drev.strftime('%d/%m/%Y') if drev else '-'}")
+            data_fmt = drev.strftime("%d/%m/%Y") if drev else "-"
+            st.markdown(f"""
+            <div class="dash-widget">
+                <div>
+                    <div class="dash-header">Próxima Revisão</div>
+                    <div class="dash-content" style="color:#E53E3E;">{data_fmt}</div>
+                    <div class="dash-sub">Meta: {st.session_state.dados['status_meta']}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.divider()
+        
+        # DNA DO SUPORTE
+        st.markdown("##### 🧬 Nível de Suporte por Área")
+        dna_c1, dna_c2 = st.columns(2)
+        
+        areas = list(LISTAS_BARREIRAS.keys())
+        for i, area in enumerate(areas):
+            qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
+            val = min(qtd * 20, 100)
+            
+            target = dna_c1 if i < 3 else dna_c2
+            target.caption(f"{area} ({qtd} barreiras)")
+            target.progress(val)
 
     st.divider()
 
