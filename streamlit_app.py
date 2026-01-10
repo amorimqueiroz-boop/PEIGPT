@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CLEAN TABS + DASHBOARD HÍBRIDO)
+# 2. ESTILO VISUAL (BARRA INTELIGENTE + AVATAR + BNCC BOX)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -38,11 +38,10 @@ def aplicar_estilo_visual():
         :root { 
             --brand-blue: #0F52BA; 
             --brand-coral: #FF6B6B; 
+            --brand-green: #38A169;
         }
         
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
-        
-        /* REMOVER LINHAS PADRÃO DO STREAMLIT NAS ABAS */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         /* HEADER */
@@ -53,8 +52,8 @@ def aplicar_estilo_visual():
         }
         .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* ABAS PÍLULA (LIMPAS E ELEGANTES) */
-        .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        /* ABAS (Clean) */
+        .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
         .stTabs [data-baseweb="tab"] {
             height: 38px; border-radius: 19px !important; background-color: white; 
             border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 25px;
@@ -65,50 +64,43 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO FINA */
+        /* BARRA DE PROGRESSO (LÓGICA DE COR NO PYTHON) */
         .minimal-track {
             width: 100%; height: 4px; background-color: #EDF2F7; border-radius: 2px;
             position: relative; margin: 0 0 40px 0;
         }
         .minimal-fill {
-            height: 100%; background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
-            border-radius: 2px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
+            height: 100%; border-radius: 2px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .minimal-cursor-icon {
-            position: absolute; top: -23px; font-size: 2rem; 
+            position: absolute; top: -24px; font-size: 2rem; 
             transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10;
             filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
         }
 
-        /* CARDS DA HOME (VERTICAL) */
-        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-        .rich-card {
-            background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            height: 250px; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; text-align: center;
-            position: relative; overflow: hidden;
-        }
-        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
-        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
-        
-        .icon-box { width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 10px; }
-        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
-        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
-        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
-        .ic-green { background-color: #F0FFF4; color: #38A169; }
-
-        /* DASHBOARD ELEMENTS */
+        /* DASHBOARD HERO COM AVATAR */
         .dash-hero {
             background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%);
             border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px;
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);
         }
-        
-        /* Donut Chart CSS */
+        .dash-avatar-circle {
+            width: 60px; height: 60px; border-radius: 50%; 
+            background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; font-weight: 800; color: white; margin-right: 15px;
+        }
+
+        /* BNCC BOX NO DASHBOARD */
+        .bncc-box {
+            background: #F0FFF4; border: 1px solid #C6F6D5; border-radius: 12px; padding: 20px;
+            margin-top: 20px; border-left: 5px solid #38A169;
+        }
+        .bncc-title { color: #22543D; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+
+        /* Donut Charts */
         .donut-card {
             background: white; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -124,12 +116,6 @@ def aplicar_estilo_visual():
         .donut-value { position: absolute; z-index: 2; font-size: 1.6rem; font-weight: 800; color: #2D3748; }
         .donut-label { text-transform: uppercase; font-size: 0.75rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; }
 
-        /* Barras de Suporte (Dashboard) */
-        .bar-container { margin-bottom: 15px; }
-        .bar-flex { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; color: #4A5568; font-weight: 600; }
-        .bar-bg { width: 100%; height: 6px; background: #EDF2F7; border-radius: 3px; overflow: hidden; }
-        .bar-fill { height: 100%; border-radius: 3px; }
-
         /* Info Cards */
         .info-card {
             background: #F8FAFC; border-radius: 12px; padding: 15px; border-left: 5px solid #CBD5E0;
@@ -138,6 +124,23 @@ def aplicar_estilo_visual():
         .ic-warn { border-left-color: #DD6B20; background: #FFFAF0; }
         .ic-success { border-left-color: #38A169; background: #F0FFF4; }
         .ic-blue { border-left-color: #3182CE; background: #EBF8FF; }
+
+        /* CARDS HOME */
+        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+        .rich-card {
+            background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
+            height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
+        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
+        .icon-box { width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 10px; }
+        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
+        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
+        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
+        .ic-green { background-color: #F0FFF4; color: #38A169; }
 
         /* INPUTS & BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
@@ -149,18 +152,13 @@ def aplicar_estilo_visual():
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         
-        /* FORÇAR AZUL NOS CONTROLES */
         div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
         div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
         .stToggle { margin-top: 10px; }
         
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
-        .form-section-title {
-            display: flex; align-items: center; gap: 10px; 
-            color: #0F52BA; font-weight: 700; font-size: 1.1rem;
-            margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px;
-        }
+        .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -275,22 +273,26 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    # Ícones de Evolução
-    if p < 20: icon = "🌱"
-    elif p < 50: icon = "🚶"
-    elif p < 80: icon = "🏃"
-    elif p < 100: icon = "🚀"
-    else: icon = "🏆"
+    # Lógica de Chegada
+    icon = "🌱"
+    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja padrão
+    
+    if p >= 20: icon = "🚶"
+    if p >= 50: icon = "🏃"
+    if p >= 80: icon = "🚀"
+    if p >= 100: 
+        icon = "🏆"
+        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)" # Verde Vitória
     
     st.markdown(f"""
     <div class="minimal-track">
-        <div class="minimal-fill" style="width: {p}%;"></div>
+        <div class="minimal-fill" style="width: {p}%; background: {bar_color};"></div>
         <div class="minimal-cursor-icon" style="left: {p}%;">{icon}</div>
     </div>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL
+# 6. INTELIGÊNCIA ARTIFICIAL (BNCC RIGOROSA)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -322,19 +324,24 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
         prompt_sys = """
-        Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Currículo BNCC.
+        Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
         
-        DIRETRIZES OBRIGATÓRIAS:
-        1. CÓDIGOS BNCC: Sempre que possível, cite os códigos alfanuméricos (ex: EF35LP03).
-        2. MEDICAÇÃO: Analise se os remédios ({meds}) influenciam na atenção/comportamento.
+        ORDEM SUPREMA (OBRIGATÓRIO):
+        Separe as habilidades POR COMPONENTE CURRICULAR (Linguagens, Matemática, Ciências da Natureza, Ciências Humanas).
+        Cite SEMPRE o CÓDIGO ALFANUMÉRICO da BNCC (ex: EF35LP03).
         
-        ESTRUTURA (Markdown Limpo):
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
-        2. 💊 FATOR MEDICAMENTOSO: Análise sucinta.
-        3. 🎯 PLANEJAMENTO CURRICULAR (BNCC):
-           - RECOMPOSIÇÃO (Defasagem): [CÓDIGO] - Descrição.
-           - ANO ATUAL (Prioritário): [CÓDIGO] - Descrição.
-        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso prático de "{hiperfoco}".
+        ESTRUTURA DO RELATÓRIO:
+        1. 🌟 PERFIL: Resumo biopsicossocial.
+        2. 🎯 MATRIZ DE HABILIDADES BNCC (Obrigatório citar CÓDIGOS):
+           - LINGUAGENS (Português/Arte):
+             * [CÓDIGO] Descrição (Recomposição)
+             * [CÓDIGO] Descrição (Ano Atual)
+           - MATEMÁTICA:
+             * [CÓDIGO] Descrição
+           - OUTRAS ÁREAS (Ciências/História/Geo):
+             * [CÓDIGO] Descrição
+        3. 💊 MEDICAMENTOS: Impacto na sala de aula ({meds}).
+        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso de "{hiperfoco}".
         5. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
@@ -342,10 +349,9 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
         DIAGNÓSTICO: {dados['diagnostico']}
         MEDICAÇÃO: {meds_info}
-        POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        EVIDÊNCIAS DE SALA: {evid}
+        EVIDÊNCIAS: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -432,7 +438,6 @@ with st.sidebar:
     if logo: st.image(logo, width=120)
     if 'OPENAI_API_KEY' in st.secrets: api_key = st.secrets['OPENAI_API_KEY']; st.success("✅ OpenAI OK")
     else: api_key = st.text_input("Chave OpenAI:", type="password")
-    
     st.markdown("### 📂 Carregar Backup")
     uploaded_json = st.file_uploader("Arquivo .json", type="json")
     if uploaded_json:
@@ -442,16 +447,14 @@ with st.sidebar:
             if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
             st.session_state.dados.update(d); st.success("Carregado!")
         except: st.error("Erro no arquivo.")
-        
     st.markdown("---")
     if st.button("💾 Salvar no Sistema", use_container_width=True):
         ok, msg = salvar_aluno(st.session_state.dados)
         if ok: st.success(msg)
         else: st.error(msg)
-        
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v48.0 Harmony</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v49.0 Masterpiece</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -463,7 +466,7 @@ st.markdown(f"""
     <span>Ecossistema de Inteligência Pedagógica e Inclusiva</span>
 </div>""", unsafe_allow_html=True)
 
-# ABAS (VOLTAR AO TEXTO PURO)
+# ABAS
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 
@@ -486,7 +489,6 @@ with tab0: # INÍCIO
         </div>""", unsafe_allow_html=True)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
-    
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
     with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
@@ -609,7 +611,7 @@ with tab6: # MONITORAMENTO
     with c3: st.session_state.dados['parecer_geral'] = st.selectbox("Parecer Geral", ["Manter Estratégias", "Aumentar Suporte", "Reduzir Suporte (Autonomia)", "Alterar Metodologia", "Encaminhar para Especialista"], index=0)
     with c4: st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"])
 
-with tab7: # IA (2 COLUNAS)
+with tab7: # IA
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
     col_left, col_right = st.columns([1, 2])
@@ -635,17 +637,23 @@ with tab7: # IA (2 COLUNAS)
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD HÍBRIDO (DONUTS + BARRAS)
+with tab8: # DASHBOARD
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
+        init_avatar = st.session_state.dados['nome'][0].upper() if st.session_state.dados['nome'] else "?"
         st.markdown(f"""
-        <div class="header-unified" style="background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); color:white;">
-            <div style="font-size:2rem; font-weight:800;">{st.session_state.dados['nome']}</div>
-            <div style="margin-left:auto;">{st.session_state.dados['serie']}</div>
+        <div class="dash-hero">
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div class="dash-avatar-circle">{init_avatar}</div>
+                <div class="dash-info"><h1>{st.session_state.dados['nome']}</h1><p>{st.session_state.dados['serie']}</p></div>
+            </div>
+            <div>
+                <div style="text-align:right; font-size:0.8rem; opacity:0.8;">STATUS</div>
+                <div style="font-size:1.2rem; font-weight:bold;">{st.session_state.dados['status_meta']}</div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # ROW 1: CÍRCULOS E HIPERFOCO
         c_kpi1, c_kpi2, c_kpi3 = st.columns(3)
         with c_kpi1:
             n_pot = len(st.session_state.dados['potencias'])
@@ -661,14 +669,12 @@ with tab8: # DASHBOARD HÍBRIDO (DONUTS + BARRAS)
 
         st.write("")
         
-        # ROW 2: ALERTAS
         c_info1, c_info2 = st.columns(2)
         with c_info1:
             if st.session_state.dados['lista_medicamentos']:
                 st.markdown("""<div class="info-card ic-warn"><i class="ri-medicine-bottle-fill" style="color:#DD6B20; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#C05621;">Requer Atenção Farmacológica</div><div style="font-size:0.85rem; color:#744210;">Aluno faz uso de medicação contínua. Verifique a aba Estudante.</div></div></div>""", unsafe_allow_html=True)
             else:
                 st.markdown("""<div class="info-card ic-success"><i class="ri-checkbox-circle-fill" style="color:#38A169; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#276749;">Sem Medicação Informada</div></div></div>""", unsafe_allow_html=True)
-        
         with c_info2:
             if st.session_state.dados['rede_apoio']:
                 rede_txt = ", ".join(st.session_state.dados['rede_apoio'])
@@ -676,9 +682,18 @@ with tab8: # DASHBOARD HÍBRIDO (DONUTS + BARRAS)
             else:
                 st.markdown("""<div class="info-card" style="border-left-color:#CBD5E0; background:#F7FAFC;"><i class="ri-user-unfollow-line" style="color:#A0AEC0; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#718096;">Rede de Apoio não informada</div></div></div>""", unsafe_allow_html=True)
 
+        # BOX DA BNCC (VISUALIZAÇÃO DESTAQUE)
+        if st.session_state.dados['ia_sugestao']:
+            st.markdown("""
+            <div class="bncc-box">
+                <div class="bncc-title"><i class="ri-compass-3-fill"></i> Matriz de Habilidades (BNCC)</div>
+                <p style="font-size:0.9rem; color:#276749;">
+                    A IA gerou uma matriz curricular personalizada. Verifique os códigos (Ex: EF35LP03) no relatório detalhado abaixo ou na aba "IA".
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
         st.write("")
-        
-        # ROW 3: BARRAS DETALHADAS (DNA DO SUPORTE)
         st.markdown("##### 🧬 Nível de Suporte por Área")
         dna_c1, dna_c2 = st.columns(2)
         areas = list(LISTAS_BARREIRAS.keys())
