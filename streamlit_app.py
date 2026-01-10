@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CORREÇÃO DE CORES E LAYOUT)
+# 2. ESTILO VISUAL (AZUL INSTITUCIONAL + CORAL DESTAQUE)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -34,9 +34,10 @@ def aplicar_estilo_visual():
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         
+        /* PALETA */
         :root { 
-            --brand-blue: #0F52BA; /* Azul Marinho */
-            --brand-coral: #FF6B6B; /* Vermelho Coral */
+            --brand-blue: #0F52BA; 
+            --brand-coral: #FF6B6B; 
         }
         
         /* LAYOUT */
@@ -51,7 +52,7 @@ def aplicar_estilo_visual():
         }
         .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* ABAS PÍLULA (VERMELHO CORAL) */
+        /* ABAS PÍLULA */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
             height: 38px; border-radius: 19px !important; background-color: white; 
@@ -63,7 +64,7 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO (VERMELHO CORAL) */
+        /* BARRA DE PROGRESSO */
         .minimal-track {
             width: 100%; height: 3px; background-color: #EDF2F7; border-radius: 1.5px;
             position: relative; margin: 12px 0 45px 0;
@@ -81,23 +82,19 @@ def aplicar_estilo_visual():
             box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
-        /* CARDS DA HOME (VOLTA AO VERTICAL BONITO) */
+        /* CARDS VERTICAIS (TELA INICIAL) */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
             height: 250px; display: flex; flex-direction: column; 
-            align-items: center; /* Centraliza Horizontalmente */
-            justify-content: center; /* Centraliza Verticalmente */
-            text-align: center;
+            align-items: center; justify-content: center; text-align: center;
             position: relative; overflow: hidden;
         }
         .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
-        
         .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
         .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
         
-        /* Ícones Coloridos (Centralizados) */
         .icon-box {
             width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center;
             font-size: 1.8rem; margin-bottom: 10px;
@@ -107,7 +104,7 @@ def aplicar_estilo_visual():
         .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
         .ic-green { background-color: #F0FFF4; color: #38A169; }
 
-        /* DASHBOARD WIDGETS (ESTRUTURADOS) */
+        /* DASHBOARD WIDGETS */
         .dash-widget {
             background-color: white; border-radius: 12px; border: 1px solid #E2E8F0;
             padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: space-between;
@@ -117,13 +114,12 @@ def aplicar_estilo_visual():
         .dash-content { font-size: 1.4rem; color: #2D3748; font-weight: 800; }
         .dash-sub { font-size: 0.9rem; color: #718096; margin-top: 5px; }
         
-        /* Tag de Hiperfoco */
         .hf-tag {
             background: #E6FFFA; color: #2C7A7B; padding: 5px 15px; border-radius: 20px;
             font-weight: 700; font-size: 1rem; border: 1px solid #B2F5EA; display: inline-block;
         }
 
-        /* INPUTS E BOTÕES (AZUL MARINHO) */
+        /* INPUTS & BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 10px !important; border-color: #E2E8F0 !important; 
         }
@@ -133,18 +129,10 @@ def aplicar_estilo_visual():
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         
-        /* FORÇAR TOGGLES E CHECKBOXES PARA AZUL */
-        /* Checkbox checado */
-        div[data-baseweb="checkbox"] div[class*="checked"] { 
-            background-color: var(--brand-blue) !important; 
-            border-color: var(--brand-blue) !important; 
-        }
-        /* Toggle (Switch) checado */
-        div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] {
-            background-color: var(--brand-blue) !important;
-        }
+        /* FORÇAR AZUL NOS CONTROLES */
+        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
+        div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
-        
         .stToggle { margin-top: 10px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -194,34 +182,8 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 5. UTILITÁRIOS
+# 5. UTILITÁRIOS (SALVAR/CARREGAR)
 # ==============================================================================
-def calcular_progresso():
-    pontos = 0
-    total = 7 
-    d = st.session_state.dados
-    if d['nome']: pontos += 1
-    if d['serie']: pontos += 1
-    if d['diagnostico']: pontos += 1
-    if any(d['checklist_evidencias'].values()): pontos += 1
-    if d['hiperfoco']: pontos += 1
-    if any(d['barreiras_selecionadas'].values()): pontos += 1
-    if d['estrategias_ensino'] or d['estrategias_acesso']: pontos += 1
-    return int((pontos / total) * 100)
-
-def render_progresso():
-    p = calcular_progresso()
-    if p < 10: icon_class = "ri-map-pin-user-line"
-    elif p < 100: icon_class = "ri-run-line"
-    else: icon_class = "ri-rocket-2-fill"
-    
-    st.markdown(f"""
-    <div class="minimal-track">
-        <div class="minimal-fill" style="width: {p}%;"></div>
-        <div class="minimal-cursor-icon" style="left: {p}%;"><i class="{icon_class}"></i></div>
-    </div>
-    """, unsafe_allow_html=True)
-
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
 
@@ -269,6 +231,32 @@ def carregar_aluno(nome_arq):
 def excluir_aluno(nome_arq):
     try: os.remove(os.path.join(PASTA_BANCO, nome_arq)); return True
     except: return False
+
+def calcular_progresso():
+    pontos = 0
+    total = 7 
+    d = st.session_state.dados
+    if d['nome']: pontos += 1
+    if d['serie']: pontos += 1
+    if d['diagnostico']: pontos += 1
+    if any(d['checklist_evidencias'].values()): pontos += 1
+    if d['hiperfoco']: pontos += 1
+    if any(d['barreiras_selecionadas'].values()): pontos += 1
+    if d['estrategias_ensino'] or d['estrategias_acesso']: pontos += 1
+    return int((pontos / total) * 100)
+
+def render_progresso():
+    p = calcular_progresso()
+    if p < 10: icon_class = "ri-map-pin-user-line"
+    elif p < 100: icon_class = "ri-run-line"
+    else: icon_class = "ri-rocket-2-fill"
+    
+    st.markdown(f"""
+    <div class="minimal-track">
+        <div class="minimal-fill" style="width: {p}%;"></div>
+        <div class="minimal-cursor-icon" style="left: {p}%;"><i class="{icon_class}"></i></div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ==============================================================================
 # 6. INTELIGÊNCIA ARTIFICIAL
@@ -334,7 +322,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF CLÁSSICO
+# 7. GERADOR PDF
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -421,12 +409,19 @@ with st.sidebar:
     if 'OPENAI_API_KEY' in st.secrets: api_key = st.secrets['OPENAI_API_KEY']; st.success("✅ OpenAI OK")
     else: api_key = st.text_input("Chave OpenAI:", type="password")
     
-    st.markdown("---")
-    st.caption("📂 Gestão de Casos")
-    st.info("Para salvar, use as opções de Rascunho na aba 'Documento'.")
+    st.markdown("### 📂 Carregar Backup")
+    uploaded_json = st.file_uploader("Arquivo .json do Aluno", type="json")
+    if uploaded_json:
+        try:
+            d = json.load(uploaded_json)
+            if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
+            if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
+            st.session_state.dados.update(d); st.success("Dados carregados!")
+        except: st.error("Erro no arquivo.")
+        
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v37.0 Restore</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v38.0 Sidebar Manager</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -464,7 +459,7 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # CARDS VERTICAIS RESTAURADOS
+    # CARDS VERTICAIS (CLÁSSICOS)
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
     with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
@@ -497,7 +492,7 @@ with tab1: # ESTUDANTE
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'], placeholder="Selecione os familiares...")
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico", st.session_state.dados['diagnostico'])
     
-    # Medicação Melhorada (COM CORREÇÃO DE ERRO DO KEYERROR)
+    # Medicação Melhorada
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
@@ -513,7 +508,7 @@ with tab1: # ESTUDANTE
             if st.session_state.dados['lista_medicamentos']:
                 st.markdown("**Lista Atual:**")
                 for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
-                    # CORREÇÃO SEGURA: .get('obs', '')
+                    # .get() previne erro em arquivos antigos
                     display_txt = f"💊 **{m['nome']}** ({m['posologia']})"
                     if m.get('obs'): display_txt += f" - *Obs: {m['obs']}*"
                     
@@ -644,16 +639,15 @@ with tab7: # IA
         else:
             st.info("👈 Preencha as abas anteriores e clique no botão para gerar o plano.")
 
-with tab8: # DASHBOARD COMPLETO (RESTAURADO E WIDGETIZADO)
+with tab8: # DASHBOARD WIDGETS
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     
     if st.session_state.dados['nome']:
-        # DASHBOARD WIDGETS
+        # DASHBOARD WIDGETS (VISUAL CORRIGIDO)
         st.markdown("#### 📊 Painel Geral do Aluno")
         
         c_m1, c_m2, c_m3 = st.columns(3)
         
-        # WIDGET 1: IDENTIDADE
         with c_m1:
             st.markdown(f"""
             <div class="dash-widget">
@@ -665,7 +659,6 @@ with tab8: # DASHBOARD COMPLETO (RESTAURADO E WIDGETIZADO)
             </div>
             """, unsafe_allow_html=True)
             
-        # WIDGET 2: HIPERFOCO
         with c_m2:
             hf = st.session_state.dados['hiperfoco'] or "Não informado"
             st.markdown(f"""
@@ -677,7 +670,6 @@ with tab8: # DASHBOARD COMPLETO (RESTAURADO E WIDGETIZADO)
             </div>
             """, unsafe_allow_html=True)
             
-        # WIDGET 3: MONITORAMENTO
         with c_m3:
             drev = st.session_state.dados.get('monitoramento_data')
             data_fmt = drev.strftime("%d/%m/%Y") if drev else "-"
@@ -693,7 +685,6 @@ with tab8: # DASHBOARD COMPLETO (RESTAURADO E WIDGETIZADO)
         
         st.divider()
         
-        # DNA DO SUPORTE
         st.markdown("##### 🧬 Nível de Suporte por Área")
         dna_c1, dna_c2 = st.columns(2)
         
@@ -708,7 +699,7 @@ with tab8: # DASHBOARD COMPLETO (RESTAURADO E WIDGETIZADO)
 
     st.divider()
 
-    # ÁREA DE DOWNLOAD
+    # ÁREA DE DOWNLOAD (UPLOAD REMOVIDO DAQUI)
     if st.session_state.dados['ia_sugestao']:
         c1, c2 = st.columns(2)
         with c1:
@@ -722,21 +713,12 @@ with tab8: # DASHBOARD COMPLETO (RESTAURADO E WIDGETIZADO)
             st.markdown("##### 💾 Gestão de Rascunhos")
             json_dados = json.dumps(st.session_state.dados, default=str)
             st.download_button("Baixar Arquivo do Aluno (.json)", json_dados, f"PEI_{st.session_state.dados['nome']}.json", "application/json")
-            
-            uploaded_json = st.file_uploader("Carregar Arquivo do Aluno", type="json")
-            if uploaded_json:
-                try:
-                    d = json.load(uploaded_json)
-                    if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
-                    if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
-                    st.session_state.dados.update(d); st.success("Dados carregados!"); st.rerun()
-                except: st.error("Erro no arquivo.")
     
     st.divider()
     st.markdown("#### 🗂️ Banco de Estudantes (Local)")
     arquivos = glob.glob(os.path.join(PASTA_BANCO, "*.json"))
     if not arquivos: 
-        st.caption("Nenhum estudante salvo no servidor local. Use a opção 'Baixar Arquivo' acima para garantir seus dados.")
+        st.caption("Nenhum estudante salvo no servidor local.")
     else:
         for arq in arquivos:
             nome = os.path.basename(arq).replace(".json", "").replace("_", " ").title()
