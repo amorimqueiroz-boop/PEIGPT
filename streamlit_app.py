@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (DASHBOARD REDESENHADO)
+# 2. ESTILO VISUAL (ANIMAÇÃO LENTA + DASHBOARD RICO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -38,8 +38,7 @@ def aplicar_estilo_visual():
         :root { 
             --brand-blue: #0F52BA; 
             --brand-coral: #FF6B6B;
-            --success-green: #38A169;
-            --warning-orange: #DD6B20;
+            --brand-gold: #D69E2E;
         }
         
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
@@ -53,7 +52,7 @@ def aplicar_estilo_visual():
         }
         .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* ABAS */
+        /* ABAS PÍLULA */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
             height: 38px; border-radius: 19px !important; background-color: white; 
@@ -65,25 +64,27 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO */
+        /* BARRA DE PROGRESSO CINEMÁTICA */
         .minimal-track {
-            width: 100%; height: 3px; background-color: #EDF2F7; border-radius: 1.5px;
-            position: relative; margin: 12px 0 45px 0;
+            width: 100%; height: 6px; background-color: #EDF2F7; border-radius: 3px;
+            position: relative; margin: 15px 0 50px 0;
         }
         .minimal-fill {
             height: 100%; background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
-            border-radius: 1.5px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
+            border-radius: 3px; 
+            transition: width 2.5s cubic-bezier(0.25, 1, 0.5, 1); /* Animação lenta de 2.5s */
+            box-shadow: 0 2px 5px rgba(255, 107, 107, 0.3);
         }
         .minimal-cursor-icon {
-            position: absolute; top: -17px; font-size: 1.5rem; color: #FF6B6B;
-            transition: left 1s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10;
-            background: white; border-radius: 50%; width: 30px; height: 30px; 
+            position: absolute; top: -17px; font-size: 1.6rem; color: #FF6B6B;
+            transition: left 2.5s cubic-bezier(0.25, 1, 0.5, 1); /* Acompanha o preenchimento lentamente */
+            transform: translateX(-50%); z-index: 10;
+            background: white; border-radius: 50%; width: 34px; height: 34px; 
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 2px solid white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
-        /* CARDS HOME */
+        /* CARDS VERTICAIS DA HOME */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
@@ -101,64 +102,29 @@ def aplicar_estilo_visual():
         .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
         .ic-green { background-color: #F0FFF4; color: #38A169; }
 
-        /* ==================== DASHBOARD NOVO DESIGN ==================== */
+        /* DASHBOARD MASTER */
+        .dash-hero-card {
+            background: white; border-radius: 16px; padding: 25px; border-left: 6px solid var(--brand-blue);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .dash-stat-box {
+            background: #F8FAFC; border-radius: 12px; padding: 15px; border: 1px solid #E2E8F0;
+            text-align: center; position: relative; overflow: hidden; transition: all 0.3s ease;
+        }
+        .dash-stat-box:hover { transform: translateY(-3px); border-color: var(--brand-coral); }
+        .dash-stat-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #718096; letter-spacing: 0.5px; }
+        .dash-stat-value { font-size: 1.4rem; font-weight: 800; color: #2D3748; margin-top: 5px; }
         
-        /* 1. HERO BANNER */
-        .dash-hero {
-            background: linear-gradient(135deg, #0F52BA 0%, #093c8d 100%);
-            border-radius: 20px; padding: 30px; margin-bottom: 25px;
-            color: white; display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 10px 25px rgba(15, 82, 186, 0.2);
-            position: relative; overflow: hidden;
-        }
-        .dash-avatar {
-            width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.2);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; font-weight: 800; border: 3px solid rgba(255,255,255,0.3);
-        }
-        .dash-info h1 { margin: 0; font-size: 2rem; color: white; }
-        .dash-info p { margin: 5px 0 0 0; opacity: 0.8; font-size: 1rem; }
-
-        /* 2. METRIC GRID */
-        .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .metric-box {
-            background: white; padding: 20px; border-radius: 16px; border: 1px solid #EDF2F7;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px;
-            transition: transform 0.2s;
-        }
-        .metric-box:hover { transform: translateY(-2px); border-color: #CBD5E0; }
-        .metric-icon {
-            width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-        }
-        .mi-purple { background: #FAF5FF; color: #805AD5; }
-        .mi-orange { background: #FFFAF0; color: #DD6B20; }
-        .mi-teal { background: #E6FFFA; color: #319795; }
+        /* GRÁFICO DE BARRAS CSS PURO (BAR CHART) */
+        .chart-container { margin-top: 20px; background: white; padding: 20px; border-radius: 16px; border: 1px solid #E2E8F0; }
+        .chart-row { display: flex; align-items: center; margin-bottom: 12px; }
+        .chart-label { width: 120px; font-size: 0.85rem; font-weight: 600; color: #4A5568; text-align: right; padding-right: 15px; }
+        .chart-bar-area { flex-grow: 1; background: #EDF2F7; height: 10px; border-radius: 5px; overflow: hidden; }
+        .chart-bar-fill { height: 100%; border-radius: 5px; animation: loadBar 2s ease-out forwards; }
+        .chart-value { width: 40px; font-size: 0.8rem; font-weight: 700; color: #2D3748; padding-left: 10px; }
         
-        .metric-text h4 { margin: 0; font-size: 0.75rem; text-transform: uppercase; color: #718096; }
-        .metric-text span { font-size: 1.2rem; font-weight: 800; color: #2D3748; }
-
-        /* 3. DETAIL COLUMNS */
-        .detail-card {
-            background: white; border-radius: 16px; border: 1px solid #EDF2F7; padding: 25px;
-            height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-        }
-        .card-header { 
-            font-size: 1.1rem; font-weight: 800; color: #2D3748; margin-bottom: 20px; 
-            display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 2px solid #F7FAFC;
-        }
-        
-        /* Custom Progress Bar for Dashboard */
-        .custom-bar-container { margin-bottom: 15px; }
-        .bar-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: #4A5568; margin-bottom: 5px; font-weight: 600; }
-        .bar-bg { width: 100%; height: 8px; background: #EDF2F7; border-radius: 4px; overflow: hidden; }
-        .bar-val { height: 100%; border-radius: 4px; }
-        
-        .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-        .tag-item { 
-            padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
-            background: #F0FFF4; color: #22543D; border: 1px solid #C6F6D5;
-        }
+        @keyframes loadBar { from { width: 0; } }
 
         /* INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
@@ -175,8 +141,7 @@ def aplicar_estilo_visual():
         .stToggle { margin-top: 10px; }
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title {
-            display: flex; align-items: center; gap: 10px; 
-            color: #0F52BA; font-weight: 700; font-size: 1.1rem;
+            display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem;
             margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px;
         }
     </style>
@@ -288,17 +253,28 @@ def calcular_progresso():
     if d['hiperfoco']: pontos += 1
     if any(d['barreiras_selecionadas'].values()): pontos += 1
     if d['estrategias_ensino'] or d['estrategias_acesso']: pontos += 1
-    return int((pontos / total) * 100)
+    
+    # SE O RELATÓRIO IA EXISTIR, PROGRESSO É 100% (CHEGADA)
+    if d.get('ia_sugestao'): return 100
+    
+    return int((pontos / total) * 95) # Max 95% antes da IA
 
 def render_progresso():
     p = calcular_progresso()
+    
     if p < 10: icon_class = "ri-map-pin-user-line"
     elif p < 100: icon_class = "ri-run-line"
-    else: icon_class = "ri-rocket-2-fill"
-    st.markdown(f"""<div class="minimal-track"><div class="minimal-fill" style="width: {p}%;"></div><div class="minimal-cursor-icon" style="left: {p}%;"><i class="{icon_class}"></i></div></div>""", unsafe_allow_html=True)
+    else: icon_class = "ri-trophy-fill" # Troféu na chegada
+    
+    st.markdown(f"""
+    <div class="minimal-track">
+        <div class="minimal-fill" style="width: {p}%;"></div>
+        <div class="minimal-cursor-icon" style="left: {p}%;"><i class="{icon_class}"></i></div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL
+# 6. INTELIGÊNCIA ARTIFICIAL (BNCC EXPERT)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -324,23 +300,32 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         client = OpenAI(api_key=api_key)
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
+        
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
         prompt_sys = """
-        Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Currículo BNCC.
-        DIRETRIZES:
-        1. MEDICAÇÃO: Analise se os remédios ({meds}) influenciam na atenção/comportamento.
-        2. BNCC: Diferencie RECOMPOSIÇÃO (base) de PRIORIDADE (série atual).
-        ESTRUTURA:
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
-        2. 💊 FATOR MEDICAMENTOSO: Análise.
-        3. 🎯 PLANEJAMENTO CURRICULAR (BNCC):
-           - RECOMPOSIÇÃO: [Lista]
-           - ANO ATUAL (TODOS OS COMPONENTES): [Lista]
-        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso prático de "{hiperfoco}".
-        5. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
+        Você é um Especialista em Educação Inclusiva e profundo conhecedor da BNCC (Base Nacional Comum Curricular).
+        
+        SUA MISSÃO: Criar um PEI técnico e acolhedor.
+        
+        DIRETRIZES RÍGIDAS:
+        1. CITE OS CÓDIGOS DA BNCC: Sempre que sugerir uma habilidade, use o código alfanumérico (Ex: EF03MA01, EF15AR01).
+        2. ESTRUTURA BNCC:
+           - COMPETÊNCIAS GERAIS: Cite 1 ou 2 que serão trabalhadas.
+           - HABILIDADES: Separe em "Recomposição" (Anos anteriores) e "Ano Atual".
+        3. MEDICAÇÃO: Analise o impacto dos fármacos citados na aprendizagem.
+        
+        FORMATO DE SAÍDA (MARKDOWN):
+        1. 🌟 PERFIL DO ESTUDANTE: Resumo biopsicossocial.
+        2. 💊 ANÁLISE MEDICAMENTOSA: (Se houver).
+        3. 🎯 PLANEJAMENTO BNCC:
+           * Competências Gerais: [Texto]
+           * Habilidades de Recomposição (Pré-Requisitos): [Código] - [Descrição]
+           * Habilidades Prioritárias ({serie}): [Código] - [Descrição]
+        4. 💡 ESTRATÉGIAS & HIPERFOCO: Como usar "{hiperfoco}" na prática.
+        5. 🧩 ADAPTAÇÕES: Ambiente e Avaliação.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
@@ -350,7 +335,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        EVIDÊNCIAS DE SALA: {evid}
+        EVIDÊNCIAS: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -358,7 +343,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF
+# 7. GERADOR PDF CLÁSSICO
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -457,7 +442,7 @@ with st.sidebar:
         
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v44.0 Visual Command Center</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v45.0 Masterpiece</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -647,88 +632,62 @@ with tab7: # IA (LAYOUT 2 COLUNAS)
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD (DESIGN THINKING - REVISITED)
+with tab8: # DASHBOARD RICO
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
         # HERO HEADER
         init = st.session_state.dados['nome'][0].upper() if st.session_state.dados['nome'] else "?"
         st.markdown(f"""
-        <div class="dash-hero">
+        <div class="dash-hero-card">
             <div style="display:flex; align-items:center; gap:20px;">
-                <div class="dash-avatar">{init}</div>
-                <div class="dash-info">
-                    <h1>{st.session_state.dados['nome']}</h1>
-                    <p>{st.session_state.dados['serie']} | {st.session_state.dados['turma']}</p>
+                <div style="width:60px; height:60px; background:#EBF8FF; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#0F52BA; font-weight:bold; font-size:1.8rem;">{init}</div>
+                <div>
+                    <h2 style="margin:0; color:#2D3748; font-size:1.5rem;">{st.session_state.dados['nome']}</h2>
+                    <p style="margin:0; color:#718096;">{st.session_state.dados['serie']} • {st.session_state.dados['turma']}</p>
                 </div>
             </div>
-            <div style="text-align:right;">
-                <div style="font-size:0.8rem; opacity:0.8;">DIAGNÓSTICO</div>
-                <div style="font-size:1.2rem; font-weight:bold;">{st.session_state.dados['diagnostico'] or 'Não informado'}</div>
-            </div>
+            <div class="hf-tag">{st.session_state.dados['hiperfoco'] or 'Sem Hiperfoco'}</div>
         </div>
         """, unsafe_allow_html=True)
         
-        # GRID DE MÉTRICAS (3 COLUNAS)
-        c_m1, c_m2, c_m3 = st.columns(3)
-        with c_m1:
-            st.markdown(f"""
-            <div class="metric-box">
-                <div class="metric-icon mi-purple"><i class="ri-lightbulb-flash-fill"></i></div>
-                <div class="metric-text"><h4>Hiperfoco</h4><span>{st.session_state.dados['hiperfoco'] or '-'}</span></div>
-            </div>
-            """, unsafe_allow_html=True)
-        with c_m2:
+        # GRID MÉTRICAS
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            n_pot = len(st.session_state.dados['potencias'])
+            st.markdown(f"""<div class="dash-stat-box"><div class="dash-stat-label">Potencialidades</div><div class="dash-stat-value" style="color:#38A169;">{n_pot}</div></div>""", unsafe_allow_html=True)
+        with c2:
             n_bar = sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values())
-            st.markdown(f"""
-            <div class="metric-box">
-                <div class="metric-icon mi-orange"><i class="ri-barricade-fill"></i></div>
-                <div class="metric-text"><h4>Barreiras</h4><span>{n_bar} Identificadas</span></div>
-            </div>
-            """, unsafe_allow_html=True)
-        with c_m3:
+            st.markdown(f"""<div class="dash-stat-box"><div class="dash-stat-label">Barreiras Mapeadas</div><div class="dash-stat-value" style="color:#E53E3E;">{n_bar}</div></div>""", unsafe_allow_html=True)
+        with c3:
             drev = st.session_state.dados.get('monitoramento_data')
-            d_txt = drev.strftime("%d/%m/%Y") if drev else "Pendente"
-            st.markdown(f"""
-            <div class="metric-box">
-                <div class="metric-icon mi-teal"><i class="ri-calendar-check-fill"></i></div>
-                <div class="metric-text"><h4>Próxima Revisão</h4><span>{d_txt}</span></div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        # DETALHAMENTO (2 COLUNAS)
-        col_d1, col_d2 = st.columns(2)
+            d_txt = drev.strftime("%d/%m") if drev else "-"
+            st.markdown(f"""<div class="dash-stat-box"><div class="dash-stat-label">Próxima Revisão</div><div class="dash-stat-value" style="color:#0F52BA;">{d_txt}</div></div>""", unsafe_allow_html=True)
         
-        with col_d1:
-            st.markdown('<div class="detail-card">', unsafe_allow_html=True)
-            st.markdown('<div class="card-header"><i class="ri-rocket-2-fill" style="color:#38A169;"></i> Potencialidades</div>', unsafe_allow_html=True)
-            st.markdown('<div class="tag-cloud">', unsafe_allow_html=True)
-            if st.session_state.dados['potencias']:
-                for p in st.session_state.dados['potencias']:
-                    st.markdown(f'<span class="tag-item">{p}</span>', unsafe_allow_html=True)
-            else:
-                st.caption("Nenhuma potencialidade registrada.")
-            st.markdown('</div></div>', unsafe_allow_html=True)
-            
-        with col_d2:
-            st.markdown('<div class="detail-card">', unsafe_allow_html=True)
-            st.markdown('<div class="card-header"><i class="ri-tools-fill" style="color:#0F52BA;"></i> Nível de Suporte</div>', unsafe_allow_html=True)
-            
-            # Barras Customizadas
-            areas = list(LISTAS_BARREIRAS.keys())
-            for area in areas:
-                qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
-                if qtd > 0:
-                    pct = min(qtd * 20, 100)
-                    color = "#E53E3E" if pct > 60 else ("#DD6B20" if pct > 30 else "#3182CE")
-                    st.markdown(f"""
-                    <div class="custom-bar-container">
-                        <div class="bar-label"><span>{area}</span><span>{qtd} itens</span></div>
-                        <div class="bar-bg"><div class="bar-val" style="width:{pct}%; background:{color};"></div></div>
+        st.write("")
+        
+        # GRÁFICO VISUAL (BARRAS CSS)
+        st.markdown("##### 📊 Mapa de Suporte Necessário")
+        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+        
+        areas = list(LISTAS_BARREIRAS.keys())
+        colors = ["#3182CE", "#805AD5", "#DD6B20", "#38A169", "#E53E3E"]
+        
+        for i, area in enumerate(areas):
+            qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
+            if qtd > 0:
+                pct = min(qtd * 20, 100) # 5 itens = 100%
+                st.markdown(f"""
+                <div class="chart-row">
+                    <div class="chart-label">{area}</div>
+                    <div class="chart-bar-area">
+                        <div class="chart-bar-fill" style="width: {pct}%; background-color: {colors[i]};"></div>
                     </div>
-                    """, unsafe_allow_html=True)
-            if sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values()) == 0:
-                st.caption("Nenhuma barreira mapeada ainda.")
-            st.markdown('</div>', unsafe_allow_html=True)
+                    <div class="chart-value">{qtd}</div>
+                </div>
+                """, unsafe_allow_html=True)
+        if n_bar == 0:
+            st.caption("Nenhuma barreira mapeada para gerar o gráfico.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.divider()
     if st.session_state.dados['ia_sugestao']:
