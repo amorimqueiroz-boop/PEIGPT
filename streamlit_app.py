@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (AZUL INSTITUCIONAL + CORAL DESTAQUE)
+# 2. ESTILO VISUAL (DASHBOARD REDESENHADO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -35,13 +35,13 @@ def aplicar_estilo_visual():
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         
-        /* PALETA */
         :root { 
             --brand-blue: #0F52BA; 
-            --brand-coral: #FF6B6B; 
+            --brand-coral: #FF6B6B;
+            --success-green: #38A169;
+            --warning-orange: #DD6B20;
         }
         
-        /* LAYOUT */
         .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
@@ -53,7 +53,7 @@ def aplicar_estilo_visual():
         }
         .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* ABAS PÍLULA */
+        /* ABAS */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; }
         .stTabs [data-baseweb="tab"] {
             height: 38px; border-radius: 19px !important; background-color: white; 
@@ -83,7 +83,7 @@ def aplicar_estilo_visual():
             box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
-        /* CARDS VERTICAIS (TELA INICIAL) */
+        /* CARDS HOME */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
@@ -95,51 +95,72 @@ def aplicar_estilo_visual():
         .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
         .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
         .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
-        
-        .icon-box {
-            width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; margin-bottom: 10px;
-        }
+        .icon-box { width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 10px; }
         .ic-blue { background-color: #EBF8FF; color: #3182CE; }
         .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
         .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
         .ic-green { background-color: #F0FFF4; color: #38A169; }
 
-        /* DASHBOARD SUPERIOR (DESIGN THINKING) */
-        .dash-student-header {
-            background: linear-gradient(135deg, #0F52BA 0%, #2A4365 100%);
-            color: white; padding: 30px; border-radius: 16px; margin-bottom: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 10px 20px rgba(15, 82, 186, 0.2);
-        }
-        .dash-student-info h2 { margin: 0; color: white; font-size: 2rem; }
-        .dash-student-info p { margin: 5px 0 0 0; opacity: 0.8; }
+        /* ==================== DASHBOARD NOVO DESIGN ==================== */
         
-        .dash-panel-card {
-            background: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0;
-            height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        /* 1. HERO BANNER */
+        .dash-hero {
+            background: linear-gradient(135deg, #0F52BA 0%, #093c8d 100%);
+            border-radius: 20px; padding: 30px; margin-bottom: 25px;
+            color: white; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 10px 25px rgba(15, 82, 186, 0.2);
+            position: relative; overflow: hidden;
         }
-        .panel-title { font-size: 0.9rem; font-weight: 700; color: #718096; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; }
-        
-        /* TAGS MODERNAS */
-        .tag-modern {
-            display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 20px;
-            font-size: 0.85rem; font-weight: 700; margin: 0 5px 5px 0;
-        }
-        .tm-green { background: #F0FFF4; color: #276749; border: 1px solid #C6F6D5; }
-        .tm-blue { background: #EBF8FF; color: #2C5282; border: 1px solid #BEE3F8; }
-        .tm-orange { background: #FFFAF0; color: #C05621; border: 1px solid #FEEBC8; }
-
-        /* SCORE CARD */
-        .score-circle {
-            width: 80px; height: 80px; border-radius: 50%; 
+        .dash-avatar {
+            width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.2);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; font-weight: 800; color: white;
-            background: var(--brand-coral); margin: 0 auto 10px auto;
-            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
+            font-size: 2.5rem; font-weight: 800; border: 3px solid rgba(255,255,255,0.3);
+        }
+        .dash-info h1 { margin: 0; font-size: 2rem; color: white; }
+        .dash-info p { margin: 5px 0 0 0; opacity: 0.8; font-size: 1rem; }
+
+        /* 2. METRIC GRID */
+        .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
+        .metric-box {
+            background: white; padding: 20px; border-radius: 16px; border: 1px solid #EDF2F7;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px;
+            transition: transform 0.2s;
+        }
+        .metric-box:hover { transform: translateY(-2px); border-color: #CBD5E0; }
+        .metric-icon {
+            width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        .mi-purple { background: #FAF5FF; color: #805AD5; }
+        .mi-orange { background: #FFFAF0; color: #DD6B20; }
+        .mi-teal { background: #E6FFFA; color: #319795; }
+        
+        .metric-text h4 { margin: 0; font-size: 0.75rem; text-transform: uppercase; color: #718096; }
+        .metric-text span { font-size: 1.2rem; font-weight: 800; color: #2D3748; }
+
+        /* 3. DETAIL COLUMNS */
+        .detail-card {
+            background: white; border-radius: 16px; border: 1px solid #EDF2F7; padding: 25px;
+            height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .card-header { 
+            font-size: 1.1rem; font-weight: 800; color: #2D3748; margin-bottom: 20px; 
+            display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 2px solid #F7FAFC;
+        }
+        
+        /* Custom Progress Bar for Dashboard */
+        .custom-bar-container { margin-bottom: 15px; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: #4A5568; margin-bottom: 5px; font-weight: 600; }
+        .bar-bg { width: 100%; height: 8px; background: #EDF2F7; border-radius: 4px; overflow: hidden; }
+        .bar-val { height: 100%; border-radius: 4px; }
+        
+        .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag-item { 
+            padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            background: #F0FFF4; color: #22543D; border: 1px solid #C6F6D5;
         }
 
-        /* INPUTS & BOTÕES */
+        /* INPUTS E BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
             border-radius: 10px !important; border-color: #E2E8F0 !important; 
         }
@@ -148,12 +169,10 @@ def aplicar_estilo_visual():
             background-color: var(--brand-blue) !important; color: white !important; border: none !important;
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
-        
         div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
         div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
         .stToggle { margin-top: 10px; }
-        
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title {
             display: flex; align-items: center; gap: 10px; 
@@ -276,13 +295,7 @@ def render_progresso():
     if p < 10: icon_class = "ri-map-pin-user-line"
     elif p < 100: icon_class = "ri-run-line"
     else: icon_class = "ri-rocket-2-fill"
-    
-    st.markdown(f"""
-    <div class="minimal-track">
-        <div class="minimal-fill" style="width: {p}%;"></div>
-        <div class="minimal-cursor-icon" style="left: {p}%;"><i class="{icon_class}"></i></div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div class="minimal-track"><div class="minimal-fill" style="width: {p}%;"></div><div class="minimal-cursor-icon" style="left: {p}%;"><i class="{icon_class}"></i></div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
 # 6. INTELIGÊNCIA ARTIFICIAL
@@ -311,7 +324,6 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         client = OpenAI(api_key=api_key)
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
-        
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
@@ -445,7 +457,7 @@ with st.sidebar:
         
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v43.0 Design Thinking</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v44.0 Visual Command Center</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -635,50 +647,87 @@ with tab7: # IA (LAYOUT 2 COLUNAS)
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD (DESIGN THINKING)
+with tab8: # DASHBOARD (DESIGN THINKING - REVISITED)
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
-        # CABEÇALHO DO DASHBOARD
+        # HERO HEADER
+        init = st.session_state.dados['nome'][0].upper() if st.session_state.dados['nome'] else "?"
         st.markdown(f"""
-        <div class="dash-student-header">
-            <div class="dash-student-info">
-                <h2>{st.session_state.dados['nome']}</h2>
-                <p>{st.session_state.dados['serie']} | {st.session_state.dados['turma']}</p>
+        <div class="dash-hero">
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div class="dash-avatar">{init}</div>
+                <div class="dash-info">
+                    <h1>{st.session_state.dados['nome']}</h1>
+                    <p>{st.session_state.dados['serie']} | {st.session_state.dados['turma']}</p>
+                </div>
             </div>
-            <div class="score-circle">{len(st.session_state.dados['potencias'])}<br><span style="font-size:0.6rem; font-weight:400;">POTÊNCIAS</span></div>
+            <div style="text-align:right;">
+                <div style="font-size:0.8rem; opacity:0.8;">DIAGNÓSTICO</div>
+                <div style="font-size:1.2rem; font-weight:bold;">{st.session_state.dados['diagnostico'] or 'Não informado'}</div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # COLUNAS DE CONTEÚDO
-        c_left, c_right = st.columns(2)
+        # GRID DE MÉTRICAS (3 COLUNAS)
+        c_m1, c_m2, c_m3 = st.columns(3)
+        with c_m1:
+            st.markdown(f"""
+            <div class="metric-box">
+                <div class="metric-icon mi-purple"><i class="ri-lightbulb-flash-fill"></i></div>
+                <div class="metric-text"><h4>Hiperfoco</h4><span>{st.session_state.dados['hiperfoco'] or '-'}</span></div>
+            </div>
+            """, unsafe_allow_html=True)
+        with c_m2:
+            n_bar = sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values())
+            st.markdown(f"""
+            <div class="metric-box">
+                <div class="metric-icon mi-orange"><i class="ri-barricade-fill"></i></div>
+                <div class="metric-text"><h4>Barreiras</h4><span>{n_bar} Identificadas</span></div>
+            </div>
+            """, unsafe_allow_html=True)
+        with c_m3:
+            drev = st.session_state.dados.get('monitoramento_data')
+            d_txt = drev.strftime("%d/%m/%Y") if drev else "Pendente"
+            st.markdown(f"""
+            <div class="metric-box">
+                <div class="metric-icon mi-teal"><i class="ri-calendar-check-fill"></i></div>
+                <div class="metric-text"><h4>Próxima Revisão</h4><span>{d_txt}</span></div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        # DETALHAMENTO (2 COLUNAS)
+        col_d1, col_d2 = st.columns(2)
         
-        with c_left:
-            st.markdown('<div class="dash-panel-card">', unsafe_allow_html=True)
-            st.markdown('<div class="panel-title">🚀 Motores de Aprendizagem</div>', unsafe_allow_html=True)
+        with col_d1:
+            st.markdown('<div class="detail-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header"><i class="ri-rocket-2-fill" style="color:#38A169;"></i> Potencialidades</div>', unsafe_allow_html=True)
+            st.markdown('<div class="tag-cloud">', unsafe_allow_html=True)
+            if st.session_state.dados['potencias']:
+                for p in st.session_state.dados['potencias']:
+                    st.markdown(f'<span class="tag-item">{p}</span>', unsafe_allow_html=True)
+            else:
+                st.caption("Nenhuma potencialidade registrada.")
+            st.markdown('</div></div>', unsafe_allow_html=True)
             
-            hf = st.session_state.dados['hiperfoco'] or "Não informado"
-            st.markdown(f"**Hiperfoco:** {hf}")
-            st.write("")
-            for p in st.session_state.dados['potencias']:
-                st.markdown(f'<span class="tag-modern tm-green">{p}</span>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+        with col_d2:
+            st.markdown('<div class="detail-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header"><i class="ri-tools-fill" style="color:#0F52BA;"></i> Nível de Suporte</div>', unsafe_allow_html=True)
             
-        with c_right:
-            st.markdown('<div class="dash-panel-card">', unsafe_allow_html=True)
-            st.markdown('<div class="panel-title">🏗️ Estrutura de Suporte (Barreiras)</div>', unsafe_allow_html=True)
-            
-            # CÁLCULO DE COMPLEXIDADE
-            total_barreiras = sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values())
-            nivel_complexidade = "Baixa" if total_barreiras < 3 else ("Média" if total_barreiras < 7 else "Alta")
-            cor_complexidade = "#2F855A" if total_barreiras < 3 else ("#C05621" if total_barreiras < 7 else "#E53E3E")
-            
-            st.markdown(f"**Nível de Adaptação Necessária:** <span style='color:{cor_complexidade}; font-weight:bold;'>{nivel_complexidade}</span>", unsafe_allow_html=True)
-            st.progress(min(total_barreiras * 10, 100))
-            
-            st.write("")
-            for area, itens in st.session_state.dados['barreiras_selecionadas'].items():
-                if itens:
-                    st.caption(f"{area}: {len(itens)} itens")
+            # Barras Customizadas
+            areas = list(LISTAS_BARREIRAS.keys())
+            for area in areas:
+                qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
+                if qtd > 0:
+                    pct = min(qtd * 20, 100)
+                    color = "#E53E3E" if pct > 60 else ("#DD6B20" if pct > 30 else "#3182CE")
+                    st.markdown(f"""
+                    <div class="custom-bar-container">
+                        <div class="bar-label"><span>{area}</span><span>{qtd} itens</span></div>
+                        <div class="bar-bg"><div class="bar-val" style="width:{pct}%; background:{color};"></div></div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            if sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values()) == 0:
+                st.caption("Nenhuma barreira mapeada ainda.")
             st.markdown('</div>', unsafe_allow_html=True)
 
     st.divider()
