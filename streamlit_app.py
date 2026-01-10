@@ -105,19 +105,38 @@ def aplicar_estilo_visual():
         .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
         .ic-green { background-color: #F0FFF4; color: #38A169; }
 
-        /* DASHBOARD WIDGETS */
-        .dash-widget {
-            background-color: white; border-radius: 12px; border: 1px solid #E2E8F0;
-            padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        /* DASHBOARD SUPERIOR (DESIGN THINKING) */
+        .dash-student-header {
+            background: linear-gradient(135deg, #0F52BA 0%, #2A4365 100%);
+            color: white; padding: 30px; border-radius: 16px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 20px rgba(15, 82, 186, 0.2);
         }
-        .dash-header { font-size: 0.8rem; text-transform: uppercase; color: #A0AEC0; font-weight: 700; margin-bottom: 10px; }
-        .dash-content { font-size: 1.4rem; color: #2D3748; font-weight: 800; }
-        .dash-sub { font-size: 0.9rem; color: #718096; margin-top: 5px; }
+        .dash-student-info h2 { margin: 0; color: white; font-size: 2rem; }
+        .dash-student-info p { margin: 5px 0 0 0; opacity: 0.8; }
         
-        .hf-tag {
-            background: #E6FFFA; color: #2C7A7B; padding: 5px 15px; border-radius: 20px;
-            font-weight: 700; font-size: 1rem; border: 1px solid #B2F5EA; display: inline-block;
+        .dash-panel-card {
+            background: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0;
+            height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .panel-title { font-size: 0.9rem; font-weight: 700; color: #718096; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; }
+        
+        /* TAGS MODERNAS */
+        .tag-modern {
+            display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 700; margin: 0 5px 5px 0;
+        }
+        .tm-green { background: #F0FFF4; color: #276749; border: 1px solid #C6F6D5; }
+        .tm-blue { background: #EBF8FF; color: #2C5282; border: 1px solid #BEE3F8; }
+        .tm-orange { background: #FFFAF0; color: #C05621; border: 1px solid #FEEBC8; }
+
+        /* SCORE CARD */
+        .score-circle {
+            width: 80px; height: 80px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 800; color: white;
+            background: var(--brand-coral); margin: 0 auto 10px auto;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
         }
 
         /* INPUTS & BOTÕES */
@@ -130,25 +149,16 @@ def aplicar_estilo_visual():
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         
-        /* FORÇAR AZUL NOS CONTROLES */
         div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
         div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
         .stToggle { margin-top: 10px; }
         
-        /* BOX LATERAL DA IA */
-        .ia-side-box {
-            background: #F8FAFC; border-radius: 16px; padding: 25px; 
-            border: 1px solid #E2E8F0; text-align: left;
-            margin-bottom: 20px;
-        }
-        
-        /* ESTILO PARA SUBTÍTULOS VISUAIS NOS FORMULÁRIOS */
+        .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title {
             display: flex; align-items: center; gap: 10px; 
             color: #0F52BA; font-weight: 700; font-size: 1.1rem;
-            margin-top: 20px; margin-bottom: 15px;
-            border-bottom: 2px solid #F7FAFC; padding-bottom: 5px;
+            margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px;
         }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
@@ -275,7 +285,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (BLINDADA)
+# 6. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -308,21 +318,12 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
 
         prompt_sys = """
         Você é um Consultor Pedagógico Especialista em Educação Inclusiva e Currículo BNCC.
-        
-        DIRETRIZES OBRIGATÓRIAS:
+        DIRETRIZES:
         1. MEDICAÇÃO: Analise se os remédios ({meds}) influenciam na atenção/comportamento.
-        
-        2. ESTRUTURA DE HABILIDADES (BNCC):
-           Divida os objetivos em DOIS BLOCOS:
-           A) HABILIDADES DE RECOMPOSIÇÃO (ANOS ANTERIORES):
-              - Lacunas e pré-requisitos.
-           B) HABILIDADES DO ANO ATUAL (PRIORITÁRIAS):
-              - Essenciais da série ({serie}).
-              - Diversos componentes (Português, Matemática, Ciências, etc.).
-        
-        ESTRUTURA FINAL DO RELATÓRIO (Markdown Limpo):
-        1. 🌟 VISÃO GERAL: Resumo biopsicossocial.
-        2. 💊 FATOR MEDICAMENTOSO: Análise farmacológica.
+        2. BNCC: Diferencie RECOMPOSIÇÃO (base) de PRIORIDADE (série atual).
+        ESTRUTURA:
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
+        2. 💊 FATOR MEDICAMENTOSO: Análise.
         3. 🎯 PLANEJAMENTO CURRICULAR (BNCC):
            - RECOMPOSIÇÃO: [Lista]
            - ANO ATUAL (TODOS OS COMPONENTES): [Lista]
@@ -345,7 +346,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF CLÁSSICO
+# 7. GERADOR PDF
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -444,7 +445,7 @@ with st.sidebar:
         
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v42.0 Personalized</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v43.0 Design Thinking</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -493,7 +494,6 @@ with tab0: # INÍCIO
 
 with tab1: # ESTUDANTE
     render_progresso()
-    
     st.markdown("<div class='form-section-title'><i class='ri-user-smile-line'></i> Identidade & Matrícula</div>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns([3, 2, 2, 1])
     st.session_state.dados['nome'] = c1.text_input("Nome Completo", st.session_state.dados['nome'])
@@ -502,14 +502,12 @@ with tab1: # ESTUDANTE
     except: serie_idx = 0
     st.session_state.dados['serie'] = c3.selectbox("Série/Ano", LISTA_SERIES, index=serie_idx, placeholder="Selecione...")
     st.session_state.dados['turma'] = c4.text_input("Turma", st.session_state.dados['turma'])
-    
     st.markdown("<div class='form-section-title'><i class='ri-hospital-line'></i> Contexto Clínico & Familiar</div>", unsafe_allow_html=True)
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico", st.session_state.dados['diagnostico'])
     c_hist, c_fam = st.columns(2)
     st.session_state.dados['historico'] = c_hist.text_area("Histórico Escolar (Retenções/Mudanças)", st.session_state.dados['historico'])
     st.session_state.dados['familia'] = c_fam.text_area("Dinâmica Familiar (Detalhes)", st.session_state.dados['familia'])
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'])
-    
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         if usa_med:
@@ -524,7 +522,6 @@ with tab1: # ESTUDANTE
                 if m.get('obs'): display_txt += f" - *Obs: {m['obs']}*"
                 st.info(display_txt)
                 if st.button("Remover", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
-    
     with st.expander("📎 Anexar Laudo (PDF)"):
         up = st.file_uploader("Upload", type="pdf", label_visibility="collapsed")
         if up: st.session_state.pdf_text = ler_pdf(up)
@@ -612,23 +609,12 @@ with tab6: # MONITORAMENTO
     with c3: st.session_state.dados['parecer_geral'] = st.selectbox("Parecer Geral", ["Manter Estratégias", "Aumentar Suporte", "Reduzir Suporte (Autonomia)", "Alterar Metodologia", "Encaminhar para Especialista"], index=0, placeholder="Selecione...")
     with c4: st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"], placeholder="Selecione...")
 
-with tab7: # IA (LAYOUT 2 COLUNAS + PERSONALIZAÇÃO)
+with tab7: # IA (LAYOUT 2 COLUNAS)
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Assistente Pedagógico Inteligente", unsafe_allow_html=True)
-    
     col_left, col_right = st.columns([1, 2])
-    
     with col_left:
-        st.markdown("""
-        <div class="ia-side-box">
-            <h4 style="color:#0F52BA; margin-top:0;">🤖 Consultoria IA</h4>
-            <p style="font-size:0.9rem; color:#64748B;">
-                Vou analisar o <b>Hiperfoco</b>, <b>Barreiras</b> e <b>Medicação</b> para criar um plano alinhado à BNCC.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # PERSONALIZAÇÃO NO BOTÃO
+        st.markdown("""<div class="ia-side-box"><h4 style="color:#0F52BA; margin-top:0;">🤖 Consultoria IA</h4><p style="font-size:0.9rem; color:#64748B;">Vou analisar o <b>Hiperfoco</b>, <b>Barreiras</b> e <b>Medicação</b> para criar um plano alinhado à BNCC.</p></div>""", unsafe_allow_html=True)
         nome_aluno = st.session_state.dados['nome'].split()[0] if st.session_state.dados['nome'] else "o estudante"
         if st.button(f"✨ GERAR PLANO PARA {nome_aluno.upper()}", type="primary", use_container_width=True):
             res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text)
@@ -638,16 +624,10 @@ with tab7: # IA (LAYOUT 2 COLUNAS + PERSONALIZAÇÃO)
                 if effect == 'balloons': st.balloons()
                 else: st.snow()
             else: st.error(err)
-
     with col_right:
         if st.session_state.dados['ia_sugestao']:
             with st.expander("🔍 Entenda a Lógica (Calibragem)"):
-                st.markdown("""
-                **Como este plano foi construído:**
-                * **Filtro Vygotsky:** Identificação da Zona de Desenvolvimento Proximal.
-                * **Análise Farmacológica:** Impacto da medicação na aprendizagem.
-                * **Alinhamento BNCC:** Habilidades de recomposição vs. ano corrente.
-                """)
+                st.markdown("""**Como este plano foi construído:**\n* **Filtro Vygotsky:** Identificação da Zona de Desenvolvimento Proximal.\n* **Análise Farmacológica:** Impacto da medicação na aprendizagem.\n* **Alinhamento BNCC:** Habilidades de recomposição vs. ano corrente.""")
             st.markdown(st.session_state.dados['ia_sugestao'])
             st.info("📝 **Personalize:** O texto acima é editável.")
             novo_texto = st.text_area("Editor de Conteúdo", value=st.session_state.dados['ia_sugestao'], height=400, key="editor_ia")
@@ -655,30 +635,51 @@ with tab7: # IA (LAYOUT 2 COLUNAS + PERSONALIZAÇÃO)
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD
+with tab8: # DASHBOARD (DESIGN THINKING)
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
-        st.markdown("#### 📊 Painel Geral do Aluno")
-        c_m1, c_m2, c_m3 = st.columns(3)
-        with c_m1: st.markdown(f"""<div class="dash-widget"><div><div class="dash-header">Estudante</div><div class="dash-content">{st.session_state.dados['nome'].split()[0]}</div><div class="dash-sub">{st.session_state.dados['serie']}</div></div></div>""", unsafe_allow_html=True)
-        with c_m2:
-            hf = st.session_state.dados['hiperfoco'] or "Não informado"
-            st.markdown(f"""<div class="dash-widget"><div><div class="dash-header">Chave de Acesso</div><div class="hf-tag">{hf}</div></div></div>""", unsafe_allow_html=True)
-        with c_m3:
-            drev = st.session_state.dados.get('monitoramento_data')
-            data_fmt = drev.strftime("%d/%m/%Y") if drev else "-"
-            st.markdown(f"""<div class="dash-widget"><div><div class="dash-header">Próxima Revisão</div><div class="dash-content" style="color:#E53E3E;">{data_fmt}</div><div class="dash-sub">Meta: {st.session_state.dados['status_meta']}</div></div></div>""", unsafe_allow_html=True)
+        # CABEÇALHO DO DASHBOARD
+        st.markdown(f"""
+        <div class="dash-student-header">
+            <div class="dash-student-info">
+                <h2>{st.session_state.dados['nome']}</h2>
+                <p>{st.session_state.dados['serie']} | {st.session_state.dados['turma']}</p>
+            </div>
+            <div class="score-circle">{len(st.session_state.dados['potencias'])}<br><span style="font-size:0.6rem; font-weight:400;">POTÊNCIAS</span></div>
+        </div>
+        """, unsafe_allow_html=True)
         
-        st.divider()
-        st.markdown("##### 🧬 Nível de Suporte por Área")
-        dna_c1, dna_c2 = st.columns(2)
-        areas = list(LISTAS_BARREIRAS.keys())
-        for i, area in enumerate(areas):
-            qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
-            val = min(qtd * 20, 100)
-            target = dna_c1 if i < 3 else dna_c2
-            target.caption(f"{area} ({qtd} barreiras)")
-            target.progress(val)
+        # COLUNAS DE CONTEÚDO
+        c_left, c_right = st.columns(2)
+        
+        with c_left:
+            st.markdown('<div class="dash-panel-card">', unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">🚀 Motores de Aprendizagem</div>', unsafe_allow_html=True)
+            
+            hf = st.session_state.dados['hiperfoco'] or "Não informado"
+            st.markdown(f"**Hiperfoco:** {hf}")
+            st.write("")
+            for p in st.session_state.dados['potencias']:
+                st.markdown(f'<span class="tag-modern tm-green">{p}</span>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        with c_right:
+            st.markdown('<div class="dash-panel-card">', unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">🏗️ Estrutura de Suporte (Barreiras)</div>', unsafe_allow_html=True)
+            
+            # CÁLCULO DE COMPLEXIDADE
+            total_barreiras = sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values())
+            nivel_complexidade = "Baixa" if total_barreiras < 3 else ("Média" if total_barreiras < 7 else "Alta")
+            cor_complexidade = "#2F855A" if total_barreiras < 3 else ("#C05621" if total_barreiras < 7 else "#E53E3E")
+            
+            st.markdown(f"**Nível de Adaptação Necessária:** <span style='color:{cor_complexidade}; font-weight:bold;'>{nivel_complexidade}</span>", unsafe_allow_html=True)
+            st.progress(min(total_barreiras * 10, 100))
+            
+            st.write("")
+            for area, itens in st.session_state.dados['barreiras_selecionadas'].items():
+                if itens:
+                    st.caption(f"{area}: {len(itens)} itens")
+            st.markdown('</div>', unsafe_allow_html=True)
 
     st.divider()
     if st.session_state.dados['ia_sugestao']:
