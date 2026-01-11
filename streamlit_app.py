@@ -45,7 +45,7 @@ LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", 
 LISTA_FAMILIA = ["Mãe", "Pai", "Mãe (2ª)", "Pai (2º)", "Avó", "Avô", "Irmão(s)", "Tio(a)", "Padrasto", "Madrasta", "Tutor Legal", "Abrigo Institucional"]
 
 # ==============================================================================
-# 3. GERENCIAMENTO DE ESTADO (CORREÇÃO AQUI)
+# 3. GERENCIAMENTO DE ESTADO (CORREÇÃO APLICADA AQUI)
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -57,8 +57,7 @@ default_state = {
     'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
     'ia_sugestao': '', 'outros_acesso': '', 'outros_ensino': '', 
     'monitoramento_data': date.today(), 
-    'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': [],
-    'dalle_image_url': '' # ADICIONADO PARA CORRIGIR O ERRO
+    'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': []
 }
 
 if 'dados' not in st.session_state: st.session_state.dados = default_state
@@ -67,6 +66,11 @@ else:
         if key not in st.session_state.dados: st.session_state.dados[key] = val
 
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
+
+# --- CORREÇÃO DO ERRO ATTRIBUTE ERROR ---
+# Inicializa a variável da imagem separadamente para garantir que ela exista
+if 'dalle_image_url' not in st.session_state: 
+    st.session_state.dalle_image_url = ""
 
 # ==============================================================================
 # 4. LÓGICA E UTILITÁRIOS
@@ -104,13 +108,11 @@ def calcular_complexidade_pei(dados):
     if saldo <= 7: return "ATENÇÃO", "#FFFFF0", "#D69E2E"
     return "CRÍTICA", "#FFF5F5", "#C53030"
 
-# --- EXTRAÇÃO ROBUSTA (IGNORA CASE E LIMPA CÓDIGO) ---
 def extrair_tag_ia(texto, tag):
     padrao = fr'\[{tag}\](.*?)(\[|$)'
     match = re.search(padrao, texto, re.DOTALL | re.IGNORECASE)
     if match: 
         conteudo = match.group(1).strip()
-        # Remove crases de código markdown se existirem
         conteudo = conteudo.replace('```graphviz', '').replace('```', '').strip()
         return conteudo
     return ""
@@ -143,7 +145,7 @@ def extrair_resumo_estrategia(texto):
 def gerar_dot_legivel(texto_mapa):
     dot = 'digraph G {\n'
     dot += '  rankdir="LR";\n'
-    dot += '  bgcolor="white";\n'  # Fundo Branco para garantir contraste
+    dot += '  bgcolor="white";\n'  # Fundo Branco
     dot += '  node [fontname="Arial", fontsize=10, shape=box, style="filled,rounded", fontcolor="black", margin=0.1];\n'
     dot += '  edge [fontname="Arial", fontsize=9, color="#A0AEC0", arrowsize=0.6];\n'
     
@@ -154,21 +156,31 @@ def gerar_dot_legivel(texto_mapa):
         for linha in linhas:
             if "->" in linha:
                 partes = linha.split("->")
-                # Remove aspas e colchetes que quebram o DOT
                 origem_raw = partes[0].strip().replace('"', "'").replace("[", "").replace("]", "")
                 destino_raw = partes[1].strip().replace('"', "'").replace("[", "").replace("]", "")
                 
-                # Cores Pastéis (Amarelo/Dourado foco)
-                fill = "#FEFCBF" # Amarelo Default
-                
+                # Cores Pastéis
+                fill = "#FEFCBF" 
                 lower_o = origem_raw.lower()
-                if "poder" in lower_o or "hiperfoco" in lower_o: fill = "#F6AD55" # Laranja
-                elif "nervoso" in lower_o or "ansied" in lower_o: fill = "#FED7D7" # Vermelho suave
-                elif "foc" in lower_o or "atenc" in lower_o: fill = "#BEE3F8" # Azul suave
-                elif "casa" in lower_o: fill = "#C6F6D5" # Verde suave
+                if "poder" in lower_o or "hiperfoco" in lower_o: fill = "#F6AD55"
+                elif "nervoso" in lower_o or "ansied" in lower_o: fill = "#FED7D7"
+                elif "foc" in lower_o or "atenc" in lower_o: fill = "#BEE3F8"
+                elif "casa" in lower_o: fill = "#C6F6D5"
                 
-                dot += f'  "{origem_raw}" [fillcolor="{fill}"];\n'
-                dot += f'  "{destino_raw}" [fillcolor="white", color="#D69E2E"];\n'
+                # Garante Emojis
+                def ensure_emoji(txt):
+                    if any(c in txt for c in "⚡😰🎯🏠💧🎧⏱️"): return txt
+                    if "nervoso" in txt.lower(): return "😰 " + txt
+                    if "foca" in txt.lower(): return "🎯 " + txt
+                    if "poder" in txt.lower(): return "⚡ " + txt
+                    if "casa" in txt.lower(): return "🏠 " + txt
+                    return "🔹 " + txt
+
+                origem_label = ensure_emoji(origem_raw)
+                destino_label = ensure_emoji(destino_raw)
+
+                dot += f'  "{origem_raw}" [label="{origem_label}", fillcolor="{fill}"];\n'
+                dot += f'  "{destino_raw}" [label="{destino_label}", fillcolor="white", color="#E2E8F0", style="filled,rounded"];\n'
                 dot += f'  "{origem_raw}" -> "{destino_raw}";\n'
     
     dot += '}'
@@ -267,12 +279,12 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (HOME VIBRANTE + DASH CLEAN + MAPA AMARELO)
+# 5. ESTILO VISUAL
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
-        @import url('[https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap)');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
@@ -323,7 +335,7 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
         
-        /* HOME CARD STYLES (VIBRANTE) */
+        /* HOME CARD STYLES */
         .home-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px;
@@ -338,7 +350,7 @@ def aplicar_estilo_visual():
             display: flex; align-items: center; justify-content: center; 
             font-size: 2.2rem; margin-bottom: 15px; 
         }
-        /* CORES VIBRANTES FORÇADAS */
+        /* CORES VIBRANTES */
         .ic-blue { background-color: #EBF8FF !important; color: #3182CE !important; border: 1px solid #BEE3F8 !important; }
         .ic-gold { background-color: #FFFFF0 !important; color: #D69E2E !important; border: 1px solid #FAF089 !important; }
         .ic-pink { background-color: #FFF5F7 !important; color: #D53F8C !important; border: 1px solid #FED7E2 !important; }
@@ -352,14 +364,14 @@ def aplicar_estilo_visual():
         .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
         .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
     </style>
-    <link href="[https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css](https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css)" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
     st.markdown(estilo, unsafe_allow_html=True)
 
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V82 - CORREÇÃO MAPA E DALL-E)
+# 6. INTELIGÊNCIA ARTIFICIAL
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -597,10 +609,10 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="[https://diversa.org.br/educacao-inclusiva/](https://diversa.org.br/educacao-inclusiva/)" target="_blank" class="rich-card-link"><div class="home-card hc-blue"><div class="home-icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="[https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm)" target="_blank" class="rich-card-link"><div class="home-card hc-gold"><div class="home-icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="[https://institutoneurosaber.com.br/](https://institutoneurosaber.com.br/)" target="_blank" class="rich-card-link"><div class="home-card hc-pink"><div class="home-icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="[http://basenacionalcomum.mec.gov.br/](http://basenacionalcomum.mec.gov.br/)" target="_blank" class="rich-card-link"><div class="home-card hc-green"><div class="home-icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="home-card hc-blue"><div class="home-icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="home-card hc-gold"><div class="home-icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="home-card hc-pink"><div class="home-icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
+    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="home-card hc-green"><div class="home-icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
     if api_key: st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
 
 with tab1: # ESTUDANTE
@@ -814,7 +826,8 @@ with tab_mapa: # MAPA AMARELO (CORRIGIDO PARA BRANCO E LEGÍVEL)
                 st.warning("Por favor, defina um Hiperfoco na aba 'Potencialidades' primeiro.")
 
     with col_dalle_img:
-        if st.session_state.dalle_image_url:
+        # CORREÇÃO DO ERRO ANTERIOR: Verifica se a variável existe antes de usar
+        if 'dalle_image_url' in st.session_state and st.session_state.dalle_image_url:
             st.image(st.session_state.dalle_image_url, caption="Sua Jornada de Aprendizagem Personalizada", use_column_width=True)
             st.markdown(f'<a href="{st.session_state.dalle_image_url}" download="Minha_Jornada_Magica.png" target="_blank" style="display:inline-block; text-decoration:none; background-color:#0F52BA; color:white; padding:10px 20px; border-radius:8px; font-weight:bold; text-align:center;">📥 Baixar Imagem (Abrir Nova Aba)</a>', unsafe_allow_html=True)
 
