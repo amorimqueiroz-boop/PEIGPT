@@ -125,7 +125,7 @@ def get_hiperfoco_emoji(texto):
     if "espaço" in t: return "🪐"
     return "🚀"
 
-def detectar_nivel_ensino(serie_str):
+def detecting_nivel_ensino(serie_str):
     if not serie_str: return "INDEFINIDO"
     s = serie_str.lower()
     if "infantil" in s: return "EI"
@@ -135,7 +135,7 @@ def detectar_nivel_ensino(serie_str):
     return "INDEFINIDO"
 
 def get_segmento_info_visual(serie):
-    nivel = detectar_nivel_ensino(serie)
+    nivel = detecting_nivel_ensino(serie)
     if nivel == "EI":
         return "Educação Infantil", "#4299e1", "Foco: Campos de Experiência (BNCC) e Desenvolvimento Integral."
     elif nivel == "FI":
@@ -154,9 +154,9 @@ def calcular_complexidade_pei(dados):
     if dados['rede_apoio']: recursos += 3
     if dados['lista_medicamentos']: recursos += 2
     saldo = (n_bar + n_suporte_alto) - recursos
-    if saldo <= 2: return "FLUIDA", "#F0FFF4", "#276749"
-    if saldo <= 7: return "ATENÇÃO", "#FFFFF0", "#D69E2E"
-    return "CRÍTICA", "#FFF5F5", "#C53030"
+    if saldo <= 2: return "FLUIDA", "#E2E8F0", "#2D3748"
+    if saldo <= 7: return "ATENÇÃO", "#E2E8F0", "#2D3748"
+    return "CRÍTICA", "#E2E8F0", "#2D3748"
 
 def extrair_tag_ia(texto, tag):
     if not texto: return ""
@@ -255,68 +255,66 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    icon = "🌱"
-    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)"
-    if p >= 100: 
-        icon = "🏆"
-        bar_color = "linear-gradient(90deg, #00C6FF 0%, #0072FF 100%)" 
-    st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
+    bar_color = "linear-gradient(90deg, #2D3748 0%, #4A5568 100%)" # Cinza Escuro
+    st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (MONOCHROME & GOLD v114.0)
+# 5. ESTILO VISUAL (SWISS CLEAN & DASHBOARD CARDS v118.0)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
-        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; background-color: #F7FAFC; }
+        /* FONTE ROBOTO (Clean & Technical) */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+        
+        html, body, [class*="css"] { 
+            font-family: 'Roboto', sans-serif; 
+            color: #2D3748; 
+            background-color: #F8F9FA; 
+        }
         .block-container { padding-top: 1.5rem !important; padding-bottom: 5rem !important; }
         
-        /* 1. NAVEGAÇÃO "PÍLULA" MONOCROMÁTICA (O PULO DO GATO) */
+        /* 1. NAVEGAÇÃO "PÍLULA" SEM EMOJIS (Clean & Flat) */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .stTabs [data-baseweb="tab-list"] { 
-            gap: 8px; 
+            gap: 12px; 
             display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 10px 5px;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            flex-wrap: wrap; 
+            justify-content: center;
+            padding: 15px 5px;
         }
-        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
 
         .stTabs [data-baseweb="tab"] { 
-            height: 38px; 
+            height: 40px; 
             border-radius: 20px !important; 
             background-color: #FFFFFF; 
             border: 1px solid #E2E8F0; 
             color: #718096; 
             font-weight: 600; 
-            font-size: 0.85rem; 
-            padding: 0 20px; 
+            font-size: 0.9rem; 
+            padding: 0 25px; 
             transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             flex-shrink: 0;
-            
-            /* O PULO DO GATO: Deixa os emojis CINZAS (escala de cinza) */
-            filter: grayscale(100%); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .stTabs [data-baseweb="tab"]:hover {
             border-color: #CBD5E0;
             color: #4A5568;
             background-color: #F7FAFC;
+            transform: translateY(-2px);
         }
 
         .stTabs [aria-selected="true"] { 
-            background-color: #EDF2F7 !important;
-            color: #1A202C !important;
-            border-color: #CBD5E0 !important;
+            background-color: #2D3748 !important; /* Preto/Cinza Escuro */
+            color: #FFFFFF !important; /* Texto Branco */
+            border-color: #2D3748 !important;
             font-weight: 800;
-            /* Traz um pouco de cor de volta ao selecionar, ou mantém cinza mais forte */
-            filter: grayscale(0%); 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         /* 2. CARD DE INSIGHT (AMARELO CLARO) */
@@ -328,76 +326,98 @@ def aplicar_estilo_visual():
             display: flex;
             align-items: center;
             gap: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-left: 5px solid #D69E2E;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+            border-left: 5px solid #ECC94B;
             margin-top: 30px;
         }
         .insight-icon {
             font-size: 1.5rem;
             color: #D69E2E;
-            background: rgba(214, 158, 46, 0.15);
-            width: 40px; height: 40px;
+            background: rgba(236, 201, 75, 0.2);
+            width: 45px; height: 45px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 3. CARDS DA HOME (CLEAN) */
+        /* 3. CARDS DA HOME (HARMONIA DE CORES) */
         .home-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 10px;
+            gap: 20px;
+            margin-top: 20px;
         }
         .rich-card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 25px;
             border: 1px solid #E2E8F0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
             transition: all 0.2s ease;
             text-decoration: none;
             color: inherit;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: center; /* Centralizado como nos exemplos */
             text-align: center;
             position: relative;
             overflow: hidden;
             height: 100%;
         }
         .rich-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
             border-color: #CBD5E0;
         }
-        .rich-card-top { width: 100%; height: 4px; position: absolute; top: 0; left: 0; }
-        .rc-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px; }
-        .rc-title { font-weight: 800; font-size: 1rem; color: #2D3748; margin-bottom: 5px; }
-        .rc-desc { font-size: 0.8rem; color: #718096; line-height: 1.3; }
+        /* Linha colorida no topo */
+        .rich-card-top { width: 100%; height: 6px; position: absolute; top: 0; left: 0; }
+        
+        .rc-icon { 
+            width: 60px; height: 60px; 
+            border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.6rem; 
+            margin-bottom: 15px; 
+        }
+        .rc-title { font-weight: 800; font-size: 1.1rem; color: #1A202C; margin-bottom: 8px; }
+        .rc-desc { font-size: 0.9rem; color: #718096; line-height: 1.4; }
 
         /* OUTROS */
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
         .prog-container { width: 100%; position: relative; margin: 0 0 30px 0; }
-        .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
-        .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-        .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
+        .prog-track { width: 100%; height: 4px; background-color: #E2E8F0; border-radius: 2px; }
+        .prog-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
         
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 8px !important; border-color: #E2E8F0 !important; }
-        div[data-testid="column"] .stButton button { border-radius: 8px !important; font-weight: 700 !important; height: 45px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
-        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
+            border-radius: 8px !important; 
+            border-color: #E2E8F0 !important; 
+            font-family: 'Roboto', sans-serif;
+        }
+        div[data-testid="column"] .stButton button { 
+            border-radius: 8px !important; 
+            font-weight: 700 !important; 
+            height: 45px !important; 
+            background-color: #2D3748 !important; /* Botão Escuro */
+            color: white !important; 
+            border: none !important; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.8rem !important;
+        }
+        div[data-testid="column"] .stButton button:hover { background-color: #1A202C !important; }
         .segmento-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 0.75rem; color: white; margin-top: 5px; }
         
-        /* FOOTER ASSINATURA */
         .footer-signature {
-            margin-top: 50px;
+            margin-top: 60px;
             padding-top: 20px;
             border-top: 1px solid #E2E8F0;
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #A0AEC0;
+            font-family: 'Roboto', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
-        /* DASHBOARD */
         .dash-hero { background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(15, 82, 186, 0.15); }
         .apple-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); color: white; font-weight: 800; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
         .metric-card { background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
@@ -484,7 +504,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
 
         # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO (CORREÇÃO LÓGICA) ---
         serie = dados['serie'] or ""
-        nivel_ensino = detectar_nivel_ensino(serie) # Usa a função de detecção robusta
+        nivel_ensino = detecting_nivel_ensino(serie) 
         
         alfabetizacao = dados.get('nivel_alfabetizacao', 'Não Avaliado')
         
@@ -631,7 +651,7 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     try:
         client = OpenAI(api_key=api_key)
         serie = dados['serie'] or ""
-        nivel_ensino = detectar_nivel_ensino(serie) # Usa a detecção correta
+        nivel_ensino = detecting_nivel_ensino(serie) 
         hiperfoco = dados['hiperfoco'] or "brincadeiras"
         
         # --- FIREWALL DE CONTEXTO ---
@@ -828,6 +848,8 @@ with st.sidebar:
         if ok: st.success(msg)
         else: st.error(msg)
     st.markdown("---")
+    data_atual = date.today().strftime("%d/%m/%Y")
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v118.0 Final Design Refinement</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -839,11 +861,11 @@ st.markdown(f"""
     <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
-# ABAS (10 Abas com Emojis nas Strings)
-abas = ["🏠 Início", "👤 Estudante", "📝 Evidências", "🤝 Rede de Apoio", "🚧 Potencialidades & Barreiras", "🛠️ Plano de Ação", "🔄 Monitoramento", "🤖 Consultoria IA", "📄 Documento", "🗺️ Jornada do Aluno"]
+# ABAS (10 Abas SEM EMOJIS)
+abas = ["Início", "Estudante", "Evidências", "Rede de Apoio", "Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento", "Jornada"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
-with tab0: # INÍCIO (LAYOUT ATUALIZADO)
+with tab0: # INÍCIO (DESIGN OVERHAUL)
     if api_key:
         with st.spinner("Conectando à IA..."):
             try:
@@ -866,37 +888,37 @@ with tab0: # INÍCIO (LAYOUT ATUALIZADO)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # GRID DE CARDS (AGORA VEM ANTES DO INSIGHT)
+    # GRID DE CARDS (AGORA COM CORES E TEXTOS CORRIGIDOS)
     st.markdown("""
     <div class="home-grid">
         <a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card">
             <div class="rich-card-top" style="background-color: #3182CE;"></div>
             <div class="rc-icon" style="background-color:#EBF8FF; color:#3182CE;"><i class="ri-book-open-line"></i></div>
             <div class="rc-title">O que é PEI?</div>
-            <div class="rc-desc">Conceitos fundamentais e estruturação.</div>
+            <div class="rc-desc">Guia fundamental sobre a estruturação do Plano.</div>
         </a>
         <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card">
-            <div class="rich-card-top" style="background-color: #D69E2E;"></div>
-            <div class="rc-icon" style="background-color:#FFFFF0; color:#D69E2E;"><i class="ri-scales-3-line"></i></div>
+            <div class="rich-card-top" style="background-color: #805AD5;"></div>
+            <div class="rc-icon" style="background-color:#F3E8FF; color:#805AD5;"><i class="ri-scales-3-line"></i></div>
             <div class="rc-title">Legislação</div>
-            <div class="rc-desc">LBI e Decretos sobre inclusão.</div>
+            <div class="rc-desc">Consulte a LBI e decretos de inclusão.</div>
         </a>
         <a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card">
             <div class="rich-card-top" style="background-color: #D53F8C;"></div>
             <div class="rc-icon" style="background-color:#FFF5F7; color:#D53F8C;"><i class="ri-brain-line"></i></div>
             <div class="rc-title">Neurociência</div>
-            <div class="rc-desc">Artigos sobre desenvolvimento atípico.</div>
+            <div class="rc-desc">Como o cérebro atípico aprende.</div>
         </a>
         <a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card">
             <div class="rich-card-top" style="background-color: #38A169;"></div>
             <div class="rc-icon" style="background-color:#F0FFF4; color:#38A169;"><i class="ri-compass-3-line"></i></div>
             <div class="rc-title">BNCC</div>
-            <div class="rc-desc">Currículo oficial e adaptações.</div>
+            <div class="rc-desc">Conexão com o currículo oficial.</div>
         </a>
     </div>
     """, unsafe_allow_html=True)
 
-    # INSIGHT CARD (AGORA POR ÚLTIMO)
+    # INSIGHT CARD (AGORA POR ÚLTIMO E AMARELO CLARO)
     if api_key:
         st.markdown(f"""
         <div class="insight-card">
@@ -1301,4 +1323,4 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
         st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
 
 # Footer final (Version signature)
-st.markdown("<div class='footer-signature'>PEI 360º v114.0 Minimalist Gray UI - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+st.markdown("<div class='footer-signature'>PEI 360º v118.0 Final Design Refinement - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
