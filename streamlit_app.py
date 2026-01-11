@@ -28,32 +28,51 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS
+# 2. LISTAS DE DADOS (ROBUSTAS & TÉCNICAS)
 # ==============================================================================
-LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
+LISTA_SERIES = [
+    "Educação Infantil (Creche)", "Educação Infantil (Pré-Escola)", 
+    "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", 
+    "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", 
+    "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)", "EJA (Educação de Jovens e Adultos)"
+]
 
 LISTA_ALFABETIZACAO = [
-    "Não Avaliado",
-    "Pré-Silábico (Garatuja/Desenho)",
-    "Pré-Silábico (Letras Aleatórias)",
-    "Silábico (Sem valor sonoro)",
-    "Silábico (Com valor sonoro)",
-    "Silábico-Alfabético",
-    "Alfabético (Em consolidação/Com erros ortográficos)",
-    "Alfabético (Fluente/Ortográfico)"
+    "Não se aplica (Educação Infantil)",
+    "Pré-Silábico (Garatuja/Desenho sem letras)",
+    "Pré-Silábico (Letras aleatórias sem valor sonoro)",
+    "Silábico (Sem valor sonoro convencional)",
+    "Silábico (Com valor sonoro vogais/consoantes)",
+    "Silábico-Alfabético (Transição)",
+    "Alfabético (Escrita fonética, com erros ortográficos)",
+    "Ortográfico (Escrita convencional consolidada)"
 ]
 
 LISTAS_BARREIRAS = {
-    "Cognitivo": ["Atenção Sustentada", "Memória de Trabalho", "Flexibilidade Cognitiva", "Raciocínio Lógico"],
-    "Comunicacional": ["Linguagem Expressiva", "Compreensão", "Pragmática (Uso Social)", "Vocabulário"],
-    "Socioemocional": ["Regulação Emocional", "Tolerância à Frustração", "Interação Social", "Autoestima"],
-    "Sensorial/Motor": ["Coordenação Motora", "Hipersensibilidade", "Busca Sensorial", "Planejamento Motor"],
-    "Acadêmico": ["Alfabetização", "Compreensão Leitora", "Cálculo", "Produção Textual"]
+    "Funções Cognitivas": ["Atenção Sustentada/Focada", "Memória de Trabalho (Operacional)", "Flexibilidade Mental", "Planejamento e Organização", "Velocidade de Processamento", "Abstração e Generalização"],
+    "Comunicação e Linguagem": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Pragmática (Uso social da língua)", "Processamento Auditivo", "Intenção Comunicativa"],
+    "Socioemocional": ["Regulação Emocional (Autocontrole)", "Tolerância à Frustração", "Interação Social com Pares", "Autoestima e Autoimagem", "Reconhecimento de Emoções"],
+    "Sensorial e Motor": ["Praxias Globais (Coordenação Grossa)", "Praxias Finas (Coordenação Fina)", "Hipersensibilidade Sensorial", "Hipossensibilidade (Busca Sensorial)", "Planejamento Motor"],
+    "Acadêmico": ["Decodificação Leitora", "Compreensão Textual", "Raciocínio Lógico-Matemático", "Grafomotricidade (Escrita manual)", "Produção Textual"]
 }
 
-LISTA_POTENCIAS = ["Memória Visual", "Musicalidade", "Tecnologia", "Hiperfoco", "Liderança", "Esportes", "Desenho", "Cálculo Mental", "Oralidade", "Criatividade"]
-LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", "Neuropediatra", "Psiquiatra", "Psicopedagogo", "Professor de Apoio", "AT"]
-LISTA_FAMILIA = ["Mãe", "Pai", "Mãe (2ª)", "Pai (2º)", "Avó", "Avô", "Irmão(s)", "Tio(a)", "Padrasto", "Madrasta", "Tutor Legal", "Abrigo Institucional"]
+LISTA_POTENCIAS = [
+    "Memória Visual", "Musicalidade/Ritmo", "Interesse em Tecnologia", "Hiperfoco Construtivo", 
+    "Liderança Natural", "Habilidades Cinestésicas (Esportes)", "Expressão Artística (Desenho)", 
+    "Cálculo Mental Rápido", "Oralidade/Vocabulário", "Criatividade/Imaginação", 
+    "Empatia/Cuidado com o outro", "Resolução de Problemas", "Curiosidade Investigativa"
+]
+
+LISTA_PROFISSIONAIS = [
+    "Psicólogo Clínico", "Neuropsicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", 
+    "Neuropediatra", "Psiquiatra Infantil", "Psicopedagogo Clínico", "Professor de Apoio (Mediador)", 
+    "Acompanhante Terapêutico (AT)", "Musicoterapeuta", "Equoterapeuta", "Oftalmologista"
+]
+
+LISTA_FAMILIA = [
+    "Mãe", "Pai", "Madrasta", "Padrasto", "Avó Materna", "Avó Paterna", "Avô Materno", "Avô Paterno", 
+    "Irmãos", "Tios", "Primos", "Tutor Legal", "Abrigo Institucional"
+]
 
 # ==============================================================================
 # 3. GERENCIAMENTO DE ESTADO
@@ -63,11 +82,11 @@ default_state = {
     'lista_medicamentos': [], 'composicao_familiar_tags': [], 'historico': '', 'familia': '', 
     'hiperfoco': '', 'potencias': [], 'rede_apoio': [], 'orientacoes_especialistas': '',
     'checklist_evidencias': {}, 
-    'nivel_alfabetizacao': 'Não Avaliado', # NOVO CAMPO
+    'nivel_alfabetizacao': 'Não se aplica (Educação Infantil)',
     'barreiras_selecionadas': {k: [] for k in LISTAS_BARREIRAS.keys()},
     'niveis_suporte': {}, 
     'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
-    'ia_sugestao': '',         # PEI TÉCNICO OU PRÁTICO
+    'ia_sugestao': '',         # PEI TÉCNICO
     'ia_mapa_texto': '',       # ROTEIRO GAMIFICADO
     'outros_acesso': '', 'outros_ensino': '', 
     'monitoramento_data': date.today(), 
@@ -108,15 +127,15 @@ def get_hiperfoco_emoji(texto):
 
 def get_segmento_info(serie):
     """Retorna informações sobre o segmento escolar para UX"""
-    if not serie: return "Geral", "Adaptação curricular padrão."
+    if not serie: return "Segmento não definido", "Selecione a série para ver as diretrizes."
     if "Educação Infantil" in serie:
-        return "Educação Infantil", "Foco Central: **Campos de Experiência** e **Direitos de Aprendizagem** (BNCC). Desenvolvimento integral (o brincar, o corpo, o outro)."
+        return "Educação Infantil", "Foco Pedagógico: **Campos de Experiência** e **Direitos de Aprendizagem** (BNCC). Prioriza-se o desenvolvimento integral, o brincar e a socialização."
     if "Fund. I" in serie:
-        return "Anos Iniciais", "Foco: Alfabetização, Habilidades Basais (anteriores) vs. Habilidades do Ano. Uso de Taxonomia de Bloom."
+        return "Anos Iniciais (Fund. I)", "Foco Pedagógico: **Alfabetização e Letramento**, construção de repertório matemático e rotina de estudante."
     if "Fund. II" in serie:
-        return "Anos Finais", "Foco: Organização, Identidade, Habilidades de Abstração e consolidação de pré-requisitos."
-    if "EM" in serie or "Médio" in serie:
-        return "Ensino Médio", "Foco: Projeto de Vida, Habilidades complexas e preparação para autonomia futura."
+        return "Anos Finais (Fund. II)", "Foco Pedagógico: **Organização e Autonomia** frente a múltiplos professores, construção de identidade e pensamento abstrato."
+    if "EM" in serie or "Médio" in serie or "EJA" in serie:
+        return "Ensino Médio / EJA", "Foco Pedagógico: **Projeto de Vida**, preparação para o mundo do trabalho/acadêmico e autonomia intelectual plena."
     return "Geral", "Adaptação curricular padrão."
 
 def calcular_complexidade_pei(dados):
@@ -138,13 +157,11 @@ def extrair_tag_ia(texto, tag):
     return ""
 
 def extrair_metas_estruturadas(texto):
-    bloco = extrair_tag_ia(texto, "METAS_SMART") # Tenta SMART padrão
+    bloco = extrair_tag_ia(texto, "METAS_SMART")
     if not bloco:
-        # Se não achar SMART, tenta Objetivos da EI
         bloco = extrair_tag_ia(texto, "OBJETIVOS_DESENVOLVIMENTO")
         if not bloco: return None
         return {"Curto": "Ver Objetivos de Desenvolvimento abaixo", "Medio": "...", "Longo": "..."}
-    
     metas = {"Curto": "Definir...", "Medio": "Definir...", "Longo": "Definir..."}
     linhas = bloco.split('\n')
     for l in linhas:
@@ -162,7 +179,6 @@ def extrair_bloom(texto):
 def extrair_campos_experiencia(texto):
     bloco = extrair_tag_ia(texto, "CAMPOS_EXPERIENCIA_PRIORITARIOS")
     if not bloco: return ["O eu, o outro e o nós", "Corpo, gestos e movimentos"]
-    # Limpa e pega os primeiros
     linhas = [l.strip().replace('- ','') for l in bloco.split('\n') if l.strip()]
     return linhas[:3]
 
@@ -170,8 +186,8 @@ def get_pro_icon(nome_profissional):
     p = nome_profissional.lower()
     if "psic" in p: return "🧠"
     if "fono" in p: return "🗣️"
-    if "terapeuta" in p: return "🧩"
-    if "neuro" in p: return "🩺"
+    if "terapeuta" in p or "equo" in p or "musico" in p: return "🧩"
+    if "neuro" in p or "psiq" in p or "medico" in p: return "🩺"
     return "👨‍⚕️"
 
 def finding_logo():
@@ -206,7 +222,7 @@ def salvar_aluno(dados):
     try:
         with open(os.path.join(PASTA_BANCO, nome_arq), 'w', encoding='utf-8') as f:
             json.dump(dados, f, default=str, ensure_ascii=False, indent=4)
-        return True, f"Salvo: {dados['nome']}"
+        return True, f"Registro salvo: {dados['nome']}"
     except Exception as e: return False, str(e)
 
 def carregar_aluno(nome_arq):
@@ -218,11 +234,11 @@ def excluir_aluno(nome_arq):
 
 def calcular_progresso():
     if st.session_state.dados['ia_sugestao']: return 100
-    pontos = 0; total = 7 # Aumentado para 7 com a Alfabetização
+    pontos = 0; total = 7
     d = st.session_state.dados
     if d['nome']: pontos += 1
     if d['serie']: pontos += 1
-    if d['nivel_alfabetizacao'] != 'Não Avaliado': pontos += 1
+    if d['nivel_alfabetizacao'] and d['nivel_alfabetizacao'] != 'Não se aplica (Educação Infantil)': pontos += 1
     if any(d['checklist_evidencias'].values()): pontos += 1
     if d['hiperfoco']: pontos += 1
     if any(d['barreiras_selecionadas'].values()): pontos += 1
@@ -394,7 +410,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
 
         # LÓGICA DE ALFABETIZAÇÃO (IMPACTO NA IA)
         prompt_literacia = ""
-        if alfabetizacao not in ["Alfabético (Fluente/Ortográfico)", "Não Avaliado", ""]:
+        if "Alfabético" not in alfabetizacao and alfabetizacao != "Não se aplica (Educação Infantil)":
              prompt_literacia = f"""
              [ATENÇÃO CRÍTICA: ALFABETIZAÇÃO]
              O aluno está na fase: {alfabetizacao}.
@@ -442,7 +458,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
                 perfil_ia = "Você é um Especialista em ANOS INICIAIS. Foco: Alfabetização, Letramento e BNCC."
             elif "Fund. II" in serie:
                 perfil_ia = "Você é um Especialista em ANOS FINAIS. Foco: Autonomia, Identidade e Habilidades BNCC."
-            elif "EM" in serie or "Médio" in serie:
+            elif "EM" in serie or "Médio" in serie or "EJA" in serie:
                 perfil_ia = "Você é um Especialista em ENSINO MÉDIO. Foco: Projeto de Vida e Habilidades BNCC."
             else:
                 perfil_ia = "Você é um Especialista em Inclusão Escolar."
@@ -520,7 +536,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         return res.choices[0].message.content, None
     except Exception as e: return None, str(e)
 
-# CÉREBRO 2: GAME MASTER (SEGMENTADO POR IDADE)
+# CÉREBRO 2: GAME MASTER (SEGMENTADO E BLINDADO)
 def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     if not api_key: return None, "Configure a API."
     try:
@@ -528,12 +544,24 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
         serie = dados['serie'] or ""
         hiperfoco = dados['hiperfoco'] or "brincadeiras"
         
+        # --- FIREWALL DE CONTEXTO ---
+        # NÃO enviamos a lista de medicamentos. Enviamos apenas o essencial.
+        contexto_seguro = f"""
+        ALUNO: {dados['nome'].split()[0]}
+        HIPERFOCO: {hiperfoco}
+        PONTOS FORTES: {', '.join(dados['potencias'])}
+        """
+        
+        regras_ouro = """
+        REGRA DE OURO: JAMAIS mencione medicamentos, laudos, CIDs, médicos ou termos clínicos. 
+        Este documento é para a criança/jovem se sentir potente. Fale de habilidades e desafios como se fosse um jogo/história.
+        """
+
         # --- LÓGICA DE SEGMENTAÇÃO DO MAPA ---
         if "Educação Infantil" in serie:
-            # INFANTIL: Visual, emojis, rotina simples
             prompt_sys = f"""
             Você é um Criador de Histórias Visuais para crianças pequenas (4-5 anos).
-            O aluno gosta de: {hiperfoco}.
+            {regras_ouro}
             
             SUA MISSÃO: Criar um Roteiro Visual usando MUITOS EMOJIS e pouquíssimo texto.
             Estrutura obrigatória:
@@ -545,15 +573,12 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
             🍎 **Lanche:** (Emoji sobre comer e lavar as mãos)
             🧘 **Descanso:** (Emoji sobre ficar calmo/soneca)
             👋 **Saída:** (Emoji sobre abraçar a família)
-            
-            Use linguagem carinhosa e direta.
             """
             
         elif "Fund. I" in serie:
-            # ANOS INICIAIS: Gamificação concreta, missões
             prompt_sys = f"""
             Você é um Game Master para crianças de 6 a 10 anos.
-            O aluno gosta de: {hiperfoco}.
+            {regras_ouro}
             
             SUA MISSÃO: Criar um "Quadro de Missões" empolgante.
             Estrutura obrigatória:
@@ -561,31 +586,30 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
             # 🗺️ MAPA DE EXPLORAÇÃO
             
             🎒 **Equipamento:** (Materiais escolares como itens de aventura)
-            ⚡ **Super Poder:** (O ponto forte do aluno)
+            ⚡ **Super Poder:** (O ponto forte do aluno transformado em habilidade)
             🚧 **O Desafio:** (O que é difícil na escola, transformado em obstáculo a pular)
             🏆 **Recompensa:** (O que ganha ao terminar: tempo livre, estrelinha)
             🤝 **Aliados:** (Professora e amigos)
             """
             
         else:
-            # FUND II / MÉDIO: RPG, Jornada do Herói, identidade
             prompt_sys = f"""
             Você é um Narrador de RPG para adolescentes.
-            O aluno gosta de: {hiperfoco}.
+            {regras_ouro}
             
             SUA MISSÃO: Criar uma "Ficha de Personagem" ou "Jornada do Herói".
             Estrutura obrigatória:
             
             # ⚔️ FICHA DE PERSONAGEM
             
-            📜 **A Quest (Missão):** (Terminar o ano, passar no vestibular, ou foco)
+            📜 **A Quest (Missão):** (Terminar o ano, aprender tal coisa, ou foco pessoal)
             🔮 **Skills (Habilidades):** (Pontos fortes cognitivos e sociais)
-            🛡️ **Buffs (Apoios):** (O que ajuda: fone de ouvido, sentar na frente)
-            👹 **Boss (Desafio):** (A dificuldade principal: ansiedade, barulho)
+            🛡️ **Buffs (Apoios):** (O que ajuda: fone de ouvido, sentar na frente, tempo extra)
+            👹 **Boss (Desafio):** (A dificuldade principal: ansiedade, barulho, organização)
             🧪 **Mana (Energia):** (Como recarregar no intervalo)
             """
         
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": "Gere o roteiro."}])
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": f"Gere o roteiro para: {contexto_seguro}"}])
         return res.choices[0].message.content, None
     except Exception as e: return None, str(e)
 
@@ -706,13 +730,13 @@ with st.sidebar:
             st.session_state.dados.update(d); st.success("Carregado!")
         except: st.error("Erro no arquivo.")
     st.markdown("---")
-    if st.button("💾 Salvar no Sistema", use_container_width=True):
+    if st.button("💾 Registrar Aluno", use_container_width=True):
         ok, msg = salvar_aluno(st.session_state.dados)
         if ok: st.success(msg)
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v109.0 Literacy Intelligence</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v110.0 Gold Master</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -756,20 +780,20 @@ with tab0: # INÍCIO (RESTORED - CLASSIC)
 
 with tab1: # ESTUDANTE
     render_progresso()
-    st.markdown("<div class='form-section-title'><i class='ri-user-smile-line'></i> Identidade & Matrícula</div>", unsafe_allow_html=True)
+    st.markdown("<div class='form-section-title'><i class='ri-user-smile-line'></i> Dossiê do Estudante</div>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns([3, 2, 2, 1])
     st.session_state.dados['nome'] = c1.text_input("Nome Completo", st.session_state.dados['nome'])
     st.session_state.dados['nasc'] = c2.date_input("Nascimento", value=st.session_state.dados.get('nasc', date(2015, 1, 1)))
     try: serie_idx = LISTA_SERIES.index(st.session_state.dados['serie']) if st.session_state.dados['serie'] in LISTA_SERIES else 0
     except: serie_idx = 0
-    st.session_state.dados['serie'] = c3.selectbox("Série/Ano", LISTA_SERIES, index=serie_idx, placeholder="Selecione...")
+    st.session_state.dados['serie'] = c3.selectbox("Série/Ano", LISTA_SERIES, index=serie_idx, placeholder="Selecione...", help="O segmento escolar define como a IA vai estruturar o PEI (BNCC, Bloom ou Projetos).")
     st.session_state.dados['turma'] = c4.text_input("Turma", st.session_state.dados['turma'])
     
-    st.markdown("<div class='form-section-title'><i class='ri-history-line'></i> Histórico & Família</div>", unsafe_allow_html=True)
+    st.markdown("<div class='form-section-title'><i class='ri-history-line'></i> Histórico & Contexto Familiar</div>", unsafe_allow_html=True)
     c_hist, c_fam = st.columns(2)
-    st.session_state.dados['historico'] = c_hist.text_area("Histórico Escolar", st.session_state.dados['historico'])
-    st.session_state.dados['familia'] = c_fam.text_area("Dinâmica Familiar", st.session_state.dados['familia'])
-    st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'])
+    st.session_state.dados['historico'] = c_hist.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Retenções, trocas de escola, relatórios anteriores.")
+    st.session_state.dados['familia'] = c_fam.text_area("Dinâmica Familiar", st.session_state.dados['familia'], help="Quem cuida, rotina em casa, apoio nas tarefas.")
+    st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem convive com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'])
     
     st.divider()
     
@@ -783,7 +807,7 @@ with tab1: # ESTUDANTE
     with col_btn_ia:
         st.write("") # Espaço para alinhar
         st.write("") 
-        if st.button("✨ Extrair Dados do Laudo", type="primary", use_container_width=True, disabled=(not st.session_state.pdf_text)):
+        if st.button("✨ Extrair Dados do Laudo", type="primary", use_container_width=True, disabled=(not st.session_state.pdf_text), help="A IA lerá o PDF e preencherá automaticamente o Diagnóstico e a Medicação abaixo."):
             with st.spinner("Analisando laudo..."):
                 dados_extraidos, erro = extrair_dados_pdf_ia(api_key, st.session_state.pdf_text)
                 if dados_extraidos:
@@ -809,7 +833,7 @@ with tab1: # ESTUDANTE
     st.divider()
     
     st.markdown("<div class='form-section-title'><i class='ri-hospital-line'></i> Contexto Clínico</div>", unsafe_allow_html=True)
-    st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico / Hipótese Diagnóstica", st.session_state.dados['diagnostico'])
+    st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico / Hipótese Diagnóstica", st.session_state.dados['diagnostico'], help="CID ou descrição da hipótese (ex: TDAH, TEA, Dislexia).")
     
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
@@ -838,7 +862,7 @@ with tab2: # EVIDÊNCIAS
         "Em qual hipótese de escrita o estudante se encontra?",
         LISTA_ALFABETIZACAO,
         index=LISTA_ALFABETIZACAO.index(st.session_state.dados['nivel_alfabetizacao']) if st.session_state.dados['nivel_alfabetizacao'] in LISTA_ALFABETIZACAO else 0,
-        help="Classificação baseada na psicogênese da língua escrita."
+        help="Classificação baseada na psicogênese da língua escrita (Ferreiro & Teberosky). Fundamental para definir as adaptações de prova."
     )
     st.divider()
     
@@ -858,21 +882,21 @@ with tab2: # EVIDÊNCIAS
 
 with tab3: # REDE
     render_progresso()
-    st.markdown("### <i class='ri-team-line'></i> Rede de Apoio", unsafe_allow_html=True)
-    st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais:", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'])
-    st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações Clínicas Importantes", st.session_state.dados['orientacoes_especialistas'])
+    st.markdown("### <i class='ri-team-line'></i> Rede de Apoio Multidisciplinar", unsafe_allow_html=True)
+    st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais que atendem o aluno:", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'])
+    st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações Clínicas Importantes (o que os terapeutas pediram?)", st.session_state.dados['orientacoes_especialistas'])
 
 with tab4: # MAPEAMENTO
     render_progresso()
     with st.container(border=True):
         st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#0F52BA'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
-        st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco", st.session_state.dados['hiperfoco'])
+        st.session_state.dados['hiperfoco'] = c1.text_input("Hiperfoco (Interesse Restrito/Intenso)", st.session_state.dados['hiperfoco'], help="Ex: Dinossauros, Trens, Minecraft. Usado para engajamento.")
         p_val = [p for p in st.session_state.dados.get('potencias', []) if p in LISTA_POTENCIAS]
-        st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes", LISTA_POTENCIAS, default=p_val)
+        st.session_state.dados['potencias'] = c2.multiselect("Pontos Fortes e Habilidades", LISTA_POTENCIAS, default=p_val)
     st.divider()
     with st.container(border=True):
-        st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte", unsafe_allow_html=True)
+        st.markdown("#### <i class='ri-barricade-line' style='color:#FF6B6B'></i> Barreiras e Nível de Suporte (CIF)", unsafe_allow_html=True)
         c_bar1, c_bar2, c_bar3 = st.columns(3)
         def render_cat_barreira(coluna, titulo, chave_json):
             with coluna:
@@ -885,9 +909,9 @@ with tab4: # MAPEAMENTO
                     for x in sel:
                         st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
                 st.write("")
-        render_cat_barreira(c_bar1, "Cognitivo", "Cognitivo")
-        render_cat_barreira(c_bar1, "Sensorial/Motor", "Sensorial/Motor")
-        render_cat_barreira(c_bar2, "Comunicacional", "Comunicacional")
+        render_cat_barreira(c_bar1, "Funções Cognitivas", "Cognitivo")
+        render_cat_barreira(c_bar1, "Sensorial e Motor", "Sensorial/Motor")
+        render_cat_barreira(c_bar2, "Comunicação e Linguagem", "Comunicacional")
         render_cat_barreira(c_bar2, "Acadêmico", "Acadêmico")
         render_cat_barreira(c_bar3, "Socioemocional", "Socioemocional")
 
@@ -898,23 +922,23 @@ with tab5: # PLANO
     with c1:
         with st.container(border=True):
             st.markdown("#### 1. Acesso (DUA)")
-            st.session_state.dados['estrategias_acesso'] = st.multiselect("Recursos", ["Tempo Estendido", "Apoio Leitura/Escrita", "Material Ampliado", "Tecnologia Assistiva", "Sala Silenciosa"], default=st.session_state.dados['estrategias_acesso'])
+            st.session_state.dados['estrategias_acesso'] = st.multiselect("Recursos", ["Tempo Estendido", "Apoio Leitura/Escrita", "Material Ampliado", "Tecnologia Assistiva", "Sala Silenciosa", "Mobiliário Adaptado"], default=st.session_state.dados['estrategias_acesso'])
             st.session_state.dados['outros_acesso'] = st.text_input("Prática Personalizada (Acesso)", st.session_state.dados['outros_acesso'])
     with c2:
         with st.container(border=True):
             st.markdown("#### 2. Ensino")
-            st.session_state.dados['estrategias_ensino'] = st.multiselect("Metodologia", ["Fragmentação de Tarefas", "Pistas Visuais", "Mapas Mentais", "Modelagem", "Ensino Híbrido"], default=st.session_state.dados['estrategias_ensino'])
+            st.session_state.dados['estrategias_ensino'] = st.multiselect("Metodologia", ["Fragmentação de Tarefas", "Pistas Visuais", "Mapas Mentais", "Modelagem", "Ensino Híbrido", "Instrução Explícita"], default=st.session_state.dados['estrategias_ensino'])
             st.session_state.dados['outros_ensino'] = st.text_input("Prática Pedagógica (Ensino)", st.session_state.dados['outros_ensino'])
     with c3:
         with st.container(border=True):
             st.markdown("#### 3. Avaliação")
-            st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação"], default=st.session_state.dados['estrategias_avaliacao'])
+            st.session_state.dados['estrategias_avaliacao'] = st.multiselect("Formato", ["Prova Adaptada", "Prova Oral", "Consulta Permitida", "Portfólio", "Autoavaliação", "Parecer Descritivo"], default=st.session_state.dados['estrategias_avaliacao'])
 
 with tab6: # MONITORAMENTO
     render_progresso()
     st.markdown("### <i class='ri-loop-right-line'></i> Monitoramento e Metas", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
-    with c1: st.session_state.dados['monitoramento_data'] = st.date_input("Próxima Revisão", value=st.session_state.dados.get('monitoramento_data', None))
+    with c1: st.session_state.dados['monitoramento_data'] = st.date_input("Data da Próxima Revisão", value=st.session_state.dados.get('monitoramento_data', None))
     with c2: st.session_state.dados['status_meta'] = st.selectbox("Status da Meta Atual", ["Não Iniciado", "Em Andamento", "Parcialmente Atingido", "Atingido", "Superado"], index=0)
     st.write("")
     c3, c4 = st.columns(2)
@@ -934,7 +958,7 @@ with tab7: # IA (CONSULTORIA PEDAGÓGICA)
         nome_aluno = st.session_state.dados['nome'].split()[0] if st.session_state.dados['nome'] else "o estudante"
         
         # Botão 1: PEI Técnico Padrão
-        if st.button(f"✨ GERAR PEI TÉCNICO", type="primary", use_container_width=True):
+        if st.button(f"✨ Criar Estratégia Técnica (PEI)", type="primary", use_container_width=True):
             res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text, modo_pratico=False)
             if res: 
                 st.session_state.dados['ia_sugestao'] = res
@@ -944,7 +968,7 @@ with tab7: # IA (CONSULTORIA PEDAGÓGICA)
         # Botão 2: PEI Prático (Novo)
         st.write("")
         st.markdown("**Opções Avançadas:**")
-        if st.button("🔄 Gerar Versão Prática (Chão de Sala)", use_container_width=True, help="Gera um guia direto de manejo e adaptação, sem termos técnicos complexos."):
+        if st.button("🔄 Criar Guia Prático (Chão de Sala)", use_container_width=True, help="Gera um guia direto de manejo e adaptação, sem termos técnicos complexos."):
              res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text, modo_pratico=True)
              if res:
                  st.session_state.dados['ia_sugestao'] = res
@@ -1090,7 +1114,7 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
 
     if st.session_state.dados['ia_sugestao']:
         # Botão para Gerar o Mapa (Chama a IA Gamificada)
-        if st.button("🎮 Gerar Roteiro Gamificado", type="primary"):
+        if st.button("🎮 Criar Roteiro Gamificado", type="primary"):
             with st.spinner("O Game Master está criando o roteiro..."):
                 texto_game, err = gerar_roteiro_gamificado(api_key, st.session_state.dados, st.session_state.dados['ia_sugestao'])
                 
