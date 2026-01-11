@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (TOP LEVEL)
+# 2. LISTAS DE DADOS (TOP LEVEL - CRÍTICO PARA NÃO DAR ERRO)
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -72,7 +72,6 @@ if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
 
-# --- DETECÇÃO DE EMOJI POR HIPERFOCO (NOVIDADE) ---
 def get_hiperfoco_emoji(texto):
     if not texto: return "🚀"
     t = texto.lower()
@@ -105,7 +104,6 @@ def extrair_tag_ia(texto, tag):
     return ""
 
 def extrair_linhas_bncc(texto):
-    # Regex para pegar qualquer menção de código BNCC na linha
     padrao = r'([A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}.*?)(?=\n|$)'
     if not texto: return []
     linhas = re.findall(padrao, texto)
@@ -113,14 +111,12 @@ def extrair_linhas_bncc(texto):
 
 def extrair_resumo_estrategia(texto):
     if not texto: return "Plano ainda não gerado."
-    # Tenta via TAG
     conteudo = extrair_tag_ia(texto, "ESTRATEGIA_MASTER")
     if not conteudo and "ESTRATÉGIAS" in texto:
         partes = texto.split("ESTRATÉGIAS")
         conteudo = partes[1].split("ADAPTAÇÕES")[0] if "ADAPTAÇÕES" in partes[1] else partes[1]
     
     if conteudo:
-        # Limpeza fina
         conteudo = re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
         return conteudo.strip()
     return "Gere o plano na aba IA para ver o resumo estratégico."
@@ -206,14 +202,14 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (CSS GLOBAL)
+# 5. ESTILO VISUAL (CSS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-        .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
+        .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
@@ -262,7 +258,6 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
         
-        /* RESTAURAR CORES DA HOME */
         .rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; }
         .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
@@ -282,7 +277,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (ROBUSTA V66)
+# 6. INTELIGÊNCIA ARTIFICIAL (COM REFERÊNCIAS BIBLIOGRÁFICAS)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -309,38 +304,57 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
-        # Medicação Simplificada na IA (Sem ler o campo OBS que foi removido)
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # --- PROMPT REFINADO COM DIRETRIZES DE ADAPTAÇÃO ---
+        # --- PROMPT V67.0 (COM BIBLIOGRAFIA) ---
         prompt_sys = """
-        Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
+        Você é um Especialista Sênior em Neuroeducação, Inclusão, Currículo BNCC e Legislação Educacional Brasileira.
         
-        USE ESTAS TAGS OBRIGATÓRIAS NO TEXTO:
+        SUA MISSÃO: Cruzar dados clínicos e escolares para criar um PEI Assertivo, Científico e Prático.
+        
+        --- BASE DE CONHECIMENTO (REFERÊNCIAS OBRIGATÓRIAS) ---
+        Use estes autores para embasar suas diretrizes quando pertinente:
+        1. MANTOAN (2021): Foco na diferenciação pedagógica e fim da segregação.
+        2. PLETSCH (2020): Crítica à "laudagem" excludente; foco no currículo comum.
+        3. DALL SOTO (2024) / META 4 PNE: Direito inegociável à educação regular.
+        4. MENDES: Ensino colaborativo e co-docência como estratégia.
+        5. CRISCOULLO (2025): Superação de barreiras reais (formação/infraestrutura).
+        6. UCHÔA & CHACON (2022): Democratização e convivência com a diferença.
+        
+        --- REGRAS DE OURO ---
+        1. USE AS TAGS EXATAS (Essenciais para o sistema).
+        2. LINGUAGEM TÉCNICA: Use "ZDP (Vygotsky)", "Andaimagem", "Funções Executivas", "Dupla Codificação".
+        3. ASSERTIVIDADE: Use "Recomenda-se", "É imperativo". Evite "pode ser".
+        
+        --- ESTRUTURA DA RESPOSTA ---
+        
+        1. 🌟 QUEM É O ESTUDANTE (SÍNTESE BIOPSICOSSOCIAL):
+           Cruze diagnóstico + histórico + evidências. Cite brevemente um autor da base (ex: "Conforme Pletsch, o foco não deve ser o laudo, mas a potencialidade...") para justificar a visão inclusiva.
         
         [ANALISE_FARMA]
-        Analise brevemente os efeitos colaterais esperados dos medicamentos informados e o impacto na rotina.
+        Analise os fármacos ({meds}). Indique efeitos colaterais (sono, sede, irritabilidade) e o impacto pedagógico direto.
         [FIM_ANALISE_FARMA]
         
-        [ESTRATEGIA_MASTER]
-        Escreva UMA estratégia principal assertiva, conectando o Hiperfoco à superação da barreira.
-        [FIM_ESTRATEGIA_MASTER]
-        
         [MATRIZ_BNCC]
-        Liste habilidades divididas em:
-        - RECOMPOSIÇÃO (Anos Anteriores): [CÓDIGO] Descrição.
+        Liste habilidades cirúrgicas. Formato Obrigatório:
+        - RECOMPOSIÇÃO: [CÓDIGO] Descrição.
         - ANO VIGENTE: [CÓDIGO] Descrição.
         [FIM_MATRIZ_BNCC]
         
-        ESTRUTURA ADICIONAL:
-        1. 🌟 QUEM É O ESTUDANTE: Resumo biopsicossocial.
-        2. ⚠️ PONTOS DE ATENÇÃO: Alertas comportamentais ou cognitivos importantes.
-        3. 🧩 DIRETRIZES DE ADAPTAÇÃO:
-           - Acesso ao Currículo.
-           - Materiais e Recursos.
-           - Avaliação Diferenciada.
+        [ESTRATEGIA_MASTER]
+        Escreva UMA estratégia prática usando o Hiperfoco ("{hiperfoco}") como alavanca de aprendizagem (Scaffolding). Seja específico no "como fazer".
+        [FIM_ESTRATEGIA_MASTER]
+        
+        2. ⚠️ PONTOS DE ATENÇÃO:
+           Alertas comportamentais, sensoriais ou sinais de crise.
+        
+        3. 🧩 DIRETRIZES DE ADAPTAÇÃO E EMBASAMENTO:
+           - Acesso ao Currículo (DUA): Cite estratégias concretas.
+           - Recursos: Pistas visuais, tecnologia assistiva, material concreto.
+           - Avaliação: Prova oral, ledor, tempo estendido (Cite a Lei/Decreto se couber).
+           - Citação Final: Encerre com uma frase de impacto baseada em Mantoan ou Uchôa sobre o direito de aprender.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
@@ -350,6 +364,9 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
         EVIDÊNCIAS: {evid}
+        
+        DOCUMENTOS ANEXOS (RESUMO DO LAUDO):
+        {contexto_pdf[:3000] if contexto_pdf else "Apenas checklist do professor disponível."}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -384,9 +401,10 @@ def gerar_pdf_final(dados, tem_anexo):
     med_list = []
     if dados['lista_medicamentos']:
         for m in dados['lista_medicamentos']:
-            # Ajustado para não quebrar sem 'obs'
+            obs = m.get('obs', '')
             esc = " (Administrado na Escola)" if m.get('escola') else ""
             txt = f"{m['nome']} ({m['posologia']}){esc}"
+            if obs: txt += f" [Obs: {obs}]"
             med_list.append(txt)
     med_str = "; ".join(med_list) if med_list else "Não informado."
     fam_str = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado."
@@ -412,6 +430,7 @@ def gerar_pdf_final(dados, tem_anexo):
                 pdf.ln(2)
     if dados['ia_sugestao']:
         pdf.ln(5); pdf.set_text_color(0); pdf.set_font("Arial", '', 10)
+        # Remove tags internas
         t_limpo = re.sub(r'\[.*?\]', '', dados['ia_sugestao'])
         for linha in t_limpo.split('\n'):
             l = limpar_texto_pdf(linha)
@@ -455,7 +474,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v66.0 Omni</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v67.0 Scholar</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -668,9 +687,8 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
             color_b = "#E53E3E" if n_bar > 5 else "#DD6B20"
             st.markdown(f"""<div class="metric-card"><div class="css-donut" style="--p: {n_bar*5}%; --fill: {color_b};"><div class="d-val">{n_bar}</div></div><div class="d-lbl">Barreiras</div></div>""", unsafe_allow_html=True)
         with c_kpi3:
-             # EMOJI DINÂMICO
-             hf_emoji = get_hiperfoco_emoji(st.session_state.dados['hiperfoco'])
              hf = st.session_state.dados['hiperfoco'] or "-"
+             hf_emoji = get_hiperfoco_emoji(hf)
              st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">{hf_emoji}</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="d-lbl">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
              # NÍVEL DE ATENÇÃO (LÓGICA BLINDADA)
