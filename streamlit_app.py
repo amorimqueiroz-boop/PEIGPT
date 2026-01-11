@@ -12,22 +12,23 @@ import os
 import re
 import glob
 import random
+import requests # Necessário para baixar a imagem do DALL-E
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
 # ==============================================================================
 def get_favicon():
-    return "📘"
+    return "🌟"
 
 st.set_page_config(
-    page_title="PEI 360º",
+    page_title="PEI 360º Visual Magic",
     page_icon=get_favicon(),
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (TOP LEVEL)
+# 2. LISTAS DE DADOS
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -65,6 +66,7 @@ else:
         if key not in st.session_state.dados: st.session_state.dados[key] = val
 
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
+if 'dalle_image_url' not in st.session_state: st.session_state.dalle_image_url = ""
 
 # ==============================================================================
 # 4. LÓGICA E UTILITÁRIOS
@@ -102,16 +104,11 @@ def calcular_complexidade_pei(dados):
     if saldo <= 7: return "ATENÇÃO", "#FFFFF0", "#D69E2E"
     return "CRÍTICA", "#FFF5F5", "#C53030"
 
-# --- EXTRAÇÃO REFORÇADA (CORREÇÃO DE ERRO) ---
 def extrair_tag_ia(texto, tag):
-    # Tenta encontrar a tag ignorando maiúsculas/minúsculas
-    # O re.DOTALL faz o . pegar quebras de linha
     padrao = fr'\[{tag}\](.*?)(\[|$)'
     match = re.search(padrao, texto, re.DOTALL | re.IGNORECASE)
-    
     if match: 
         conteudo = match.group(1).strip()
-        # Limpa blocos de código markdown se a IA colocar
         conteudo = conteudo.replace('```graphviz', '').replace('```', '').strip()
         return conteudo
     return ""
@@ -140,34 +137,64 @@ def extrair_resumo_estrategia(texto):
         return re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
     return "Gere o plano na aba IA para ver o resumo."
 
-# --- GERADOR DE GRÁFICO (DOT NATIVO) ---
-def gerar_dot_nativo(texto_mapa):
+# --- GERADOR DE GRÁFICO GAMIFICADO (DOT NATIVO VIBRANTE) ---
+def gerar_dot_gamificado(texto_mapa):
     dot = 'digraph G {\n'
-    dot += '  rankdir="LR";\n'
+    # Configurações Gerais Vibrantes
+    dot += '  rankdir="LR";\n' # Esquerda para direita
     dot += '  bgcolor="transparent";\n'
-    dot += '  node [fontname="Arial", shape=box, style="filled,rounded", color="#D69E2E", fontcolor="white"];\n'
-    dot += '  edge [color="#A0AEC0"];\n'
+    dot += '  splines=ortho;\n' # Linhas mais retas, estilo circuito
+    dot += '  nodesep=0.6;\n'
+    dot += '  ranksep=0.8;\n'
     
-    if not texto_mapa:
-        dot += '  "Sem Dados" [color="#E53E3E"];\n'
+    # Estilo Padrão dos Nós (Caixas Arredondadas Vibrantes)
+    dot += '  node [fontname="Nunito, Arial", fontsize=12, shape=box, style="filled,rounded", color="none", fontcolor="white", penwidth=2, margin=0.2];\n'
+    # Estilo Padrão das Arestas (Setas Grossas)
+    dot += '  edge [fontname="Nunito, Arial", fontsize=10, color="#CBD5E0", arrowhead=normal, penwidth=1.5];\n'
+    
+    if not texto_mapa or "->" not in texto_mapa:
+        dot += '  "Gere o Plano na Aba IA" [shape=octagon, fillcolor="#E53E3E"];\n'
     else:
         linhas = texto_mapa.strip().split('\n')
         for linha in linhas:
             if "->" in linha:
                 partes = linha.split("->")
-                # Remove aspas e espaços extras que quebram o DOT
-                origem = partes[0].strip().replace('"', "'").replace("'", "")
-                destino = partes[1].strip().replace('"', "'").replace("'", "")
+                # Limpeza agressiva de caracteres que quebram o DOT
+                origem_raw = partes[0].strip().replace('"', '').replace("'", "")
+                destino_raw = partes[1].strip().replace('"', '').replace("'", "")
                 
-                # Cores baseadas no contexto (Amarelo Suave para Estudante)
-                fill = "#D69E2E" # Gold default
-                if "Superpoder" in origem or "Hiperfoco" in origem: fill = "#F6AD55" 
-                elif "Escola" in origem or "Aula" in origem: fill = "#ECC94B" 
-                elif "Casa" in origem: fill = "#B7791F" 
+                # Lógica de Estilização Gamificada baseada em palavras-chave
+                def get_node_style(texto):
+                    t_low = texto.lower()
+                    # Power-ups / Hiperfoco (Dourado/Laranja vibrante)
+                    if any(x in t_low for x in ["poder", "hiperfoco", "meu jeito", "potência"]):
+                        return 'shape=diamond, fillcolor="linear-gradient(135deg, #F6AD55, #ED8936)", fontcolor="white", fontsize=13, fontname="Arial Black"'
+                    # Missões / Tarefas (Azul vibrante)
+                    elif any(x in t_low for x in ["missão", "desafio", "tarefa", "fazer"]):
+                        return 'shape=component, fillcolor="linear-gradient(135deg, #4299E1, #3182CE)", fontcolor="white"'
+                    # Checkpoints / Conquistas (Verde vibrante)
+                    elif any(x in t_low for x in ["conquista", "prêmio", "aprender", "consegui"]):
+                        return 'shape=star, fillcolor="linear-gradient(135deg, #48BB78, #38A169)", fontcolor="white"'
+                    # Suporte / Ajuda (Roxo vibrante)
+                    elif any(x in t_low for x in ["ajuda", "prof", "pedir", "apoio"]):
+                        return 'shape=ellipse, fillcolor="linear-gradient(135deg, #9F7AEA, #805AD5)", fontcolor="white"'
+                    # Padrão (Amarelo/Laranja Suave - Escola)
+                    else:
+                        return 'fillcolor="linear-gradient(135deg, #ECC94B, #D69E2E)", fontcolor="#2D3748"'
+
+                style_origem = get_node_style(origem_raw)
+                style_destino = get_node_style(destino_raw)
                 
-                dot += f'  "{origem}" [fillcolor="{fill}", color="{fill}"];\n'
-                dot += f'  "{destino}" [fillcolor="white", fontcolor="#2D3748", color="#CBD5E0"];\n'
-                dot += f'  "{origem}" -> "{destino}";\n'
+                # Adiciona Emojis se não tiver
+                origem_label = origem_raw if any(c in origem_raw for c in "⚡🎮🧠🏫🏠") else f"⚡ {origem_raw}"
+                destino_label = destino_raw if any(c in destino_raw for c in "✨✅🛡️🎯") else f"🎯 {destino_raw}"
+
+                dot += f'  "{origem_raw}" [label="{origem_label}", {style_origem}];\n'
+                dot += f'  "{destino_raw}" [label="{destino_label}", {style_destino}];\n'
+                
+                # Aresta animada (conceitual, cores diferentes)
+                edge_color = "#F6AD55" if "poder" in origem_raw.lower() else "#A0AEC0"
+                dot += f'  "{origem_raw}" -> "{destino_raw}" [color="{edge_color}"];\n'
     
     dot += '}'
     return dot
@@ -265,12 +292,12 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (CORRIGIDO PARA AMARELO)
+# 5. ESTILO VISUAL (VIBRANTE & GAMIFICADO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
-        @import url('[https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap)');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
@@ -350,14 +377,14 @@ def aplicar_estilo_visual():
         .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
         .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
     </style>
-    <link href="[https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css](https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css)" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
     st.markdown(estilo, unsafe_allow_html=True)
 
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V79 - EXTRAÇÃO ROBUSTA)
+# 6. INTELIGÊNCIA ARTIFICIAL (V80 - DALL-E & GAMIFICAÇÃO)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -377,6 +404,34 @@ def gerar_noticia_ia(api_key):
         return res.choices[0].message.content
     except: return "O cérebro aprende durante toda a vida."
 
+# --- FUNÇÃO DALL-E 3 ---
+def gerar_imagem_dalle(api_key, dados_aluno):
+    if not api_key: return None, "Configure a API Key."
+    try:
+        client = OpenAI(api_key=api_key)
+        
+        # Cria um prompt criativo baseado no hiperfoco
+        hf = dados_aluno['hiperfoco'] if dados_aluno['hiperfoco'] else "aprendizado criativo e exploração"
+        serie = dados_aluno['serie']
+        
+        prompt_dalle = f"""
+        A cheerful, vibrant, Pixar-style animated illustration of a young student character (approximate age for {serie}) in a fantastical world inspired by {hf}. 
+        The student is happily engaged in a learning adventure, using glowing, magical tools that represent their strengths to overcome friendly challenges. 
+        The atmosphere is triumphant, colorful, and full of hope. No text in the image.
+        """
+
+        with st.spinner("🎨 A IA está pintando sua jornada... (Isso leva uns 15s)"):
+            response = client.images.generate(
+                model="dall-e-3",
+                prompt=prompt_dalle,
+                size="1024x1024",
+                quality="standard",
+                n=1,
+            )
+        return response.data[0].url, None
+    except Exception as e:
+        return None, str(e)
+
 def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API."
     try:
@@ -389,9 +444,10 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
         prompt_sys = """
-        Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
+        Você é um Especialista Sênior em Neuroeducação e Design Instrucional Inclusivo.
         
-        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um MAPA DE INTERVENÇÃO (para o aluno).
+        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um MAPA DE MISSÕES GAMIFICADO (para o aluno).
+        Use linguagem encorajadora e baseada em forças.
         
         --- TAGS OBRIGATÓRIAS (NÃO MUDE A GRAFIA) ---
         
@@ -408,13 +464,14 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         [MATRIZ_BNCC] ... [FIM_MATRIZ_BNCC]
         
         [MAPA_VISUAL]
-        Crie um grafo em 1ª PESSOA para o aluno.
+        Crie um grafo em 1ª PESSOA usando LINGUAGEM DE JOGO/GAMIFICAÇÃO.
+        Use termos como: "Meu Superpoder", "Missão Diária", "Power-up", "Checkpoint", "Aliados".
         Use estritamente este formato: NÓ_PAI -> NÓ_FILHO
         Exemplo:
-        Meu Superpoder -> Usar Minecraft na Matemática
-        Na Escola -> Pedir tempo se cansar
-        Em Casa -> Fazer pausas de 5 min
-        (Crie 3-4 ramos baseados no perfil do aluno)
+        Meu Superpoder (Hiperfoco) -> Ativar Power-up de Matemática
+        Missão na Escola -> Pedir Ajuda ao Aliado (Prof)
+        Checkpoint em Casa -> Recarregar Bateria (Pausa)
+        (Crie 4-5 ramos baseados no perfil do aluno, focando em suas potências)
         [FIM_MAPA_VISUAL]
         
         ESTRUTURA GERAL:
@@ -535,7 +592,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v79.0 Connection Fix</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v80.0 Visual Magic</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -547,9 +604,9 @@ st.markdown(f"""
     <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
-# ABAS
-abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "🗺️ Mapa de Intervenção", "Documento"]
-tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab_mapa, tab8 = st.tabs(abas)
+# ABAS (REORDENADAS: MAPA É A ÚLTIMA)
+abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento", "🗺️ Meu Mapa da Jornada"]
+tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
 with tab0: # INÍCIO
     if api_key:
@@ -571,10 +628,10 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="[https://diversa.org.br/educacao-inclusiva/](https://diversa.org.br/educacao-inclusiva/)" target="_blank" class="rich-card-link"><div class="home-card hc-blue"><div class="home-icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="[https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm)" target="_blank" class="rich-card-link"><div class="home-card hc-gold"><div class="home-icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="[https://institutoneurosaber.com.br/](https://institutoneurosaber.com.br/)" target="_blank" class="rich-card-link"><div class="home-card hc-pink"><div class="home-icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="[http://basenacionalcomum.mec.gov.br/](http://basenacionalcomum.mec.gov.br/)" target="_blank" class="rich-card-link"><div class="home-card hc-green"><div class="home-icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="home-card hc-blue"><div class="home-icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="home-card hc-gold"><div class="home-icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="home-card hc-pink"><div class="home-icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
+    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="home-card hc-green"><div class="home-icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
     if api_key: st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
 
 with tab1: # ESTUDANTE
@@ -744,30 +801,6 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab_mapa: # MAPA (AMARELO - ATUALIZADO)
-    render_progresso()
-    st.markdown(f"""
-    <div style="background: linear-gradient(90deg, #F6E05E 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: #2D3748; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-        <h3 style="margin:0; color:#2D3748;">🗺️ Mapa de Intervenção Estratégica</h3>
-        <p style="margin:5px 0 0 0; font-weight:600;">Visualização de estratégias para o estudante (Imprimir, Colar ou Enviar pelo WhatsApp).</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # BOTÃO PARA GERAR/ATUALIZAR O MAPA MANUALMENTE
-    if st.button("🎨 Gerar/Atualizar Mapa Visual", type="primary"):
-        st.rerun()
-
-    if st.session_state.dados['ia_sugestao']:
-        texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_VISUAL")
-        if texto_mapa:
-            dot = gerar_dot_nativo(texto_mapa)
-            st.graphviz_chart(dot, use_container_width=True)
-            st.info("💡 Dica: Tire um print deste mapa e compartilhe com a família ou equipe.")
-        else:
-            st.warning("O mapa ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
-    else:
-        st.info("Preencha os dados e gere o plano na aba IA para ver o mapa aqui.")
-
 with tab8: # DASHBOARD FINAL (V74)
     render_progresso()
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
@@ -859,5 +892,57 @@ with tab8: # DASHBOARD FINAL (V74)
             st.write("")
             json_dados = json.dumps(st.session_state.dados, default=str)
             st.download_button("💾 Baixar Arquivo do Aluno (.json)", json_dados, f"PEI_{st.session_state.dados['nome']}.json", "application/json")
+
+with tab_mapa: # MAPA + DALL-E (A ÚLTIMA ABA)
+    render_progresso()
+    st.markdown(f"""
+    <div style="background: linear-gradient(90deg, #F6E05E 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: #2D3748; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <h3 style="margin:0; color:#2D3748;">🗺️ Meu Mapa da Jornada (Gamificado)</h3>
+        <p style="margin:5px 0 0 0; font-weight:600;">Sua aventura de aprendizagem personalizada! Imprima e cole no caderno.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # SEÇÃO DO GRÁFICO GAMIFICADO
+    st.markdown("#### 🕹️ Missões & Power-ups")
+    if st.button("🔄 Atualizar Mapa Visual", type="primary"):
+        st.rerun()
+
+    if st.session_state.dados['ia_sugestao']:
+        texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_VISUAL")
+        if texto_mapa:
+            # Usa o novo gerador gamificado e vibrante
+            dot = gerar_dot_gamificado(texto_mapa)
+            st.graphviz_chart(dot, use_container_width=True)
+        else:
+            st.warning("O mapa gamificado ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
+    else:
+        st.info("Preencha os dados e gere o plano na aba IA para ver suas missões aqui.")
+    
+    st.divider()
+    
+    # SEÇÃO DO DALL-E 3
+    st.markdown("#### 🎨 Ilustração Mágica (DALL-E 3)")
+    st.markdown("""<p style="font-size:0.9rem; color:#718096;">Gere uma imagem única baseada no <b>Hiperfoco</b> do aluno, estilo animação da Pixar. <br>⚠️ Nota: Esta ação tem um custo maior de API e leva cerca de 15 segundos.</p>""", unsafe_allow_html=True)
+    
+    col_dalle_btn, col_dalle_img = st.columns([1, 2])
+    
+    with col_dalle_btn:
+        if st.button("✨ Gerar Ilustração Mágica", type="primary", use_container_width=True):
+            if st.session_state.dados['hiperfoco']:
+                url, err = gerar_imagem_dalle(api_key, st.session_state.dados)
+                if url:
+                    st.session_state.dalle_image_url = url
+                    st.success("Imagem gerada com sucesso!")
+                else:
+                    st.error(f"Erro ao gerar imagem: {err}")
+            else:
+                st.warning("Por favor, defina um Hiperfoco na aba 'Potencialidades' primeiro.")
+
+    with col_dalle_img:
+        if st.session_state.dalle_image_url:
+            st.image(st.session_state.dalle_image_url, caption="Sua Jornada de Aprendizagem Personalizada", use_column_width=True)
+            # Botão para baixar a imagem (gambiarra necessária pois st.download_button não baixa URL direta)
+            st.markdown(f'<a href="{st.session_state.dalle_image_url}" download="Minha_Jornada_Magica.png" target="_blank" style="display:inline-block; text-decoration:none; background-color:#0F52BA; color:white; padding:10px 20px; border-radius:8px; font-weight:bold; text-align:center;">📥 Baixar Imagem (Abrir Nova Aba)</a>', unsafe_allow_html=True)
+            st.caption("Clique com o botão direito na imagem que abrir e selecione 'Salvar imagem como...'. O link expira em 1 hora.")
 
 st.markdown("---")
