@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (CRÍTICO: ESTÃO AQUI NO TOPO PARA EVITAR ERROS)
+# 2. LISTAS DE DADOS (GLOBAL)
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -44,7 +44,7 @@ LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", 
 LISTA_FAMILIA = ["Mãe", "Pai", "Mãe (2ª)", "Pai (2º)", "Avó", "Avô", "Irmão(s)", "Tio(a)", "Padrasto", "Madrasta", "Tutor Legal", "Abrigo Institucional"]
 
 # ==============================================================================
-# 3. GERENCIAMENTO DE ESTADO (AGORA SEGURO)
+# 3. GERENCIAMENTO DE ESTADO
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -67,16 +67,14 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 4. FUNÇÕES LÓGICAS (ORDER FIX)
+# 4. FUNÇÕES LÓGICAS & UTILITÁRIOS
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
 
-# Algoritmo de Complexidade (Retorna 3 valores: Texto, CorBG, CorTexto)
 def calcular_complexidade_pei(dados):
     n_bar = sum(len(v) for v in dados['barreiras_selecionadas'].values())
     n_suporte_alto = sum(1 for v in dados['niveis_suporte'].values() if v in ["Substancial", "Muito Substancial"])
-    
     recursos = 0
     if dados['rede_apoio']: recursos += 3
     if dados['lista_medicamentos']: recursos += 2
@@ -88,7 +86,6 @@ def calcular_complexidade_pei(dados):
     return "CRÍTICA", "#FFF5F5", "#C53030"               # Vermelho
 
 def extrair_linhas_bncc(texto):
-    # Captura a linha inteira se começar com código BNCC
     padrao = r'([A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}.*?)(?=\n|$)'
     if not texto: return []
     linhas = re.findall(padrao, texto)
@@ -98,7 +95,6 @@ def extrair_resumo_estrategia(texto):
     if not texto: return "Plano ainda não gerado."
     if "ESTRATÉGIAS" in texto:
         partes = texto.split("ESTRATÉGIAS")
-        # Tenta pegar todo o bloco até a próxima seção
         conteudo = partes[1].split("ADAPTAÇÕES")[0] if "ADAPTAÇÕES" in partes[1] else partes[1]
         return conteudo.replace('*', '').strip()
     return "Gere o plano na aba IA para ver o resumo estratégico."
@@ -112,159 +108,6 @@ def get_pro_icon(nome_profissional):
     if "prof" in p or "apoio" in p: return "🍎"
     return "👨‍⚕️"
 
-# ==============================================================================
-# 5. ESTILO VISUAL (APPLE AVATAR & CARDS REFINADOS)
-# ==============================================================================
-def aplicar_estilo_visual():
-    estilo = """
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
-        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-        
-        .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
-        div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
-        
-        /* HEADER */
-        .header-unified {
-            background-color: white; padding: 20px 40px; border-radius: 16px;
-            border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px;
-            display: flex; align-items: center; gap: 20px;
-        }
-
-        /* ABAS CLEAN */
-        .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
-        .stTabs [data-baseweb="tab"] {
-            height: 36px; border-radius: 18px !important; background-color: white; 
-            border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px;
-            transition: all 0.2s ease;
-        }
-        .stTabs [aria-selected="true"] {
-            background-color: #FF6B6B !important; color: white !important; 
-            border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
-        }
-
-        /* BARRA DE PROGRESSO (3px) */
-        .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
-        .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
-        .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-        .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
-
-        /* DASHBOARD HERO (APPLE STYLE AVATAR) */
-        .dash-hero {
-            background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%);
-            border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);
-        }
-        .apple-avatar {
-            width: 60px; height: 60px; border-radius: 50%;
-            background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%);
-            color: #0F52BA; font-weight: 800; font-size: 1.8rem;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid white;
-        }
-
-        /* METRIC CARDS (UNIFORMES) */
-        .metric-card {
-            background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 160px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-        
-        /* Donut CSS */
-        .css-donut {
-            width: 70px; height: 70px; border-radius: 50%;
-            background: conic-gradient(var(--fill) var(--p), #EDF2F7 0);
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 8px;
-        }
-        .css-donut::after { content: ""; position: absolute; width: 54px; height: 54px; border-radius: 50%; background: white; }
-        .d-val { position: absolute; z-index: 2; font-size: 1.3rem; font-weight: 800; color: #2D3748; }
-        .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
-
-        /* COMPLEXITY CARD */
-        .comp-icon-box { font-size: 2rem; margin-bottom: 5px; }
-
-        /* DETAIL CARDS (SOFT COLORS) */
-        .soft-card {
-            border-radius: 12px; padding: 25px; 
-            min-height: 260px; /* ALTURA FIXA PARA SIMETRIA */
-            height: 100%; display: flex; flex-direction: column;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);
-            border-left: 5px solid; position: relative; overflow: hidden;
-        }
-        
-        .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
-        .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
-        .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
-        .sc-cyan { background-color: #E6FFFA; border-left-color: #0BC5EA; }
-        .sc-green { background-color: #F0FFF4; border-left-color: #38A169; }
-
-        .sc-head { 
-            font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; 
-            display: flex; align-items: center; gap: 8px; color: #4A5568; letter-spacing: 0.5px; z-index: 2;
-        }
-        .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 500; z-index: 2; flex-grow: 1; }
-        
-        /* Bg Icons */
-        .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
-
-        /* LISTA BNCC */
-        .bncc-li { margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #3182CE; font-size: 0.85rem; }
-
-        /* Rede Icons */
-        .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
-
-        /* DNA BARS */
-        .dna-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; font-style: italic; }
-        .dna-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
-        .dna-track { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
-        .dna-fill { height: 100%; border-radius: 3px; }
-
-        /* CARDS HOME */
-        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-        .rich-card {
-            background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-            position: relative; overflow: hidden;
-        }
-        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
-        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
-        .icon-box { width: 65px; height: 65px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 15px; }
-        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
-        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
-        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
-        .ic-green { background-color: #F0FFF4; color: #38A169; }
-
-        /* INPUTS & BOTÕES */
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
-            border-radius: 10px !important; border-color: #E2E8F0 !important; 
-        }
-        div[data-testid="column"] .stButton button { 
-            border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; 
-            background-color: #0F52BA !important; color: white !important; border: none !important;
-        }
-        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
-        
-        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: #0F52BA !important; border-color: #0F52BA !important; }
-        div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: #0F52BA !important; }
-        .stToggle p { font-weight: 600; color: #2D3748; }
-        .stToggle { margin-top: 10px; }
-        
-        .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
-        .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
-    </style>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
-    """
-    st.markdown(estilo, unsafe_allow_html=True)
-
-aplicar_estilo_visual()
-
-# ==============================================================================
-# 5. UTILITÁRIOS (RESTANTES)
-# ==============================================================================
 def finding_logo():
     possiveis = ["360.png", "360.jpg", "logo.png", "logo.jpg", "iconeaba.png"]
     for nome in possiveis:
@@ -342,6 +185,157 @@ def render_progresso():
         <div class="prog-icon" style="left: {p}%;">{icon}</div>
     </div>
     """, unsafe_allow_html=True)
+
+# ==============================================================================
+# 5. ESTILO VISUAL (CSS FINAL)
+# ==============================================================================
+def aplicar_estilo_visual():
+    estilo = """
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
+        
+        .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
+        div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
+        
+        /* HEADER */
+        .header-unified {
+            background-color: white; padding: 20px 40px; border-radius: 16px;
+            border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px;
+            display: flex; align-items: center; gap: 20px;
+        }
+
+        /* ABAS CLEAN */
+        .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
+        .stTabs [data-baseweb="tab"] {
+            height: 36px; border-radius: 18px !important; background-color: white; 
+            border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px;
+            transition: all 0.2s ease;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: #FF6B6B !important; color: white !important; 
+            border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        }
+
+        /* BARRA DE PROGRESSO (3px) */
+        .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
+        .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
+        .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
+
+        /* DASHBOARD HERO (APPLE STYLE AVATAR) */
+        .dash-hero {
+            background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%);
+            border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);
+        }
+        .apple-avatar {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%);
+            color: #0F52BA; font-weight: 800; font-size: 1.8rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid white;
+        }
+
+        /* METRIC CARDS (UNIFORMES) */
+        .metric-card {
+            background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 160px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        
+        /* Donut CSS */
+        .css-donut {
+            width: 70px; height: 70px; border-radius: 50%;
+            background: conic-gradient(var(--fill) var(--p), #EDF2F7 0);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 8px;
+        }
+        .css-donut::after { content: ""; position: absolute; width: 54px; height: 54px; border-radius: 50%; background: white; }
+        .d-val { position: absolute; z-index: 2; font-size: 1.3rem; font-weight: 800; color: #2D3748; }
+        .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
+
+        /* COMPLEXITY CARD */
+        .comp-icon-box { margin-bottom: 5px; }
+
+        /* DETAIL CARDS (SOFT COLORS) */
+        .soft-card {
+            border-radius: 12px; padding: 25px; 
+            min-height: 260px; /* ALTURA FIXA PARA SIMETRIA */
+            height: 100%; display: flex; flex-direction: column;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);
+            border-left: 5px solid; position: relative; overflow: hidden;
+        }
+        
+        .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
+        .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
+        .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
+        .sc-cyan { background-color: #E6FFFA; border-left-color: #0BC5EA; }
+        .sc-green { background-color: #F0FFF4; border-left-color: #38A169; }
+
+        .sc-head { 
+            font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; 
+            display: flex; align-items: center; gap: 8px; color: #4A5568; letter-spacing: 0.5px; z-index: 2;
+        }
+        .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 500; z-index: 2; flex-grow: 1; }
+        
+        /* Bg Icons */
+        .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
+
+        /* LISTA BNCC */
+        .bncc-li { margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #3182CE; font-size: 0.85rem; }
+
+        /* Rede Icons */
+        .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
+
+        /* DNA BARS (RESTAURADO) */
+        .dna-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; font-style: italic; display: flex; align-items: center; gap: 6px;}
+        .dna-bar-container { margin-bottom: 12px; }
+        .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
+        .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
+        .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+        /* CARDS HOME */
+        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+        .rich-card {
+            background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
+            height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
+        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
+        .icon-box { width: 65px; height: 65px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 15px; }
+        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
+        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
+        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
+        .ic-green { background-color: #F0FFF4; color: #38A169; }
+
+        /* INPUTS & BOTÕES */
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
+            border-radius: 10px !important; border-color: #E2E8F0 !important; 
+        }
+        div[data-testid="column"] .stButton button { 
+            border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; 
+            background-color: #0F52BA !important; color: white !important; border: none !important;
+        }
+        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
+        
+        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: #0F52BA !important; border-color: #0F52BA !important; }
+        div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: #0F52BA !important; }
+        .stToggle p { font-weight: 600; color: #2D3748; }
+        .stToggle { margin-top: 10px; }
+        
+        .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
+        .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+    """
+    st.markdown(estilo, unsafe_allow_html=True)
+
+aplicar_estilo_visual()
 
 # ==============================================================================
 # 6. INTELIGÊNCIA ARTIFICIAL
@@ -501,7 +495,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v62.0 Precision</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v63.0 Final Candidate</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -715,9 +709,10 @@ with tab8: # DASHBOARD FINAL (CORRIGIDO)
              hf = st.session_state.dados['hiperfoco'] or "-"
              st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">🚀</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="d-lbl">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
-             # NÍVEL DE ATENÇÃO (LÓGICA CORRIGIDA E SEGURA)
+             # NÍVEL DE ATENÇÃO (ÍCONE NEUTRO COM COR DINÂMICA)
              txt_comp, bg_c, txt_c = calcular_complexidade_pei(st.session_state.dados)
-             st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div class="comp-icon-box" style="color:{txt_c};">⚠️</div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
+             # Repare no estilo inline do ícone: color:{txt_c}
+             st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div class="comp-icon-box"><i class="ri-alert-line" style="color:{txt_c}; font-size: 2rem;"></i></div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         
@@ -762,8 +757,9 @@ with tab8: # DASHBOARD FINAL (CORRIGIDO)
             st.markdown(f"""<div class="soft-card sc-cyan"><div class="sc-head"><i class="ri-team-fill" style="color:#0BC5EA;"></i> Rede de Apoio</div><div class="sc-body">{rede_html}</div><div class="bg-icon">🤝</div></div>""", unsafe_allow_html=True)
 
         st.write("")
+        # --- RESTAURAÇÃO DAS BARRAS DE DNA DE SUPORTE ---
         st.markdown("##### 🧬 DNA de Suporte (Detalhamento)")
-        st.markdown('<div class="dna-legend">ℹ️ Barras maiores indicam áreas que exigem mais adaptação e suporte intenso.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="dna-legend"><i class="ri-information-fill"></i> Barras maiores e vermelhas indicam áreas que exigem mais adaptação e suporte intenso.</div>', unsafe_allow_html=True)
         dna_c1, dna_c2 = st.columns(2)
         areas = list(LISTAS_BARREIRAS.keys())
         for i, area in enumerate(areas):
@@ -781,6 +777,7 @@ with tab8: # DASHBOARD FINAL (CORRIGIDO)
                 <div class="dna-bar-bg"><div class="dna-bar-fill" style="width:{val}%; background:{color};"></div></div>
             </div>
             """, unsafe_allow_html=True)
+        # ------------------------------------------------
 
     st.divider()
     if st.session_state.dados['ia_sugestao']:
