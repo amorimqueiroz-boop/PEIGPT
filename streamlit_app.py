@@ -18,10 +18,10 @@ import requests
 # 1. CONFIGURAÇÃO INICIAL
 # ==============================================================================
 def get_favicon():
-    return "📘"
+    return "🎮"
 
 st.set_page_config(
-    page_title="PEI 360º",
+    page_title="PEI 360º Gamified",
     page_icon=get_favicon(),
     layout="wide",
     initial_sidebar_state="expanded"
@@ -45,7 +45,7 @@ LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", 
 LISTA_FAMILIA = ["Mãe", "Pai", "Mãe (2ª)", "Pai (2º)", "Avó", "Avô", "Irmão(s)", "Tio(a)", "Padrasto", "Madrasta", "Tutor Legal", "Abrigo Institucional"]
 
 # ==============================================================================
-# 3. GERENCIAMENTO DE ESTADO (CORREÇÃO APLICADA AQUI)
+# 3. GERENCIAMENTO DE ESTADO
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -57,7 +57,8 @@ default_state = {
     'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
     'ia_sugestao': '', 'outros_acesso': '', 'outros_ensino': '', 
     'monitoramento_data': date.today(), 
-    'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': []
+    'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': [],
+    'dalle_image_url': '' 
 }
 
 if 'dados' not in st.session_state: st.session_state.dados = default_state
@@ -66,11 +67,7 @@ else:
         if key not in st.session_state.dados: st.session_state.dados[key] = val
 
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
-
-# --- CORREÇÃO DO ERRO ATTRIBUTE ERROR ---
-# Inicializa a variável da imagem separadamente para garantir que ela exista
-if 'dalle_image_url' not in st.session_state: 
-    st.session_state.dalle_image_url = ""
+if 'dalle_image_url' not in st.session_state: st.session_state.dalle_image_url = ""
 
 # ==============================================================================
 # 4. LÓGICA E UTILITÁRIOS
@@ -87,14 +84,14 @@ def calcular_idade(data_nasc):
 def get_hiperfoco_emoji(texto):
     if not texto: return "🚀"
     t = texto.lower()
-    if "jogo" in t or "game" in t or "minecraft" in t or "roblox" in t or "mario" in t: return "🎮"
-    if "dino" in t or "jurassic" in t: return "🦖"
-    if "fute" in t or "bola" in t or "esporte" in t: return "⚽"
-    if "desenho" in t or "arte" in t or "pintar" in t: return "🎨"
-    if "músic" in t or "piano" in t or "violão" in t: return "🎵"
+    if "jogo" in t or "game" in t or "minecraft" in t or "roblox" in t: return "🎮"
+    if "dino" in t: return "🦖"
+    if "fute" in t or "bola" in t: return "⚽"
+    if "desenho" in t or "arte" in t: return "🎨"
+    if "músic" in t: return "🎵"
     if "anim" in t or "gato" in t or "cachorro" in t: return "🐾"
-    if "carro" in t or "trem" in t or "rodas" in t: return "🏎️"
-    if "espaço" in t or "astronomia" in t: return "🪐"
+    if "carro" in t or "trem" in t: return "🏎️"
+    if "espaço" in t: return "🪐"
     return "🚀"
 
 def calcular_complexidade_pei(dados):
@@ -141,16 +138,21 @@ def extrair_resumo_estrategia(texto):
         return re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
     return "Gere o plano na aba IA para ver o resumo."
 
-# --- GERADOR DE MAPA NATIVO (DOT) ---
-def gerar_dot_legivel(texto_mapa):
+# --- GERADOR DOT "SKILL TREE" ---
+def gerar_dot_skill_tree(texto_mapa):
     dot = 'digraph G {\n'
-    dot += '  rankdir="LR";\n'
-    dot += '  bgcolor="white";\n'  # Fundo Branco
-    dot += '  node [fontname="Arial", fontsize=10, shape=box, style="filled,rounded", fontcolor="black", margin=0.1];\n'
-    dot += '  edge [fontname="Arial", fontsize=9, color="#A0AEC0", arrowsize=0.6];\n'
+    dot += '  rankdir="LR";\n' # Left to Right (Linha do tempo/Progresso)
+    dot += '  bgcolor="transparent";\n'
+    dot += '  nodesep=0.5;\n'
+    dot += '  ranksep=0.8;\n'
+    dot += '  splines=ortho;\n' # Linhas retas estilo tech/game
+    
+    # Estilos Padrão
+    dot += '  node [fontname="Arial", fontsize=11, style="filled,rounded", penwidth=2];\n'
+    dot += '  edge [fontname="Arial", fontsize=9, color="#A0AEC0", penwidth=1.5, arrowsize=0.8];\n'
     
     if not texto_mapa:
-        dot += '  "Sem Dados" [fillcolor="#FED7D7"];\n'
+        dot += '  "Start Game" [shape=doubleoctagon, fillcolor="#48BB78", color="white", fontcolor="white"];\n'
     else:
         linhas = texto_mapa.strip().split('\n')
         for linha in linhas:
@@ -159,28 +161,31 @@ def gerar_dot_legivel(texto_mapa):
                 origem_raw = partes[0].strip().replace('"', "'").replace("[", "").replace("]", "")
                 destino_raw = partes[1].strip().replace('"', "'").replace("[", "").replace("]", "")
                 
-                # Cores Pastéis
-                fill = "#FEFCBF" 
-                lower_o = origem_raw.lower()
-                if "poder" in lower_o or "hiperfoco" in lower_o: fill = "#F6AD55"
-                elif "nervoso" in lower_o or "ansied" in lower_o: fill = "#FED7D7"
-                elif "foc" in lower_o or "atenc" in lower_o: fill = "#BEE3F8"
-                elif "casa" in lower_o: fill = "#C6F6D5"
+                # Definição de Ícones e Cores por Contexto
+                fill = "white"
+                color = "#CBD5E0"
+                shape = "box"
+                font = "black"
                 
-                # Garante Emojis
-                def ensure_emoji(txt):
-                    if any(c in txt for c in "⚡😰🎯🏠💧🎧⏱️"): return txt
-                    if "nervoso" in txt.lower(): return "😰 " + txt
-                    if "foca" in txt.lower(): return "🎯 " + txt
-                    if "poder" in txt.lower(): return "⚡ " + txt
-                    if "casa" in txt.lower(): return "🏠 " + txt
-                    return "🔹 " + txt
+                # Função de estilo
+                def get_style(txt):
+                    low = txt.lower()
+                    if "superpoder" in low or "hiperfoco" in low:
+                        return "#F6AD55", "#DD6B20", "Mcircle", "white" # Laranja (Power)
+                    elif "escola" in low or "aula" in low:
+                        return "#63B3ED", "#3182CE", "folder", "white" # Azul (School)
+                    elif "casa" in low or "tarefa" in low:
+                        return "#68D391", "#2F855A", "house", "white" # Verde (Home)
+                    elif "nervoso" in low or "ajuda" in low or "ansied" in low:
+                        return "#FC8181", "#C53030", "heart", "white" # Vermelho (Health/Help)
+                    else:
+                        return "white", "#718096", "note", "black" # Padrão
 
-                origem_label = ensure_emoji(origem_raw)
-                destino_label = ensure_emoji(destino_raw)
-
-                dot += f'  "{origem_raw}" [label="{origem_label}", fillcolor="{fill}"];\n'
-                dot += f'  "{destino_raw}" [label="{destino_label}", fillcolor="white", color="#E2E8F0", style="filled,rounded"];\n'
+                f1, c1, s1, ft1 = get_style(origem_raw)
+                f2, c2, s2, ft2 = get_style(destino_raw)
+                
+                dot += f'  "{origem_raw}" [fillcolor="{f1}", color="{c1}", shape="{s1}", fontcolor="{ft1}"];\n'
+                dot += f'  "{destino_raw}" [fillcolor="{f2}", color="{c2}", shape="{s2}", fontcolor="{ft2}"];\n'
                 dot += f'  "{origem_raw}" -> "{destino_raw}";\n'
     
     dot += '}'
@@ -371,7 +376,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL
+# 6. INTELIGÊNCIA ARTIFICIAL (V82 - DALL-E & GAMIFICAÇÃO)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -475,7 +480,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF (MANTIDO)
+# 7. GERADOR PDF DE "MISSÕES" (NOVA FUNÇÃO: PDF DO MAPA)
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -494,6 +499,55 @@ class PDF_Classic(FPDF):
     def section_title(self, label):
         self.ln(8); self.set_fill_color(240, 248, 255); self.set_text_color(0, 78, 146)
         self.set_font('Arial', 'B', 11); self.cell(0, 8, f"  {label}", 0, 1, 'L', fill=True); self.ln(4)
+
+class PDF_Mission_Board(FPDF):
+    def header(self):
+        self.set_fill_color(246, 224, 94) # Dourado/Amarelo
+        self.rect(0, 0, 210, 30, 'F')
+        self.set_xy(10, 10)
+        self.set_font('Arial', 'B', 18)
+        self.set_text_color(45, 55, 72)
+        self.cell(0, 10, "MAPA DA MINHA JORNADA", 0, 1, 'C')
+    def chapter_body(self, texto_mapa):
+        self.set_y(40)
+        self.set_font('Arial', '', 12)
+        
+        # Desenhar "Cartas" baseadas no texto do mapa
+        linhas = texto_mapa.strip().split('\n')
+        for linha in linhas:
+            if "->" in linha:
+                partes = linha.split("->")
+                origem = partes[0].strip().replace('"','').replace("'", "")
+                destino = partes[1].strip().replace('"','').replace("'", "")
+                
+                # Caixa da Missão
+                self.set_fill_color(237, 242, 247) # Cinza claro
+                self.set_draw_color(203, 213, 224)
+                self.rect(self.get_x(), self.get_y(), 190, 20, 'FD')
+                
+                # Ícone/Origem (Negrito)
+                self.set_xy(self.get_x() + 5, self.get_y() + 5)
+                self.set_font('Arial', 'B', 11)
+                self.set_text_color(49, 130, 206) # Azul
+                self.cell(60, 10, limpar_texto_pdf(origem), 0, 0)
+                
+                # Seta
+                self.set_font('Arial', '', 12)
+                self.set_text_color(100)
+                self.cell(10, 10, ">>", 0, 0)
+                
+                # Ação (Normal)
+                self.set_font('Arial', '', 11)
+                self.set_text_color(45)
+                self.cell(0, 10, limpar_texto_pdf(destino), 0, 1)
+                
+                self.ln(12) # Espaço entre cartas
+
+def gerar_pdf_missoes(texto_mapa, nome_aluno):
+    pdf = PDF_Mission_Board()
+    pdf.add_page()
+    pdf.chapter_body(texto_mapa)
+    return pdf.output(dest='S').encode('latin-1', 'replace')
 
 def gerar_pdf_final(dados, tem_anexo):
     pdf = PDF_Classic(); pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
@@ -791,15 +845,22 @@ with tab_mapa: # MAPA AMARELO (CORRIGIDO PARA BRANCO E LEGÍVEL)
     </div>
     """, unsafe_allow_html=True)
     
-    if st.button("🎨 Gerar/Atualizar Mapa Visual", type="primary"):
-        st.rerun()
+    col_map_1, col_map_2 = st.columns([1,3])
+    with col_map_1:
+        if st.button("🎨 Atualizar Mapa", type="primary"):
+            st.rerun()
+        # NOVO BOTÃO DE PDF DO MAPA
+        if st.session_state.dados['ia_sugestao']:
+            texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_VISUAL")
+            if texto_mapa:
+                pdf_mapa = gerar_pdf_missoes(texto_mapa, st.session_state.dados['nome'])
+                st.download_button("📥 Baixar PDF 'Missões'", pdf_mapa, "Mapa_Missões.pdf", "application/pdf")
 
     if st.session_state.dados['ia_sugestao']:
         texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_VISUAL")
         if texto_mapa:
             dot = gerar_dot_legivel(texto_mapa)
             st.graphviz_chart(dot, use_container_width=True)
-            st.info("💡 Dica: Tire um print deste mapa e compartilhe com a família ou equipe.")
         else:
             st.warning("O mapa ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
     else:
