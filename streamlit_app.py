@@ -98,13 +98,13 @@ def get_segmento_info(serie):
     """Retorna informações sobre o segmento escolar para UX"""
     if not serie: return "Geral", "Adaptação curricular padrão."
     if "Educação Infantil" in serie:
-        return "Educação Infantil", "Foco em marcos do desenvolvimento, sensorial e socialização (BNCC: Campos de Experiência)."
+        return "Educação Infantil", "Foco em **Direitos de Aprendizagem** e **Campos de Experiência** (BNCC). Não usamos Bloom aqui."
     if "Fund. I" in serie:
-        return "Anos Iniciais", "Foco na alfabetização, letramento e consolidação de operações básicas."
+        return "Anos Iniciais", "Foco na alfabetização, letramento e consolidação de operações básicas. (Usa Bloom)."
     if "Fund. II" in serie:
-        return "Anos Finais", "Foco na organização (múltiplos professores), autonomia e identidade."
+        return "Anos Finais", "Foco na organização (múltiplos professores), autonomia e identidade. (Usa Bloom)."
     if "EM" in serie or "Médio" in serie:
-        return "Ensino Médio", "Foco no Projeto de Vida, autonomia intelectual e preparação para o futuro."
+        return "Ensino Médio", "Foco no Projeto de Vida, autonomia intelectual e preparação para o futuro. (Usa Bloom)."
     return "Geral", "Adaptação curricular padrão."
 
 def calcular_complexidade_pei(dados):
@@ -126,8 +126,13 @@ def extrair_tag_ia(texto, tag):
     return ""
 
 def extrair_metas_estruturadas(texto):
-    bloco = extrair_tag_ia(texto, "METAS_SMART")
-    if not bloco: return None
+    bloco = extrair_tag_ia(texto, "METAS_SMART") # Tenta SMART padrão
+    if not bloco:
+        # Se não achar SMART, tenta Objetivos da EI
+        bloco = extrair_tag_ia(texto, "OBJETIVOS_APRENDIZAGEM")
+        if not bloco: return None
+        return {"Curto": "Ver Objetivos de Aprendizagem abaixo", "Medio": "...", "Longo": "..."}
+    
     metas = {"Curto": "Definir...", "Medio": "Definir...", "Longo": "Definir..."}
     linhas = bloco.split('\n')
     for l in linhas:
@@ -140,6 +145,11 @@ def extrair_metas_estruturadas(texto):
 def extrair_bloom(texto):
     bloco = extrair_tag_ia(texto, "TAXONOMIA_BLOOM")
     if not bloco: return ["Identificar", "Compreender", "Aplicar"]
+    return [v.strip() for v in bloco.split(',')]
+
+def extrair_bncc_direitos(texto):
+    bloco = extrair_tag_ia(texto, "DIREITOS_APRENDIZAGEM")
+    if not bloco: return ["Conviver", "Brincar"]
     return [v.strip() for v in bloco.split(',')]
 
 def get_pro_icon(nome_profissional):
@@ -356,56 +366,54 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO ---
         serie = dados['serie'] or ""
         
-        if "Educação Infantil" in serie:
+        is_educacao_infantil = "Educação Infantil" in serie
+        
+        # 1. Definição do Perfil e Estrutura (PROMPT DINÂMICO)
+        
+        if is_educacao_infantil:
+            # === EDUCAÇÃO INFANTIL (BNCC: CAMPOS E DIREITOS) ===
             perfil_ia = """
             Você é um Especialista em EDUCAÇÃO INFANTIL e Inclusão.
-            FOCO: BNCC (Campos de Experiência), marcos do desenvolvimento, brincar heurístico, socialização e autonomia básica.
+            FOCO: BNCC (Campos de Experiência e Direitos de Aprendizagem).
+            NÃO use Taxonomia de Bloom. NÃO foque em alfabetização formal.
+            Foque em: Brincar, cuidar, interações, corpo e movimento.
             """
-        elif "Fund. I" in serie:
-            perfil_ia = """
-            Você é um Especialista em ANOS INICIAIS (Fundamental I) e Alfabetização.
-            FOCO: Processo de alfabetização/letramento, consolidação da matemática básica e rotina escolar.
+            estrutura_req = """
+            ESTRUTURA OBRIGATÓRIA (EI):
+            1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
+            [ANALISE_FARMA] Analise os fármacos. [/ANALISE_FARMA]
+            
+            [DIREITOS_APRENDIZAGEM]
+            Liste 3 direitos prioritários (Conviver, Brincar, Participar, Explorar, Expressar, Conhecer-se) e como garanti-los.
+            Use o formato: Direito: Ação prática.
+            [/DIREITOS_APRENDIZAGEM]
+            
+            [CAMPOS_EXPERIENCIA]
+            Liste 2 Campos de Experiência da BNCC prioritários para este caso.
+            [/CAMPOS_EXPERIENCIA]
+            
+            [OBJETIVOS_APRENDIZAGEM]
+            - OBJETIVO 1: ...
+            - OBJETIVO 2: ...
+            [FIM_OBJETIVOS]
+            
+            2. 🧩 ESTRATÉGIAS DE ACOLHIMENTO E ROTINA:
+            (Descreva adaptações sensoriais e de rotina).
             """
-        elif "Fund. II" in serie:
-            perfil_ia = """
-            Você é um Especialista em ANOS FINAIS (Fundamental II).
-            FOCO: Organização para múltiplos professores, habilidades sociais na pré-adolescência, identidade e abstração.
-            """
-        elif "EM" in serie or "Médio" in serie:
-            perfil_ia = """
-            Você é um Especialista em ENSINO MÉDIO e Projetos de Vida.
-            FOCO: Autonomia intelectual, abstração profunda, preparação para vida adulta/vestibular.
-            """
+            
         else:
-            perfil_ia = "Você é um Especialista Sênior em Neuroeducação e Inclusão."
+            # === FUNDAMENTAL E MÉDIO (BLOOM E SMART) ===
+            if "Fund. I" in serie:
+                perfil_ia = "Você é um Especialista em ANOS INICIAIS. Foco: Alfabetização e Letramento."
+            elif "Fund. II" in serie:
+                perfil_ia = "Você é um Especialista em ANOS FINAIS. Foco: Autonomia e Organização."
+            elif "EM" in serie or "Médio" in serie:
+                perfil_ia = "Você é um Especialista em ENSINO MÉDIO. Foco: Projeto de Vida e Abstração."
+            else:
+                perfil_ia = "Você é um Especialista em Inclusão Escolar."
 
-        # --- SELEÇÃO DE FORMATO (TÉCNICO VS PRÁTICO) ---
-        if modo_pratico:
-            prompt_sys = f"""
-            {perfil_ia}
-            SUA MISSÃO: Criar um GUIA PRÁTICO E DIRETO para o professor usar em sala de aula AMANHÃ.
-            
-            ESTRUTURA DE RESPOSTA OBRIGATÓRIA (Não use blocos técnicos aqui, use texto corrido e tópicos):
-            
-            # ESTRATÉGIAS PRÁTICAS PARA {serie.upper()}
-            
-            1. 🎯 O QUE FAZER AMANHÃ:
-            (3 ações simples e imediatas para adaptação de atividade e comportamento).
-            
-            2. 🗣️ COMO FALAR:
-            (Exemplos de comandos ou feedbacks que funcionam para este perfil).
-            
-            3. 🏠 ROTINA E AMBIENTE:
-            (Dicas de onde sentar, como organizar a mesa, pausas).
-            
-            NOTA: Não inclua "Avaliação de Repertório" ou termos clínicos complexos. Fale a língua do professor.
-            """
-        else:
-            prompt_sys = f"""
-            {perfil_ia}
-            SUA MISSÃO: Cruzar dados para criar um PEI Técnico Oficial com Taxonomia de Bloom e Metas SMART.
-            
-            ESTRUTURA OBRIGATÓRIA:
+            estrutura_req = """
+            ESTRUTURA OBRIGATÓRIA (Padrão):
             1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
             [ANALISE_FARMA] Analise os fármacos. [/ANALISE_FARMA]
             [TAXONOMIA_BLOOM] Liste APENAS 3 verbos de comando adequados ao nível. [/TAXONOMIA_BLOOM]
@@ -417,7 +425,33 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
             [FIM_METAS_SMART]
             
             2. 🧩 DIRETRIZES DE ADAPTAÇÃO:
-            (Descreva as adaptações curriculares e de acesso necessárias).
+            (Adaptações curriculares e de acesso).
+            """
+
+        # --- SELEÇÃO DE FORMATO (TÉCNICO VS PRÁTICO) ---
+        if modo_pratico:
+            prompt_sys = f"""
+            {perfil_ia}
+            SUA MISSÃO: Criar um GUIA PRÁTICO E DIRETO para o professor usar em sala de aula AMANHÃ.
+            
+            ESTRUTURA DE RESPOSTA OBRIGATÓRIA (Texto corrido e tópicos, sem blocos técnicos):
+            
+            # ESTRATÉGIAS PRÁTICAS PARA {serie.upper()}
+            
+            1. 🎯 O QUE FAZER AMANHÃ:
+            (3 ações simples e imediatas para adaptação de atividade e comportamento).
+            
+            2. 🗣️ COMO FALAR:
+            (Exemplos de comandos ou feedbacks que funcionam para este perfil).
+            
+            3. 🏠 ROTINA E AMBIENTE:
+            (Dicas de onde sentar, como organizar a mesa, pausas).
+            """
+        else:
+            prompt_sys = f"""
+            {perfil_ia}
+            SUA MISSÃO: Cruzar dados para criar um PEI Técnico Oficial.
+            {estrutura_req}
             """
         
         prompt_user = f"""
@@ -625,7 +659,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v106.0 Segmented & Educational UX</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v107.0 BNCC Specialized</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -922,14 +956,29 @@ with tab8: # DOCUMENTO (PDF TÉCNICO & DASHBOARD)
             st.write("")
             metas = extrair_metas_estruturadas(st.session_state.dados['ia_sugestao'])
             if metas:
-                html_metas = f"""<div class="meta-row"><span style="font-size:1.2rem;">🏁</span> <b>Curto (2m):</b> {metas['Curto']}</div><div class="meta-row"><span style="font-size:1.2rem;">🧗</span> <b>Médio (6m):</b> {metas['Medio']}</div><div class="meta-row"><span style="font-size:1.2rem;">🏔️</span> <b>Longo (1a):</b> {metas['Longo']}</div>"""
+                html_metas = f"""<div class="meta-row"><span style="font-size:1.2rem;">🏁</span> <b>Curto:</b> {metas['Curto']}</div><div class="meta-row"><span style="font-size:1.2rem;">🧗</span> <b>Médio:</b> {metas['Medio']}</div><div class="meta-row"><span style="font-size:1.2rem;">🏔️</span> <b>Longo:</b> {metas['Longo']}</div>"""
             else: html_metas = "Gere o plano na aba IA."
             st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-flag-2-fill" style="color:#D69E2E;"></i> Cronograma de Metas</div><div class="sc-body">{html_metas}</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
-            verbos = extrair_bloom(st.session_state.dados['ia_sugestao'])
-            html_verbos = "".join([f'<span class="bloom-tag">{v}</span>' for v in verbos])
-            st.markdown(f"""<div class="soft-card sc-blue"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#3182CE;"></i> Taxonomia de Bloom (Verbos)</div><div class="sc-body"><div style="margin-bottom:10px; font-size:0.85rem; color:#4A5568;">Verbos de comando sugeridos para atividades:</div>{html_verbos}</div><div class="bg-icon">🧠</div></div>""", unsafe_allow_html=True)
+            # LÓGICA DE EXIBIÇÃO BLOOM vs BNCC
+            is_ei = "Educação Infantil" in (st.session_state.dados['serie'] or "")
+            
+            if is_ei:
+                direitos = extrair_bncc_direitos(st.session_state.dados['ia_sugestao'])
+                html_tags = "".join([f'<span class="bloom-tag">{d}</span>' for d in direitos])
+                card_title = "Direitos de Aprendizagem (BNCC)"
+                card_desc = "Foco pedagógico para a Educação Infantil:"
+                card_icon = "🧸"
+            else:
+                verbos = extrair_bloom(st.session_state.dados['ia_sugestao'])
+                html_tags = "".join([f'<span class="bloom-tag">{v}</span>' for v in verbos])
+                card_title = "Taxonomia de Bloom (Verbos)"
+                card_desc = "Verbos de comando sugeridos para atividades:"
+                card_icon = "🧠"
+
+            st.markdown(f"""<div class="soft-card sc-blue"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#3182CE;"></i> {card_title}</div><div class="sc-body"><div style="margin-bottom:10px; font-size:0.85rem; color:#4A5568;">{card_desc}</div>{html_tags}</div><div class="bg-icon">{card_icon}</div></div>""", unsafe_allow_html=True)
+            
             st.write("")
             rede_html = ""
             if st.session_state.dados['rede_apoio']:
