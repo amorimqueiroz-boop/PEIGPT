@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (GLOBAL)
+# 2. LISTAS DE DADOS (CRÍTICO: TOPO ABSOLUTO PARA EVITAR ERROS)
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -67,12 +67,13 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 4. FUNÇÕES LÓGICAS & UTILITÁRIOS
+# 4. FUNÇÕES LÓGICAS E DE EXTRAÇÃO (BLINDADAS)
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
 
 def calcular_complexidade_pei(dados):
+    # Retorna: Texto, CorBG, CorTexto
     n_bar = sum(len(v) for v in dados['barreiras_selecionadas'].values())
     n_suporte_alto = sum(1 for v in dados['niveis_suporte'].values() if v in ["Substancial", "Muito Substancial"])
     recursos = 0
@@ -93,11 +94,32 @@ def extrair_linhas_bncc(texto):
 
 def extrair_resumo_estrategia(texto):
     if not texto: return "Plano ainda não gerado."
+    
+    # 1. Tentar localizar o bloco de Estratégias
     if "ESTRATÉGIAS" in texto:
         partes = texto.split("ESTRATÉGIAS")
-        conteudo = partes[1].split("ADAPTAÇÕES")[0] if "ADAPTAÇÕES" in partes[1] else partes[1]
-        return conteudo.replace('*', '').strip()
-    return "Gere o plano na aba IA para ver o resumo estratégico."
+        bloco_estrategia = partes[1]
+        
+        # 2. Cortar antes do próximo tópico (Adaptações, Avaliação, etc.)
+        if "ADAPTAÇÕES" in bloco_estrategia:
+            bloco_estrategia = bloco_estrategia.split("ADAPTAÇÕES")[0]
+        elif "5." in bloco_estrategia: # Tenta pegar pelo número do próximo item
+            bloco_estrategia = bloco_estrategia.split("5.")[0]
+            
+        # 3. Limpar linhas vazias e cabeçalhos numéricos residuais (ex: "4. 🧩")
+        linhas = [l.strip() for l in bloco_estrategia.split('\n') if l.strip()]
+        
+        # Pega a primeira linha longa (evita títulos curtos)
+        for linha in linhas:
+            # Remove marcadores de início como "4.", "-", "*"
+            linha_limpa = re.sub(r'^[\d\.\-\*\s]+', '', linha) 
+            # Remove emojis se estiverem no início
+            linha_limpa = re.sub(r'^[^\w\s]+', '', linha_limpa).strip()
+            
+            if len(linha_limpa) > 30: # É uma frase real
+                return linha_limpa
+                
+    return "Consulte o relatório completo para detalhes."
 
 def get_pro_icon(nome_profissional):
     p = nome_profissional.lower()
@@ -169,7 +191,7 @@ def calcular_progresso():
 def render_progresso():
     p = calcular_progresso()
     icon = "🌱"
-    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja
+    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)"
     
     if p >= 20: icon = "🚀"
     if p >= 50: icon = "🛸"
@@ -177,7 +199,7 @@ def render_progresso():
     
     if p >= 100: 
         icon = "🏆"
-        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)" # Verde
+        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)"
     
     st.markdown(f"""
     <div class="prog-container">
@@ -187,7 +209,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (CSS FINAL)
+# 5. ESTILO VISUAL (CSS REFINADO - SIMETRIA)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -217,13 +239,13 @@ def aplicar_estilo_visual():
             border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO (3px) */
+        /* BARRA DE PROGRESSO */
         .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
         .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
 
-        /* DASHBOARD HERO (APPLE STYLE AVATAR) */
+        /* DASHBOARD HERO */
         .dash-hero {
             background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%);
             border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px;
@@ -232,20 +254,18 @@ def aplicar_estilo_visual():
         }
         .apple-avatar {
             width: 60px; height: 60px; border-radius: 50%;
-            background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%);
-            color: #0F52BA; font-weight: 800; font-size: 1.8rem;
+            background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4);
+            color: white; font-weight: 800; font-size: 1.6rem;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid white;
         }
 
-        /* METRIC CARDS (UNIFORMES) */
+        /* METRIC CARDS */
         .metric-card {
             background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 160px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
         
-        /* Donut CSS */
         .css-donut {
             width: 70px; height: 70px; border-radius: 50%;
             background: conic-gradient(var(--fill) var(--p), #EDF2F7 0);
@@ -256,13 +276,10 @@ def aplicar_estilo_visual():
         .d-val { position: absolute; z-index: 2; font-size: 1.3rem; font-weight: 800; color: #2D3748; }
         .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
 
-        /* COMPLEXITY CARD */
-        .comp-icon-box { margin-bottom: 5px; }
-
-        /* DETAIL CARDS (SOFT COLORS) */
+        /* DETAIL CARDS (ALINHAMENTO FORÇADO) */
         .soft-card {
             border-radius: 12px; padding: 25px; 
-            min-height: 260px; /* ALTURA FIXA PARA SIMETRIA */
+            min-height: 260px; /* ALTURA IGUAL PARA TODOS */
             height: 100%; display: flex; flex-direction: column;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);
             border-left: 5px solid; position: relative; overflow: hidden;
@@ -278,7 +295,7 @@ def aplicar_estilo_visual():
             font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; 
             display: flex; align-items: center; gap: 8px; color: #4A5568; letter-spacing: 0.5px; z-index: 2;
         }
-        .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 500; z-index: 2; flex-grow: 1; }
+        .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 600; z-index: 2; flex-grow: 1; }
         
         /* Bg Icons */
         .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
@@ -289,7 +306,7 @@ def aplicar_estilo_visual():
         /* Rede Icons */
         .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
 
-        /* DNA BARS (RESTAURADO) */
+        /* DNA BARS */
         .dna-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; font-style: italic; display: flex; align-items: center; gap: 6px;}
         .dna-bar-container { margin-bottom: 12px; }
         .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
@@ -495,7 +512,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v63.0 Final Candidate</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v63.0 Surgical</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -709,10 +726,10 @@ with tab8: # DASHBOARD FINAL (CORRIGIDO)
              hf = st.session_state.dados['hiperfoco'] or "-"
              st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">🚀</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="d-lbl">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
-             # NÍVEL DE ATENÇÃO (ÍCONE NEUTRO COM COR DINÂMICA)
+             # NÍVEL DE ATENÇÃO (LÓGICA CORRIGIDA E ÍCONE NEUTRO)
              txt_comp, bg_c, txt_c = calcular_complexidade_pei(st.session_state.dados)
-             # Repare no estilo inline do ícone: color:{txt_c}
-             st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div class="comp-icon-box"><i class="ri-alert-line" style="color:{txt_c}; font-size: 2rem;"></i></div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
+             # O ÍCONE AGORA É COLORIDO PELO CONTEXTO, MAS O ÍCONE EM SI É NEUTRO (ALERT LINE)
+             st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div style="font-size:2.2rem; color:{txt_c}; margin-bottom:5px;"><i class="ri-error-warning-line"></i></div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         
@@ -730,7 +747,7 @@ with tab8: # DASHBOARD FINAL (CORRIGIDO)
             
             st.write("")
             
-            # CARD 3: ESTRATÉGIA (TEXTO CHEIO)
+            # CARD 3: ESTRATÉGIA (SEM CORTES)
             resumo = extrair_resumo_estrategia(st.session_state.dados['ia_sugestao'])
             st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#D69E2E;"></i> Estratégia Principal</div><div class="sc-body" style="font-style:italic;">"{resumo}"</div><div class="bg-icon">💡</div></div>""", unsafe_allow_html=True)
 
@@ -746,7 +763,7 @@ with tab8: # DASHBOARD FINAL (CORRIGIDO)
             
             st.write("")
 
-            # CARD 4: REDE (ÍCONES)
+            # CARD 4: REDE (ÍCONES AUTOMÁTICOS)
             rede_html = ""
             if st.session_state.dados['rede_apoio']:
                 for prof in st.session_state.dados['rede_apoio']:
@@ -757,9 +774,8 @@ with tab8: # DASHBOARD FINAL (CORRIGIDO)
             st.markdown(f"""<div class="soft-card sc-cyan"><div class="sc-head"><i class="ri-team-fill" style="color:#0BC5EA;"></i> Rede de Apoio</div><div class="sc-body">{rede_html}</div><div class="bg-icon">🤝</div></div>""", unsafe_allow_html=True)
 
         st.write("")
-        # --- RESTAURAÇÃO DAS BARRAS DE DNA DE SUPORTE ---
         st.markdown("##### 🧬 DNA de Suporte (Detalhamento)")
-        st.markdown('<div class="dna-legend"><i class="ri-information-fill"></i> Barras maiores e vermelhas indicam áreas que exigem mais adaptação e suporte intenso.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="dna-legend"><i class="ri-information-fill"></i> Barras maiores indicam áreas que exigem mais adaptação e suporte intenso.</div>', unsafe_allow_html=True)
         dna_c1, dna_c2 = st.columns(2)
         areas = list(LISTAS_BARREIRAS.keys())
         for i, area in enumerate(areas):
@@ -777,7 +793,6 @@ with tab8: # DASHBOARD FINAL (CORRIGIDO)
                 <div class="dna-bar-bg"><div class="dna-bar-fill" style="width:{val}%; background:{color};"></div></div>
             </div>
             """, unsafe_allow_html=True)
-        # ------------------------------------------------
 
     st.divider()
     if st.session_state.dados['ia_sugestao']:
