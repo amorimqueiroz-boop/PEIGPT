@@ -258,7 +258,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (VIBRANT CARDS + GLOW TABS + TYPOGRAPHY FIXES)
+# 5. ESTILO VISUAL (VIBRANT CARDS + GLOW TABS + DASHBOARD FIX)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -370,11 +370,10 @@ def aplicar_estilo_visual():
         .rc-desc { font-size: 0.8rem; color: #718096; line-height: 1.3; }
 
         /* OUTROS */
-        /* Header Unificado + Subtitulo */
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
         .header-subtitle { font-size: 1.2rem; color: #718096; font-weight: 600; border-left: 2px solid #E2E8F0; padding-left: 20px; line-height: 1.2; }
 
-        /* Títulos de Seção (com ícones) */
+        /* Títulos com Ícones (RESTAURADO) */
         .form-section-title { font-size: 1.2rem; font-weight: 700; color: #2D3748; margin: 25px 0 15px 0; display: flex; align-items: center; gap: 10px; }
         .form-section-title i { color: #3182CE; font-size: 1.4rem; }
 
@@ -388,7 +387,19 @@ def aplicar_estilo_visual():
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         .segmento-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 0.75rem; color: white; margin-top: 5px; }
         
-        /* DASHBOARD */
+        /* DASHBOARD - KPI ELEMENTS (RESTAURADOS) */
+        .css-donut { --p: 0; --fill: #e5e7eb; width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(var(--fill) var(--p), #F3F4F6 0); position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .css-donut:after { content: ""; position: absolute; width: 60px; height: 60px; border-radius: 50%; background: white; }
+        .d-val { position: relative; z-index: 10; font-weight: 800; font-size: 1.2rem; color: #2D3748; }
+        .d-lbl { font-size: 0.75rem; font-weight: 700; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; }
+        .comp-icon-box { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .dna-bar-container { margin-bottom: 15px; }
+        .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px; font-weight: 600; color: #4A5568; }
+        .dna-bar-bg { width: 100%; height: 8px; background-color: #E2E8F0; border-radius: 4px; overflow: hidden; }
+        .dna-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+        .rede-chip { display: inline-flex; align-items: center; gap: 5px; background: white; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #2D3748; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #E2E8F0; margin: 0 5px 5px 0; }
+        .bloom-tag { display: inline-block; background: rgba(255,255,255,0.6); padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; margin: 0 5px 5px 0; color: #2C5282; border: 1px solid rgba(49, 130, 206, 0.2); }
+
         .dash-hero { background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(15, 82, 186, 0.15); }
         .apple-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); color: white; font-weight: 800; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
         .metric-card { background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
@@ -399,6 +410,7 @@ def aplicar_estilo_visual():
         .sc-cyan { background-color: #E6FFFA; border-left-color: #0BC5EA; }
         .sc-green { background-color: #F0FFF4; border-left-color: #38A169; }
         .footer-signature { margin-top: 50px; padding-top: 20px; border-top: 1px solid #E2E8F0; text-align: center; font-size: 0.8rem; color: #A0AEC0; }
+        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -948,8 +960,6 @@ with tab0: # INÍCIO (SEM TÍTULO FUNDAMENTOS)
             </div>
             <div style="font-size:3rem; opacity:0.2;"><i class="ri-heart-pulse-line"></i></div>
         </div>""", unsafe_allow_html=True)
-    
-    # Título "Fundamentos" removido conforme solicitado
     
     # GRID DE CARDS COLORIDOS
     st.markdown("""
