@@ -258,7 +258,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (VIBRANT CARDS + GLOW TABS + DASHBOARD FIX)
+# 5. ESTILO VISUAL (FINAL ADJUSTMENTS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -304,7 +304,6 @@ def aplicar_estilo_visual():
             background-color: #EDF2F7;
         }
 
-        /* ESTADO SELECIONADO: TRANSPARENTE COM BRILHO PÁLIDO */
         .stTabs [aria-selected="true"] { 
             background-color: transparent !important; 
             color: #3182CE !important; 
@@ -335,7 +334,7 @@ def aplicar_estilo_visual():
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 3. CARDS DA HOME (COLORIDOS) */
+        /* 3. CARDS DA HOME */
         .home-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -372,10 +371,6 @@ def aplicar_estilo_visual():
         /* OUTROS */
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
         .header-subtitle { font-size: 1.2rem; color: #718096; font-weight: 600; border-left: 2px solid #E2E8F0; padding-left: 20px; line-height: 1.2; }
-
-        /* Títulos com Ícones (RESTAURADO) */
-        .form-section-title { font-size: 1.2rem; font-weight: 700; color: #2D3748; margin: 25px 0 15px 0; display: flex; align-items: center; gap: 10px; }
-        .form-section-title i { color: #3182CE; font-size: 1.4rem; }
 
         .prog-container { width: 100%; position: relative; margin: 0 0 30px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
@@ -931,7 +926,7 @@ abas = [
     "ESTUDANTE", 
     "EVIDÊNCIAS", 
     "REDE DE APOIO", 
-    "BARREIRAS", 
+    "MAPEAMENTO", # NOME NOVO (Antes: BARREIRAS)
     "PLANO DE AÇÃO", 
     "MONITORAMENTO", 
     "CONSULTORIA IA", 
@@ -1005,7 +1000,8 @@ with tab0: # INÍCIO (SEM TÍTULO FUNDAMENTOS)
 
 with tab1: # ESTUDANTE
     render_progresso()
-    st.markdown("<div class='form-section-title'><i class='ri-user-smile-line'></i> Dossiê do Estudante</div>", unsafe_allow_html=True)
+    # PADRONIZAÇÃO DE TÍTULO
+    st.markdown("### <i class='ri-user-smile-line'></i> Dossiê do Estudante", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns([3, 2, 2, 1])
     st.session_state.dados['nome'] = c1.text_input("Nome Completo", st.session_state.dados['nome'])
     st.session_state.dados['nasc'] = c2.date_input("Nascimento", value=st.session_state.dados.get('nasc', date(2015, 1, 1)))
@@ -1021,7 +1017,7 @@ with tab1: # ESTUDANTE
 
     st.session_state.dados['turma'] = c4.text_input("Turma", st.session_state.dados['turma'])
     
-    st.markdown("<div class='form-section-title'><i class='ri-history-line'></i> Histórico & Contexto Familiar</div>", unsafe_allow_html=True)
+    st.markdown("##### Histórico & Contexto Familiar")
     c_hist, c_fam = st.columns(2)
     st.session_state.dados['historico'] = c_hist.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Relate retenções, trocas de escola, avanços e desafios anteriores.")
     st.session_state.dados['familia'] = c_fam.text_area("Dinâmica Familiar", st.session_state.dados['familia'], help="Quem cuida, como é a rotina em casa, quem apoia nas tarefas.")
@@ -1064,7 +1060,7 @@ with tab1: # ESTUDANTE
 
     st.divider()
     
-    st.markdown("<div class='form-section-title'><i class='ri-hospital-line'></i> Contexto Clínico</div>", unsafe_allow_html=True)
+    st.markdown("##### Contexto Clínico")
     st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico / Hipótese Diagnóstica", st.session_state.dados['diagnostico'], help="CID ou descrição da hipótese (ex: TDAH, TEA, Dislexia).")
     
     with st.container(border=True):
@@ -1089,7 +1085,10 @@ with tab1: # ESTUDANTE
 
 with tab2: # EVIDÊNCIAS
     render_progresso()
-    st.markdown("<div class='form-section-title'><i class='ri-abc-line'></i> Nível de Alfabetização</div>", unsafe_allow_html=True)
+    # PADRONIZAÇÃO DE TÍTULO
+    st.markdown("### <i class='ri-search-eye-line'></i> Coleta de Evidências (Observação Dirigida)", unsafe_allow_html=True)
+    
+    st.markdown("##### Nível de Alfabetização")
     st.session_state.dados['nivel_alfabetizacao'] = st.selectbox(
         "Em qual hipótese de escrita o estudante se encontra?",
         LISTA_ALFABETIZACAO,
@@ -1100,15 +1099,15 @@ with tab2: # EVIDÊNCIAS
     
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown("<div class='form-section-title'><i class='ri-book-open-line'></i> Pedagógico</div>", unsafe_allow_html=True)
+        st.markdown("**Pedagógico**")
         for q in ["Estagnação na aprendizagem", "Dificuldade de generalização", "Dificuldade de abstração", "Lacuna em pré-requisitos"]:
             st.session_state.dados['checklist_evidencias'][q] = st.toggle(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
     with c2:
-        st.markdown("<div class='form-section-title'><i class='ri-brain-line'></i> Cognitivo</div>", unsafe_allow_html=True)
+        st.markdown("**Cognitivo**")
         for q in ["Oscilação de foco", "Fadiga mental rápida", "Dificuldade de iniciar tarefas", "Esquecimento recorrente"]:
             st.session_state.dados['checklist_evidencias'][q] = st.toggle(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
     with c3:
-        st.markdown("<div class='form-section-title'><i class='ri-emotion-line'></i> Comportamental</div>", unsafe_allow_html=True)
+        st.markdown("**Comportamental**")
         for q in ["Dependência de mediação (1:1)", "Baixa tolerância à frustração", "Desorganização de materiais", "Recusa de tarefas"]:
             st.session_state.dados['checklist_evidencias'][q] = st.toggle(q, value=st.session_state.dados['checklist_evidencias'].get(q, False))
 
@@ -1118,8 +1117,11 @@ with tab3: # REDE
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais que atendem o aluno:", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'])
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações Clínicas Importantes (o que os terapeutas pediram?)", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPEAMENTO
+with tab4: # MAPEAMENTO (ANTIGA BARREIRAS)
     render_progresso()
+    # PADRONIZAÇÃO DE TÍTULO
+    st.markdown("### <i class='ri-radar-line'></i> Mapeamento Integral", unsafe_allow_html=True)
+    
     with st.container(border=True):
         st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#0F52BA'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
@@ -1396,4 +1398,4 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
         st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
 
 # Footer final
-st.markdown("<div class='footer-signature'>PEI 360º v114.0 Minimalist Gray UI - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+st.markdown("<div class='footer-signature'>PEI 360º v115.0 Minimalist Gray UI - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
