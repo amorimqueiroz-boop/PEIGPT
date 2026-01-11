@@ -258,7 +258,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (VIBRANT CARDS + GLOW TABS)
+# 5. ESTILO VISUAL (VIBRANT CARDS + GLOW TABS + TYPOGRAPHY FIXES)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -307,14 +307,13 @@ def aplicar_estilo_visual():
         /* ESTADO SELECIONADO: TRANSPARENTE COM BRILHO PÁLIDO */
         .stTabs [aria-selected="true"] { 
             background-color: transparent !important; 
-            color: #3182CE !important; /* Texto Azul para contraste */
-            border: 1px solid #3182CE !important; /* Borda fina definindo a forma */
+            color: #3182CE !important; 
+            border: 1px solid #3182CE !important; 
             font-weight: 800;
-            /* O BRILHO PÁLIDO (Glow) */
             box-shadow: 0 0 12px rgba(49, 130, 206, 0.4), inset 0 0 5px rgba(49, 130, 206, 0.1) !important;
         }
 
-        /* 2. CARD DE INSIGHT (AMARELO VIBRANTE) */
+        /* 2. CARD DE INSIGHT */
         .insight-card {
             background-color: #FFFFF0;
             border-radius: 12px;
@@ -371,7 +370,14 @@ def aplicar_estilo_visual():
         .rc-desc { font-size: 0.8rem; color: #718096; line-height: 1.3; }
 
         /* OUTROS */
+        /* Header Unificado + Subtitulo */
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
+        .header-subtitle { font-size: 1.2rem; color: #718096; font-weight: 600; border-left: 2px solid #E2E8F0; padding-left: 20px; line-height: 1.2; }
+
+        /* Títulos de Seção (com ícones) */
+        .form-section-title { font-size: 1.2rem; font-weight: 700; color: #2D3748; margin: 25px 0 15px 0; display: flex; align-items: center; gap: 10px; }
+        .form-section-title i { color: #3182CE; font-size: 1.4rem; }
+
         .prog-container { width: 100%; position: relative; margin: 0 0 30px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
@@ -922,7 +928,7 @@ abas = [
 ]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
-with tab0: # INÍCIO (LAYOUT VIBRANTE + ABAS GLOW)
+with tab0: # INÍCIO (SEM TÍTULO FUNDAMENTOS)
     if api_key:
         with st.spinner("Conectando à IA..."):
             try:
@@ -943,9 +949,9 @@ with tab0: # INÍCIO (LAYOUT VIBRANTE + ABAS GLOW)
             <div style="font-size:3rem; opacity:0.2;"><i class="ri-heart-pulse-line"></i></div>
         </div>""", unsafe_allow_html=True)
     
-    st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
+    # Título "Fundamentos" removido conforme solicitado
     
-    # GRID DE CARDS COLORIDOS (DE VOLTA!)
+    # GRID DE CARDS COLORIDOS
     st.markdown("""
     <div class="home-grid">
         <a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card">
@@ -975,7 +981,7 @@ with tab0: # INÍCIO (LAYOUT VIBRANTE + ABAS GLOW)
     </div>
     """, unsafe_allow_html=True)
 
-    # INSIGHT CARD (AGORA AMARELO NOVAMENTE)
+    # INSIGHT CARD
     if api_key:
         st.markdown(f"""
         <div class="insight-card">
