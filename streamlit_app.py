@@ -126,10 +126,6 @@ def get_hiperfoco_emoji(texto):
     return "🚀"
 
 def detectar_nivel_ensino(serie_str):
-    """
-    Mapeamento RÍGIDO do nível de ensino para evitar confusão da IA.
-    Retorna: 'EI' (Infantil), 'FI' (Fund I), 'FII' (Fund II), 'EM' (Médio)
-    """
     if not serie_str: return "INDEFINIDO"
     s = serie_str.lower()
     if "infantil" in s: return "EI"
@@ -139,16 +135,15 @@ def detectar_nivel_ensino(serie_str):
     return "INDEFINIDO"
 
 def get_segmento_info_visual(serie):
-    """Retorna cor e texto para feedback visual do segmento"""
     nivel = detectar_nivel_ensino(serie)
     if nivel == "EI":
-        return "Educação Infantil", "blue", "Foco: Campos de Experiência (BNCC) e Desenvolvimento Integral."
+        return "Educação Infantil", "#4299e1", "Foco: Campos de Experiência (BNCC) e Desenvolvimento Integral."
     elif nivel == "FI":
-        return "Anos Iniciais (Fund. I)", "green", "Foco: Alfabetização, Letramento e Construção de Habilidades."
+        return "Anos Iniciais (Fund. I)", "#48bb78", "Foco: Alfabetização, Letramento e Construção de Habilidades."
     elif nivel == "FII":
-        return "Anos Finais (Fund. II)", "orange", "Foco: Autonomia, Identidade e Abstração (Múltiplos Professores)."
+        return "Anos Finais (Fund. II)", "#ed8936", "Foco: Autonomia, Identidade e Abstração (Múltiplos Professores)."
     elif nivel == "EM":
-        return "Ensino Médio / EJA", "purple", "Foco: Projeto de Vida e Preparação Acadêmica/Profissional."
+        return "Ensino Médio / EJA", "#9f7aea", "Foco: Projeto de Vida e Preparação Acadêmica/Profissional."
     else:
         return "Selecione a Série", "grey", "Aguardando seleção..."
 
@@ -225,7 +220,6 @@ def ler_pdf(arquivo):
 
 def limpar_texto_pdf(texto):
     if not texto: return ""
-    # Remove emojis e formatação markdown para PDF
     t = texto.replace('**', '').replace('__', '').replace('#', '')
     t = t.replace('⚡', '').replace('🧠', '').replace('🌬️', '').replace('🕒', '').replace('📁', '').replace('🚶‍♂️', '').replace('🎨', '').replace('🤝', '').replace('🧙‍♂️', '').replace('⚔️', '').replace('🛡️', '').replace('🎒', '').replace('🧪', '').replace('🧸', '').replace('🍎', '').replace('💤', '')
     return t.encode('latin-1', 'ignore').decode('latin-1')
@@ -269,74 +263,148 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL
+# 5. ESTILO VISUAL (DESIGN OVERHAUL v112.0)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
-        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-        .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
+        html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; background-color: #F7FAFC; }
+        .block-container { padding-top: 1.5rem !important; padding-bottom: 5rem !important; }
+        
+        /* 1. NAVEGAÇÃO CHIQUE E FLUIDA (TABS) */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
-        
+        .stTabs [data-baseweb="tab-list"] { 
+            gap: 12px; 
+            flex-wrap: wrap; 
+            margin-bottom: 30px; 
+            justify-content: center;
+            padding: 10px;
+        }
+        .stTabs [data-baseweb="tab"] { 
+            height: 45px; 
+            border-radius: 25px !important; 
+            background-color: white; 
+            border: 1px solid #E2E8F0; 
+            color: #718096; 
+            font-weight: 700; 
+            font-size: 0.9rem; 
+            padding: 0 25px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .stTabs [data-baseweb="tab"]:hover {
+            transform: translateY(-2px);
+            border-color: #0F52BA;
+            color: #0F52BA;
+        }
+        .stTabs [aria-selected="true"] { 
+            background: linear-gradient(135deg, #0F52BA 0%, #0062E6 100%) !important; 
+            color: white !important; 
+            border-color: transparent !important; 
+            box-shadow: 0 4px 12px rgba(15, 82, 186, 0.3);
+        }
+
+        /* 2. CARD DE INSIGHT (VIBRANTE) */
+        .insight-card {
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            box-shadow: 0 10px 20px rgba(118, 75, 162, 0.25);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .insight-card::before {
+            content: "";
+            position: absolute;
+            top: -20px; right: -20px;
+            width: 100px; height: 100px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+        .insight-icon {
+            background: rgba(255,255,255,0.2);
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            backdrop-filter: blur(5px);
+        }
+
+        /* 3. CARDS DA HOME (MODERN GRID) */
+        .home-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .rich-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .rich-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            border-color: #CBD5E0;
+        }
+        .rich-card-top {
+            width: 100%;
+            height: 6px;
+            position: absolute;
+            top: 0; left: 0;
+        }
+        .rc-icon {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        .rc-title { font-weight: 800; font-size: 1.1rem; color: #2D3748; margin-bottom: 8px; }
+        .rc-desc { font-size: 0.85rem; color: #718096; line-height: 1.4; }
+
+        /* OUTROS ESTILOS MANTIDOS */
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
-        .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
-        .stTabs [data-baseweb="tab"] { height: 36px; border-radius: 18px !important; background-color: white; border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px; transition: all 0.2s ease; }
-        .stTabs [aria-selected="true"] { background-color: #FF6B6B !important; color: white !important; border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3); }
-        
         .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
         .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
-
+        
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
+        div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
+        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
+        .segmento-badge { display: inline-block; padding: 5px 12px; border-radius: 15px; font-weight: 800; font-size: 0.8rem; color: white; margin-top: 5px; }
+        
+        /* DASHBOARD */
         .dash-hero { background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2); }
         .apple-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); color: white; font-weight: 800; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
-
         .metric-card { background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .css-donut { width: 70px; height: 70px; border-radius: 50%; background: conic-gradient(var(--fill) var(--p), #EDF2F7 0); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
-        .css-donut::after { content: ""; position: absolute; width: 54px; height: 54px; border-radius: 50%; background: white; }
-        .d-val { position: absolute; z-index: 2; font-size: 1.3rem; font-weight: 800; color: #2D3748; }
-        .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
-        .comp-icon-box { margin-bottom: 5px; }
-
         .soft-card { border-radius: 12px; padding: 20px; min-height: 220px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 5px solid; position: relative; overflow: hidden; }
         .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
         .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
         .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
         .sc-cyan { background-color: #E6FFFA; border-left-color: #0BC5EA; }
         .sc-green { background-color: #F0FFF4; border-left-color: #38A169; }
-        
-        .home-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .home-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
-        .home-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
-        .home-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
-        .icon-box { width: 70px; height: 70px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin-bottom: 15px; }
-        .ic-blue { background-color: #EBF8FF !important; color: #3182CE !important; border: 1px solid #BEE3F8 !important; }
-        .ic-gold { background-color: #FFFFF0 !important; color: #D69E2E !important; border: 1px solid #FAF089 !important; }
-        .ic-pink { background-color: #FFF5F7 !important; color: #D53F8C !important; border: 1px solid #FED7E2 !important; }
-        .ic-green { background-color: #F0FFF4 !important; color: #38A169 !important; border: 1px solid #C6F6D5 !important; }
-        .rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-        
-        .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
-        .dna-bar-container { margin-bottom: 12px; }
-        .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
-        .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
-        .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
-        .bloom-tag { background: #EBF8FF; color: #3182CE; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; margin-right: 5px; border: 1px solid #BEE3F8; display: inline-block; margin-bottom: 5px; }
-        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
-        
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
-        div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
-        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
-        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: #0F52BA !important; border-color: #0F52BA !important; }
-        .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
-        .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
-
-        /* CARDS DO MAPA */
         .game-card { background-color: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 6px solid; }
-        .gc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .gc-title { font-weight: 800; font-size: 1.1rem; color: #2D3748; }
-        .segmento-badge { display: inline-block; padding: 5px 12px; border-radius: 15px; font-weight: 800; font-size: 0.8rem; color: white; margin-top: 5px; }
+        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -756,7 +824,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v111.0 Gold Master</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v112.0 Design Overhaul</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -772,31 +840,70 @@ st.markdown(f"""
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento", "🗺️ Jornada do Aluno"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
-with tab0: # INÍCIO (RESTORED - CLASSIC)
+with tab0: # INÍCIO (DESIGN OVERHAUL)
     if api_key:
-        with st.spinner("Gerando inspiração..."):
+        with st.spinner("Conectando à IA..."):
             try:
                 client = OpenAI(api_key=api_key)
-                saudacao = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta acolhedora para professor sobre inclusão."}]).choices[0].message.content
-                noticia = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta sobre legislação de inclusão ou neurociência."}]).choices[0].message.content
+                # Tentativa de frase do dia
+                saudacao = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase muito curta e motivadora para professor de educação inclusiva."}], max_tokens=30).choices[0].message.content
+                noticia = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica relâmpago (1 frase) sobre neurociência na escola."}], max_tokens=40).choices[0].message.content
             except:
                 saudacao = "A inclusão transforma vidas."
-                noticia = "O PEI é um direito garantido por lei."
+                noticia = "O cérebro aprende quando emocionado."
+        
+        # HERO BANNER
         st.markdown(f"""
-        <div style="background: linear-gradient(90deg, #0F52BA 0%, #004E92 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 82, 186, 0.25);">
-            <div style="display:flex; gap:20px; align-items:center;">
-                <div style="background:rgba(255,255,255,0.2); padding:12px; border-radius:50%;"><i class="ri-sparkling-2-fill" style="font-size: 2rem; color: #FFD700;"></i></div>
-                <div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div>
+        <div class="dash-hero">
+            <div>
+                <h2 style="color:white; margin:0;">Olá, Educador(a)!</h2>
+                <p style="margin:5px 0 0 0; opacity:0.9;">{saudacao}</p>
             </div>
+            <div style="font-size:3rem; opacity:0.2;"><i class="ri-heart-pulse-line"></i></div>
         </div>""", unsafe_allow_html=True)
+
+        # INSIGHT CARD (GLASSMORPHISM)
+        st.markdown(f"""
+        <div class="insight-card">
+            <div class="insight-icon"><i class="ri-lightbulb-flash-line"></i></div>
+            <div>
+                <h4 style="margin:0; color:white;">Insight do Dia</h4>
+                <p style="margin:5px 0 0 0; font-size:0.95rem; opacity:0.9;">{noticia}</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
-    if api_key: st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
+    
+    # GRID DE CARDS
+    st.markdown("""
+    <div class="home-grid">
+        <a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card">
+            <div class="rich-card-top" style="background-color: #3182CE;"></div>
+            <div class="rc-icon" style="background-color:#EBF8FF; color:#3182CE;"><i class="ri-book-open-line"></i></div>
+            <div class="rc-title">O que é PEI?</div>
+            <div class="rc-desc">Conceitos fundamentais e estruturação.</div>
+        </a>
+        <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card">
+            <div class="rich-card-top" style="background-color: #D69E2E;"></div>
+            <div class="rc-icon" style="background-color:#FFFFF0; color:#D69E2E;"><i class="ri-scales-3-line"></i></div>
+            <div class="rc-title">Legislação</div>
+            <div class="rc-desc">LBI e Decretos sobre inclusão.</div>
+        </a>
+        <a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card">
+            <div class="rich-card-top" style="background-color: #D53F8C;"></div>
+            <div class="rc-icon" style="background-color:#FFF5F7; color:#D53F8C;"><i class="ri-brain-line"></i></div>
+            <div class="rc-title">Neurociência</div>
+            <div class="rc-desc">Artigos sobre desenvolvimento atípico.</div>
+        </a>
+        <a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card">
+            <div class="rich-card-top" style="background-color: #38A169;"></div>
+            <div class="rc-icon" style="background-color:#F0FFF4; color:#38A169;"><i class="ri-compass-3-line"></i></div>
+            <div class="rc-title">BNCC</div>
+            <div class="rc-desc">Currículo oficial e adaptações.</div>
+        </a>
+    </div>
+    """, unsafe_allow_html=True)
 
 with tab1: # ESTUDANTE
     render_progresso()
