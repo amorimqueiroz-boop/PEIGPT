@@ -2,16 +2,12 @@ import streamlit as st
 from datetime import date
 from io import BytesIO
 from docx import Document
-from docx.shared import Pt
 from openai import OpenAI
 from pypdf import PdfReader
 from fpdf import FPDF
-import base64
 import json
 import os
 import re
-import glob
-import random
 import requests
 
 # ==============================================================================
@@ -44,6 +40,9 @@ LISTA_POTENCIAS = ["Memória Visual", "Musicalidade", "Tecnologia", "Hiperfoco",
 LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", "Neuropediatra", "Psiquiatra", "Psicopedagogo", "Professor de Apoio", "AT"]
 LISTA_FAMILIA = ["Mãe", "Pai", "Mãe (2ª)", "Pai (2º)", "Avó", "Avô", "Irmão(s)", "Tio(a)", "Padrasto", "Madrasta", "Tutor Legal", "Abrigo Institucional"]
 
+PASTA_BANCO = "banco_alunos"
+if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
+
 # ==============================================================================
 # 3. GERENCIAMENTO DE ESTADO
 # ==============================================================================
@@ -55,8 +54,8 @@ default_state = {
     'barreiras_selecionadas': {k: [] for k in LISTAS_BARREIRAS.keys()},
     'niveis_suporte': {}, 
     'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
-    'ia_sugestao': '',         # PEI TÉCNICO
-    'ia_mapa_texto': '',       # ROTEIRO GAMIFICADO (NOVO)
+    'ia_sugestao': '',       # Conteúdo Técnico
+    'ia_mapa_texto': '',     # Conteúdo do Aluno (NOVO)
     'outros_acesso': '', 'outros_ensino': '', 
     'monitoramento_data': date.today(), 
     'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': []
@@ -72,9 +71,6 @@ if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 # ==============================================================================
 # 4. LÓGICA E UTILITÁRIOS
 # ==============================================================================
-PASTA_BANCO = "banco_alunos"
-if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
-
 def calcular_idade(data_nasc):
     if not data_nasc: return ""
     hoje = date.today()
@@ -84,14 +80,11 @@ def calcular_idade(data_nasc):
 def get_hiperfoco_emoji(texto):
     if not texto: return "🚀"
     t = texto.lower()
-    if "jogo" in t or "game" in t or "minecraft" in t or "roblox" in t: return "🎮"
+    if "jogo" in t or "game" in t: return "🎮"
     if "dino" in t: return "🦖"
     if "fute" in t or "bola" in t: return "⚽"
     if "desenho" in t or "arte" in t: return "🎨"
     if "músic" in t: return "🎵"
-    if "anim" in t or "gato" in t or "cachorro" in t: return "🐾"
-    if "carro" in t: return "🏎️"
-    if "espaço" in t: return "🪐"
     return "🚀"
 
 def calcular_complexidade_pei(dados):
@@ -113,15 +106,14 @@ def extrair_tag_ia(texto, tag):
     return ""
 
 def extrair_secao_do_mapa(texto_mapa, chave):
-    """Extrai partes do texto gamificado para o PDF do tabuleiro"""
+    """Extrai partes do texto gamificado para o PDF"""
     if not texto_mapa: return "..."
-    # Regex para pegar o texto entre os títulos (que têm emojis ou asteriscos)
     patterns = {
-        "poder": r"(Poder|Superpoder).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
-        "ansiedade": r"(Calma|Ansiedade).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
-        "escola": r"(Escola|Sala|Aula|Missão).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
-        "organizacao": r"(Organiza|Rotina|Inventário).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
-        "aliados": r"(Aliados|Rede|Guilda).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)"
+        "poder": r"(Poder|Superpoder|Hiperfoco).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
+        "ansiedade": r"(Calma|Ansiedade|Nervoso|Pânico).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
+        "escola": r"(Escola|Sala|Aula|Silêncio).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
+        "organizacao": r"(Organiza|Rotina|Mestre|Pasta).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
+        "aliados": r"(Aliados|Rede|Contar|Apoio).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)"
     }
     match = re.search(patterns.get(chave, ""), texto_mapa, re.DOTALL | re.IGNORECASE)
     if match: return match.group(2).strip()
@@ -187,14 +179,6 @@ def salvar_aluno(dados):
         return True, f"Salvo: {dados['nome']}"
     except Exception as e: return False, str(e)
 
-def carregar_aluno(nome_arq):
-    # (Mantido simplificado)
-    return None
-
-def excluir_aluno(nome_arq):
-    try: os.remove(os.path.join(PASTA_BANCO, nome_arq)); return True
-    except: return False
-
 def calcular_progresso():
     if st.session_state.dados['ia_sugestao']: return 100
     pontos = 0; total = 6 
@@ -253,6 +237,9 @@ def aplicar_estilo_visual():
         .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
         .sc-cyan { background-color: #E6FFFA; border-left-color: #0BC5EA; }
         .sc-green { background-color: #F0FFF4; border-left-color: #38A169; }
+        .sc-head { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #4A5568; letter-spacing: 0.5px; z-index: 2; }
+        .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 600; z-index: 2; flex-grow: 1; }
+        .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
         
         .home-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .home-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
@@ -280,10 +267,12 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
 
-        /* CARDS DO MAPA */
-        .game-card { background-color: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 6px solid; }
-        .gc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        /* CARDS DO MAPA (CSS EXTRA) */
+        .game-card { background-color: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 6px solid; transition: transform 0.2s; }
+        .game-card:hover { transform: translateY(-3px); }
+        .gc-power { border-top-color: #F6AD55; } /* Laranja */
         .gc-title { font-weight: 800; font-size: 1.1rem; color: #2D3748; }
+        .gc-body { font-size: 0.95rem; color: #4A5568; line-height: 1.5; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -292,7 +281,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (TÉCNICA & GAMIFICADA)
+# 6. INTELIGÊNCIA ARTIFICIAL (TÉCNICA & LÚDICA)
 # ==============================================================================
 
 # CÉREBRO 1: O PEDAGOGO TÉCNICO (CONSULTORIA IA)
@@ -327,20 +316,19 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
 
         prompt_sys = """
         Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
-        SUA MISSÃO: Cruzar dados para criar um PEI com Taxonomia de Bloom e Metas SMART.
+        SUA MISSÃO: Criar um PEI TÉCNICO para a equipe escolar.
         
         --- ESTRUTURA OBRIGATÓRIA ---
-        1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
         [ANALISE_FARMA] Analise os fármacos. [/ANALISE_FARMA]
         [TAXONOMIA_BLOOM] Liste APENAS 3 verbos de comando. [/TAXONOMIA_BLOOM]
         
-        [METAS_SMART]
+        [METAS_SMART] 
         - CURTO PRAZO (2 meses): ...
         - MÉDIO PRAZO (Semestre): ...
         - LONGO PRAZO (Ano): ...
         [FIM_METAS_SMART]
         
-        2. 🧩 DIRETRIZES DE ADAPTAÇÃO:
+        [ESTRATEGIA_MASTER] ... [FIM_ESTRATEGIA_MASTER]
         """
         
         prompt_user = f"""
@@ -357,7 +345,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         return res.choices[0].message.content, None
     except Exception as e: return None, str(e)
 
-# CÉREBRO 2: GAME MASTER (Traduz para o Aluno)
+# CÉREBRO 2: GAME MASTER (TRADUZ PARA O MAPA)
 def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     if not api_key: return None, "Configure a API."
     try:
@@ -402,7 +390,7 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF (TÉCNICO & TABULEIRO SEPARADOS)
+# 7. GERADOR PDF
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -432,7 +420,6 @@ class PDF_Game_Board(FPDF):
         self.cell(0, 15, "MEU MAPA DE PODERES E MISSOES", 0, 1, 'C')
 
     def draw_card(self, x, y, title, content, color_r, color_g, color_b, icon=""):
-        # Desenha um "Card" no PDF
         self.set_fill_color(color_r, color_g, color_b)
         self.set_draw_color(200, 200, 200)
         self.rect(x, y, 80, 50, 'DF')
@@ -448,7 +435,6 @@ def gerar_pdf_final(dados, tem_anexo):
     pdf = PDF_Classic(); pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
     pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
     pdf.set_font("Arial", size=10); pdf.set_text_color(0)
-    
     med_list = []
     if dados['lista_medicamentos']:
         for m in dados['lista_medicamentos']:
@@ -458,7 +444,6 @@ def gerar_pdf_final(dados, tem_anexo):
             med_list.append(txt)
     med_str = "; ".join(med_list) if med_list else "Não informado."
     fam_str = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado."
-    
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nome:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nome'], 0, 1)
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nascimento:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, str(dados['nasc']), 0, 1)
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Série/Turma:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, f"{dados['serie']} - {dados['turma']}", 0, 1)
@@ -496,23 +481,21 @@ def gerar_pdf_tabuleiro(texto_aluno):
     pdf = PDF_Game_Board(orientation='L', format='A4')
     pdf.add_page()
     
-    # Extração de Tópicos
-    poder = extrair_secao_do_mapa(texto_aluno, "poder")
-    ansiedade = extrair_secao_do_mapa(texto_aluno, "ansiedade")
-    escola = extrair_secao_do_mapa(texto_aluno, "escola")
-    organizacao = extrair_secao_do_mapa(texto_aluno, "organizacao")
-    aliados = extrair_secao_do_mapa(texto_aluno, "aliados")
-    
+    # Extração simples
+    def get_block(key):
+        match = re.search(fr"{key}.*?\n(.*?)(?=\n\*\*|\Z)", texto_aluno, re.DOTALL)
+        return match.group(1).strip() if match else "..."
+
+    # Cards (Sem imagem, só layout)
     y_start = 40
     
-    # Cards
-    pdf.draw_card(20, y_start, "MEU SUPERPODER", poder, 254, 215, 170, "[!]")
-    pdf.draw_card(110, y_start, "CALMA INTERIOR", ansiedade, 198, 246, 213, "[~]")
-    pdf.draw_card(200, y_start, "NA ESCOLA", escola, 190, 227, 248, "[+]")
+    pdf.draw_card(20, y_start, "MEUS SUPERPODERES", get_block("Superpoderes"), 255, 230, 204)
+    pdf.draw_card(110, y_start, "ESCUDO DE CALMA", get_block("Calma"), 209, 242, 235)
+    pdf.draw_card(200, y_start, "MISSAO NA SALA", get_block("Missão"), 214, 234, 248)
     
     y_row2 = y_start + 60
-    pdf.draw_card(65, y_row2, "MEU INVENTARIO", organizacao, 233, 216, 253, "[#]")
-    pdf.draw_card(155, y_row2, "MEUS ALIADOS", aliados, 255, 250, 205, "[&]")
+    pdf.draw_card(65, y_row2, "MEU INVENTARIO", get_block("Inventário"), 232, 218, 239)
+    pdf.draw_card(155, y_row2, "MEUS ALIADOS", get_block("Guilda"), 255, 250, 205)
     
     return pdf.output(dest='S').encode('latin-1', 'replace')
 
@@ -548,7 +531,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v103.0 Add-On Strategy</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v103.0 Final Integration</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -560,7 +543,7 @@ st.markdown(f"""
     <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
-# ABAS (10 Abas)
+# ABAS
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento", "🗺️ Jornada do Aluno"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
@@ -731,6 +714,10 @@ with tab7: # IA (CONSULTORIA PEDAGÓGICA)
             **1. Documentos Norteadores**
             * NOTA TÉCNICA SEESP/MEC nº 24/2010.
             * DUA - Desenho Universal para a Aprendizagem.
+            
+            **2. Autores de Referência**
+            * MENDES, Enicéia Gonçalves (Ensino Colaborativo).
+            * MANTOAN, Maria Teresa Eglér (Inclusão Total).
             """)
 
     with col_right:
@@ -746,8 +733,9 @@ with tab7: # IA (CONSULTORIA PEDAGÓGICA)
 
 with tab8: # DOCUMENTO (PDF TÉCNICO & DASHBOARD)
     render_progresso()
-    st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
+    st.markdown("### <i class='ri-file-pdf-line'></i> Documentação Oficial", unsafe_allow_html=True)
     
+    # 1. VISUAL DASHBOARD
     if st.session_state.dados['nome']:
         init_avatar = st.session_state.dados['nome'][0].upper() if st.session_state.dados['nome'] else "?"
         idade_str = calcular_idade(st.session_state.dados['nasc'])
@@ -783,6 +771,7 @@ with tab8: # DOCUMENTO (PDF TÉCNICO & DASHBOARD)
              st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div class="comp-icon-box"><i class="ri-error-warning-line" style="color:{txt_c}; font-size: 2rem;"></i></div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
 
         st.write("")
+        
         c_r1, c_r2 = st.columns(2)
         with c_r1:
             tem_med = len(st.session_state.dados['lista_medicamentos']) > 0
@@ -790,17 +779,19 @@ with tab8: # DOCUMENTO (PDF TÉCNICO & DASHBOARD)
                 st.markdown(f"""<div class="soft-card sc-orange"><div class="sc-head"><i class="ri-medicine-bottle-fill" style="color:#DD6B20;"></i> Atenção Farmacológica</div><div class="sc-body">Aluno em uso de medicação contínua. Verifique a aba Estudante para detalhes e posologia.</div><div class="bg-icon">💊</div></div>""", unsafe_allow_html=True)
             else:
                 st.markdown(f"""<div class="soft-card sc-green"><div class="sc-head"><i class="ri-checkbox-circle-fill" style="color:#38A169;"></i> Medicação</div><div class="sc-body">Nenhuma medicação informada.</div><div class="bg-icon">✅</div></div>""", unsafe_allow_html=True)
+            
             st.write("")
             metas = extrair_metas_estruturadas(st.session_state.dados['ia_sugestao'])
             if metas:
                 html_metas = f"""<div class="meta-row"><span style="font-size:1.2rem;">🏁</span> <b>Curto (2m):</b> {metas['Curto']}</div><div class="meta-row"><span style="font-size:1.2rem;">🧗</span> <b>Médio (6m):</b> {metas['Medio']}</div><div class="meta-row"><span style="font-size:1.2rem;">🏔️</span> <b>Longo (1a):</b> {metas['Longo']}</div>"""
-            else: html_metas = "Gere o plano na aba IA."
+            else: html_metas = "Gere o plano na aba IA para ver o cronograma."
             st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-flag-2-fill" style="color:#D69E2E;"></i> Cronograma de Metas</div><div class="sc-body">{html_metas}</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
             verbos = extrair_bloom(st.session_state.dados['ia_sugestao'])
             html_verbos = "".join([f'<span class="bloom-tag">{v}</span>' for v in verbos])
             st.markdown(f"""<div class="soft-card sc-blue"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#3182CE;"></i> Taxonomia de Bloom (Verbos)</div><div class="sc-body"><div style="margin-bottom:10px; font-size:0.85rem; color:#4A5568;">Verbos de comando sugeridos para atividades:</div>{html_verbos}</div><div class="bg-icon">🧠</div></div>""", unsafe_allow_html=True)
+            
             st.write("")
             rede_html = ""
             if st.session_state.dados['rede_apoio']:
@@ -822,72 +813,65 @@ with tab8: # DOCUMENTO (PDF TÉCNICO & DASHBOARD)
             if val > 40: color = "#DD6B20"
             if val > 70: color = "#E53E3E"
             target.markdown(f"""<div class="dna-bar-container"><div class="dna-bar-flex"><span>{area}</span><span>{qtd} barreiras</span></div><div class="dna-bar-bg"><div class="dna-bar-fill" style="width:{val}%; background:{color};"></div></div></div>""", unsafe_allow_html=True)
-        
-        st.divider()
-        if st.session_state.dados['ia_sugestao']:
-            c1, c2 = st.columns(2)
-            with c1:
-                pdf = gerar_pdf_final(st.session_state.dados, len(st.session_state.pdf_text)>0)
-                st.download_button("📥 Baixar PDF Oficial", pdf, f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf", type="primary")
-            with c2:
-                docx = gerar_docx_final(st.session_state.dados)
-                st.download_button("📥 Baixar Word Editável", docx, f"PEI_{st.session_state.dados['nome']}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-                st.write("")
-                json_dados = json.dumps(st.session_state.dados, default=str)
-                st.download_button("💾 Baixar Arquivo do Aluno (.json)", json_dados, f"PEI_{st.session_state.dados['nome']}.json", "application/json")
+
+    st.divider()
+    if st.session_state.dados['ia_sugestao']:
+        c1, c2 = st.columns(2)
+        with c1:
+            pdf = gerar_pdf_final(st.session_state.dados, len(st.session_state.pdf_text)>0)
+            st.download_button("📥 Baixar PDF Oficial", pdf, f"PEI_{st.session_state.dados['nome']}.pdf", "application/pdf", type="primary")
+        with c2:
+            docx = gerar_docx_final(st.session_state.dados)
+            st.download_button("📥 Baixar Word Editável", docx, f"PEI_{st.session_state.dados['nome']}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            st.write("")
+            json_dados = json.dumps(st.session_state.dados, default=str)
+            st.download_button("💾 Baixar Arquivo do Aluno (.json)", json_dados, f"PEI_{st.session_state.dados['nome']}.json", "application/json")
 
 with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
     render_progresso()
     st.markdown(f"""
     <div style="background: linear-gradient(90deg, #F6E05E 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: #2D3748; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-        <h3 style="margin:0; color:#2D3748;">🗺️ Jornada do Aluno: {st.session_state.dados['nome']}</h3>
-        <p style="margin:5px 0 0 0; font-weight:600;">Estratégias visuais e gamificadas para o estudante.</p>
+        <h3 style="margin:0; color:#2D3748;">🗺️ Jornada do Aluno</h3>
+        <p style="margin:5px 0 0 0; font-weight:600;">Painel de Missões e Poderes (Material Gamificado).</p>
     </div>
     """, unsafe_allow_html=True)
     
+    # Verifica se já tem o PEI Técnico para basear o mapa
     if st.session_state.dados['ia_sugestao']:
-        # Botão para Gerar o Mapa (Chama a IA Gamificada)
-        if st.button("🎮 Gerar Roteiro Gamificado", type="primary"):
-            with st.spinner("O Game Master está criando o roteiro..."):
+        
+        # Botão para gerar o mapa (Independente)
+        if st.button("🎮 Gerar Roteiro Gamificado (Baseado no PEI)", type="primary"):
+            with st.spinner("Traduzindo estratégias para linguagem de jogo..."):
                 texto_game, err = gerar_roteiro_gamificado(api_key, st.session_state.dados, st.session_state.dados['ia_sugestao'])
                 if texto_game:
+                    # Limpa as tags para exibição
                     clean = texto_game.replace("[MAPA_TEXTO_GAMIFICADO]", "").replace("[FIM_MAPA_TEXTO_GAMIFICADO]", "")
                     st.session_state.dados['ia_mapa_texto'] = clean
                     st.rerun()
         
-        # Exibição do Mapa (Cards)
+        # Exibe o Mapa se existir
         if st.session_state.dados['ia_mapa_texto']:
-            st.markdown("#### 📜 Roteiro de Poderes")
-            
-            # Cards HTML Simples
-            # Dividindo o texto em blocos para exibir bonitinho
-            blocks = st.session_state.dados['ia_mapa_texto'].split('\n\n')
-            for b in blocks:
-                if "**" in b:
-                    title = b.split('\n')[0].replace('**', '')
-                    content = '\n'.join(b.split('\n')[1:])
-                    st.markdown(f"""
-                    <div class="game-card gc-power">
-                        <div class="gc-title">{title}</div>
-                        <div class="gc-body">{content}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
             st.divider()
+            col_visual, col_pdf = st.columns([2, 1])
             
-            # Botão de Exportar PDF do Tabuleiro
-            st.markdown("#### 📤 Exportar Tabuleiro")
-            pdf_tabuleiro = gerar_pdf_tabuleiro(st.session_state.dados['ia_mapa_texto'], None) # Sem imagem por enquanto
-            st.download_button(
-                "📥 Baixar Tabuleiro de Missões (PDF)", 
-                pdf_tabuleiro, 
-                "Mapa_Gamificado.pdf", 
-                "application/pdf", 
-                type="primary",
-                use_container_width=True
-            )
+            with col_visual:
+                st.markdown("#### 📜 Roteiro de Poderes")
+                with st.container(border=True):
+                    st.markdown(st.session_state.dados['ia_mapa_texto'])
             
+            with col_pdf:
+                st.markdown("#### 📤 Exportar")
+                st.info("Baixe este mapa em formato de tabuleiro para imprimir.")
+                pdf_tabuleiro = gerar_pdf_tabuleiro(st.session_state.dados['ia_mapa_texto'], None) # Sem imagem por enquanto
+                st.download_button(
+                    "📥 Baixar Tabuleiro (PDF)", 
+                    pdf_tabuleiro, 
+                    "Mapa_Gamificado.pdf", 
+                    "application/pdf", 
+                    type="primary", 
+                    use_container_width=True
+                )
     else:
-        st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
+        st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro. O Mapa precisa dele como base.")
 
 st.markdown("---")
