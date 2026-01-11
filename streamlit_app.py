@@ -377,22 +377,22 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
         3. Siga EXATAMENTE este template:
         
         [MAPA_TEXTO_GAMIFICADO]
-        ⚡ **Meus Superpoderes:**
+        **Meus Superpoderes:**
         (Como uso meu {dados['hiperfoco']} para aprender melhor).
         
-        🛡️ **Escudo de Calma:**
+        **Escudo de Calma:**
         (Técnica de respiração ou pausa para quando estou nervoso).
         
-        ⚔️ **Missão na Sala:**
+        **Missão na Sala:**
         (O que faço na aula: sentar na frente, pedir silêncio, usar fone).
         
-        🎒 **Meu Inventário:**
+        **Meu Inventário:**
         (Como organizo minha mochila ou caderno).
         
-        🧪 **Poção de Energia:**
+        **Poção de Energia:**
         (O que faço no intervalo para descansar).
         
-        🤝 **Minha Guilda:**
+        **Minha Guilda:**
         (Quem são meus aliados: Mãe, Pai, Professores).
         [FIM_MAPA_TEXTO_GAMIFICADO]
         """
@@ -846,39 +846,65 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
     """, unsafe_allow_html=True)
     
     if st.session_state.dados['ia_sugestao']:
-        # Botão para Gerar o Mapa (Chama a IA Gamificada)
+        # Botão para Gerar o Mapa
         if st.button("🎮 Gerar Roteiro Gamificado", type="primary"):
             with st.spinner("O Game Master está criando o roteiro..."):
                 texto_game, err = gerar_roteiro_gamificado(api_key, st.session_state.dados, st.session_state.dados['ia_sugestao'])
+                
                 if texto_game:
-                    clean = texto_game.replace("[MAPA_TEXTO_GAMIFICADO]", "").replace("[FIM_MAPA_TEXTO_GAMIFICADO]", "")
+                    # Limpeza mais robusta
+                    clean = texto_game.replace("[MAPA_TEXTO_GAMIFICADO]", "").replace("[FIM_MAPA_TEXTO_GAMIFICADO]", "").strip()
                     st.session_state.dados['ia_mapa_texto'] = clean
                     st.rerun()
+                else:
+                    st.error(f"Erro ao gerar: {err}")
         
-        # Exibição do Mapa (Cards)
-        if st.session_state.dados['ia_mapa_texto']:
+        # Exibição do Conteúdo
+        texto_mapa = st.session_state.dados.get('ia_mapa_texto', '')
+        
+        if texto_mapa:
             st.markdown("#### 📜 Roteiro de Poderes")
             
-            blocks = st.session_state.dados['ia_mapa_texto'].split('\n\n')
-            for b in blocks:
-                if "**" in b:
-                    parts = b.split('\n')
-                    if len(parts) > 1:
-                        title = parts[0].replace('**', '').strip()
-                        content = '\n'.join(parts[1:]).strip()
-                        st.markdown(f"""
-                        <div class="game-card gc-power">
-                            <div class="gc-title">{title}</div>
-                            <div class="gc-body">{content}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+            # TENTATIVA 1: Tentar criar cards bonitos
+            # Usa Regex para achar títulos entre ** ** (ex: **Meus Poderes:**)
+            padrao_blocos = re.split(r'\n(?=\*\*)', texto_mapa) # Quebra onde tiver uma nova linha seguida de **
+            
+            cards_gerados = 0
+            
+            for bloco in padrao_blocos:
+                bloco = bloco.strip()
+                if not bloco: continue
+                
+                # Verifica se o bloco começa com ** (Título)
+                if bloco.startswith("**"):
+                    try:
+                        # Separa o título do resto do conteúdo
+                        partes = bloco.split("\n", 1)
+                        if len(partes) == 2:
+                            titulo = partes[0].replace("**", "").replace(":", "").strip()
+                            conteudo = partes[1].strip()
+                            
+                            st.markdown(f"""
+                            <div class="game-card gc-power">
+                                <div class="gc-title">{titulo}</div>
+                                <div class="gc-body">{conteudo}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            cards_gerados += 1
+                    except:
+                        pass # Se der erro num bloco específico, ignora e tenta o próximo
+
+            # TENTATIVA 2: Se a IA não formatou direito e nenhum card foi gerado, mostra texto puro
+            if cards_gerados == 0:
+                st.info("O formato gerado pela IA foi diferente do padrão, mostrando texto original:")
+                st.markdown(texto_mapa)
 
             st.divider()
             
-            # Botão de Exportar PDF do Tabuleiro (CORRIGIDO)
+            # Botão de Exportar PDF
             st.markdown("#### 📤 Exportar Tabuleiro")
             try:
-                pdf_tabuleiro = gerar_pdf_tabuleiro(st.session_state.dados['ia_mapa_texto'], None) 
+                pdf_tabuleiro = gerar_pdf_tabuleiro(texto_mapa, None) 
                 
                 st.download_button(
                     "📥 Baixar Tabuleiro de Missões (PDF)", 
@@ -891,7 +917,12 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
             except Exception as e:
                 st.error(f"Erro ao gerar PDF do Mapa: {str(e)}")
             
+            # Botão para limpar/refazer se precisar
+            if st.button("Recomeçar Mapa"):
+                st.session_state.dados['ia_mapa_texto'] = ""
+                st.rerun()
+            
     else:
-        st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
+        st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro para habilitar o modo Gamificado.")
 
 st.markdown("---")
