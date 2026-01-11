@@ -108,31 +108,21 @@ def extrair_tag_ia(texto, tag):
     # Regex robusto que busca entre tags, ignorando case e quebras de linha
     padrao = fr'\[{tag}\](.*?)(\[FIM_{tag}\]|\[|$)'
     match = re.search(padrao, texto, re.DOTALL | re.IGNORECASE)
-    
-    if match: 
-        return match.group(1).strip()
+    if match: return match.group(1).strip()
     return ""
 
 def extrair_secao_do_mapa(texto_mapa, chave):
-    """
-    Busca seções específicas dentro do texto do mapa (ex: 'Superpoderes', 'Ansiedade')
-    para popular os cards e o PDF separadamente.
-    """
+    """Extrai partes específicas do texto gamificado para popular o PDF"""
     if not texto_mapa: return "Sem informação."
-    
-    # Padrões flexíveis para encontrar os tópicos
     patterns = {
-        "poder": r"(Poder|Superpoder|Hiperfoco).*?:\s*(.*?)(?=\n[A-Z\u00C0-\u00FF]|$)",
-        "ansiedade": r"(Calma|Ansiedade|Nervoso|Pânico).*?:\s*(.*?)(?=\n[A-Z\u00C0-\u00FF]|$)",
-        "escola": r"(Escola|Sala|Aula|Silêncio).*?:\s*(.*?)(?=\n[A-Z\u00C0-\u00FF]|$)",
-        "organizacao": r"(Organiza|Rotina|Mestre|Pasta).*?:\s*(.*?)(?=\n[A-Z\u00C0-\u00FF]|$)",
-        "pausa": r"(Pausa|Energia|Recarga|Descanso).*?:\s*(.*?)(?=\n[A-Z\u00C0-\u00FF]|$)",
-        "aliados": r"(Aliados|Rede|Contar|Apoio).*?:\s*(.*?)(?=\n[A-Z\u00C0-\u00FF]|$)"
+        "poder": r"(Poder|Superpoder|Hiperfoco).*?:\s*(.*?)(?=\n(\*|\n)|$)",
+        "ansiedade": r"(Calma|Ansiedade|Nervoso|Pânico).*?:\s*(.*?)(?=\n(\*|\n)|$)",
+        "escola": r"(Escola|Sala|Aula|Silêncio).*?:\s*(.*?)(?=\n(\*|\n)|$)",
+        "organizacao": r"(Organiza|Rotina|Mestre|Pasta).*?:\s*(.*?)(?=\n(\*|\n)|$)",
+        "aliados": r"(Aliados|Rede|Contar|Apoio).*?:\s*(.*?)(?=\n(\*|\n)|$)"
     }
-    
     match = re.search(patterns.get(chave, ""), texto_mapa, re.DOTALL | re.IGNORECASE)
-    if match:
-        return match.group(2).strip()
+    if match: return match.group(2).strip()
     return "..."
 
 def extrair_metas_estruturadas(texto):
@@ -173,7 +163,7 @@ def ler_pdf(arquivo):
 
 def limpar_texto_pdf(texto):
     if not texto: return ""
-    # Remove emojis e caracteres não latinos para o FPDF padrão
+    # Remove emojis e formatação markdown para o FPDF básico
     t = texto.encode('latin-1', 'ignore').decode('latin-1')
     t = t.replace('**', '').replace('__', '').replace('#', '')
     return t
@@ -186,6 +176,18 @@ def salvar_aluno(dados):
             json.dump(dados, f, default=str, ensure_ascii=False, indent=4)
         return True, f"Salvo: {dados['nome']}"
     except Exception as e: return False, str(e)
+
+def carregar_aluno(nome_arq):
+    try:
+        with open(os.path.join(PASTA_BANCO, nome_arq), 'r', encoding='utf-8') as f: d = json.load(f)
+        if 'nasc' in d: d['nasc'] = date.fromisoformat(d['nasc'])
+        if d.get('monitoramento_data'): d['monitoramento_data'] = date.fromisoformat(d['monitoramento_data'])
+        return d
+    except: return None
+
+def excluir_aluno(nome_arq):
+    try: os.remove(os.path.join(PASTA_BANCO, nome_arq)); return True
+    except: return False
 
 def calcular_progresso():
     if st.session_state.dados['ia_sugestao']: return 100
@@ -247,7 +249,7 @@ def aplicar_estilo_visual():
         .gc-icon { font-size: 1.8rem; }
         .gc-title { font-weight: 800; font-size: 1.1rem; color: #2D3748; }
         .gc-body { font-size: 0.95rem; color: #4A5568; line-height: 1.5; }
-
+        
         .home-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .home-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
         .home-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
@@ -264,9 +266,7 @@ def aplicar_estilo_visual():
         .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
         .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
         .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
-        .bloom-tag { background: #EBF8FF; color: #3182CE; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; margin-right: 5px; border: 1px solid #BEE3F8; display: inline-block; margin-bottom: 5px; }
-        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
-
+        
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
         div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
@@ -418,10 +418,26 @@ def gerar_pdf_final(dados, tem_anexo):
     pdf = PDF_Classic(); pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
     pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
     pdf.set_font("Arial", size=10); pdf.set_text_color(0)
-    # ... (Conteúdo do PDF Técnico - Mantido Igual) ...
-    pdf.cell(0, 10, "Detalhes técnicos omitidos para brevidade do código (está ok).", 0, 1)
-    # Reutilizando a lógica existente de geração de PDF técnico...
-    # (Para economizar espaço aqui, mas o código original completo deve ser mantido)
+    
+    # ... Conteúdo Técnico do PDF ...
+    med_list = []
+    if dados['lista_medicamentos']:
+        for m in dados['lista_medicamentos']:
+            med_list.append(f"{m['nome']} ({m['posologia']})")
+    med_str = "; ".join(med_list) if med_list else "Não informado."
+    
+    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nome:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nome'], 0, 1)
+    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Série:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, str(dados['serie']), 0, 1)
+    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Diagnóstico:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, dados['diagnostico'])
+    pdf.ln(2)
+    
+    if dados['ia_sugestao']:
+        pdf.section_title("2. PLANEJAMENTO PEDAGÓGICO")
+        # Remove a parte gamificada do PDF técnico
+        texto_tecnico = dados['ia_sugestao'].split("[AREA_DO_ALUNO]")[0]
+        texto_limpo = re.sub(r'\[.*?\]', '', texto_tecnico)
+        pdf.multi_cell(0, 6, limpar_texto_pdf(texto_limpo))
+        
     return pdf.output(dest='S').encode('latin-1', 'replace')
 
 def gerar_pdf_tabuleiro(texto_aluno):
@@ -434,6 +450,7 @@ def gerar_pdf_tabuleiro(texto_aluno):
     ansiedade = extrair_secao_do_mapa(texto_aluno, "ansiedade")
     escola = extrair_secao_do_mapa(texto_aluno, "escola")
     organizacao = extrair_secao_do_mapa(texto_aluno, "organizacao")
+    aliados = extrair_secao_do_mapa(texto_aluno, "aliados")
     
     # Desenhar os 4 cards principais (Coordenadas manuais para layout de tabuleiro)
     # Card 1: Poder (Laranja)
@@ -446,8 +463,7 @@ def gerar_pdf_tabuleiro(texto_aluno):
     # Linha de baixo
     # Card 4: Organização (Roxo Claro)
     pdf.draw_card(65, 100, "MEU INVENTARIO", organizacao, 233, 216, 253, "[#]")
-    # Card 5: Aliados (Amarelo Claro) - Se houver
-    aliados = extrair_secao_do_mapa(texto_aluno, "aliados")
+    # Card 5: Aliados (Amarelo Claro)
     pdf.draw_card(155, 100, "MEUS ALIADOS", aliados, 255, 250, 205, "[&]")
     
     return pdf.output(dest='S').encode('latin-1', 'replace')
