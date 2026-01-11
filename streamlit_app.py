@@ -12,7 +12,7 @@ import os
 import re
 import glob
 import random
-import graphviz # BIBLIOTECA NATIVA PARA O MAPA MENTAL
+# REMOVIDO: import graphviz (Causa do erro)
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -28,7 +28,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (TOP LEVEL - CRÍTICO)
+# 2. LISTAS DE DADOS (TOP LEVEL)
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -90,8 +90,6 @@ def get_hiperfoco_emoji(texto):
     if "anim" in t or "gato" in t or "cachorro" in t: return "🐾"
     if "carro" in t or "trem" in t or "rodas" in t: return "🏎️"
     if "espaço" in t or "astronomia" in t: return "🪐"
-    if "leitura" in t or "livro" in t: return "📚"
-    if "pok" in t: return "⚡"
     return "🚀"
 
 def calcular_complexidade_pei(dados):
@@ -135,37 +133,36 @@ def extrair_resumo_estrategia(texto):
         return re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
     return "Gere o plano na aba IA para ver o resumo."
 
-# --- GERADOR DE MAPA MENTAL ---
-def gerar_grafico_estudante(texto_mapa):
-    graph = graphviz.Digraph()
-    graph.attr(rankdir='LR', bgcolor='transparent') 
-    graph.attr('node', fontname='Nunito, Arial')
+# --- GERADOR DE MAPA NATIVO (SEM IMPORT GRAPHVIZ) ---
+def gerar_dot_nativo(texto_mapa):
+    # Gera string DOT que o Streamlit entende nativamente
+    dot = 'digraph G {\n'
+    dot += '  rankdir="LR";\n'
+    dot += '  bgcolor="transparent";\n'
+    dot += '  node [fontname="Arial", shape=box, style="filled,rounded", color="#0F52BA", fontcolor="white"];\n'
     
     if not texto_mapa:
-        graph.node("A", "Gere o Mapa na Aba IA")
-        return graph
-
-    linhas = texto_mapa.strip().split('\n')
-    for linha in linhas:
-        if "->" in linha:
-            partes = linha.split("->")
-            origem = partes[0].strip()
-            destino = partes[1].strip()
-            
-            # Estilo dinâmico baseado no contexto
-            if "Superpoder" in origem or "Hiperfoco" in origem:
-                graph.node(origem, label=origem, style='filled', fillcolor='#FEFCBF', color='#D69E2E', fontcolor='#744210', shape='ellipse')
-            elif "Escola" in origem or "Aula" in origem:
-                graph.node(origem, label=origem, style='filled', fillcolor='#EBF8FF', color='#3182CE', fontcolor='#2A4365', shape='folder')
-            elif "Casa" in origem:
-                graph.node(origem, label=origem, style='filled', fillcolor='#F0FFF4', color='#38A169', fontcolor='#22543D', shape='house')
-            else:
-                graph.node(origem, label=origem, style='filled', fillcolor='#E2E8F0', color='#718096', shape='box')
-            
-            graph.node(destino, label=destino, style='filled, rounded', fillcolor='white', color='#CBD5E0', fontcolor='#2D3748')
-            graph.edge(origem, destino, color="#A0AEC0")
-            
-    return graph
+        dot += '  "Gere o plano na IA" [color="#E53E3E"];\n'
+    else:
+        linhas = texto_mapa.strip().split('\n')
+        for linha in linhas:
+            if "->" in linha:
+                partes = linha.split("->")
+                origem = partes[0].strip().replace('"', '')
+                destino = partes[1].strip().replace('"', '')
+                
+                # Cores baseadas no contexto
+                fill = "#0F52BA"
+                if "Superpoder" in origem or "Hiperfoco" in origem: fill = "#D69E2E" # Gold
+                elif "Escola" in origem or "Aula" in origem: fill = "#3182CE" # Blue
+                elif "Casa" in origem: fill = "#38A169" # Green
+                
+                dot += f'  "{origem}" [fillcolor="{fill}", color="{fill}"];\n'
+                dot += f'  "{destino}" [fillcolor="white", fontcolor="#2D3748", color="#CBD5E0"];\n'
+                dot += f'  "{origem}" -> "{destino}" [color="#A0AEC0"];\n'
+    
+    dot += '}'
+    return dot
 
 def get_pro_icon(nome_profissional):
     p = nome_profissional.lower()
@@ -200,6 +197,12 @@ def limpar_texto_pdf(texto):
     t = re.sub(r'\[.*?\]', '', texto) 
     t = t.replace('**', '').replace('__', '').replace('### ', '').replace('## ', '').replace('# ', '')
     return re.sub(r'[^\x00-\xff]', '', t)
+
+def extrair_linhas_bncc(texto):
+    padrao = r'([A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}.*?)(?=\n|$)'
+    if not texto: return []
+    linhas = re.findall(padrao, texto)
+    return list(set([l.strip().replace('**', '') for l in linhas if len(l) > 10]))
 
 def salvar_aluno(dados):
     if not dados['nome']: return False, "Nome obrigatório."
@@ -254,7 +257,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (HÍBRIDO: HOME VIBRANTE + DASH CLEAN)
+# 5. ESTILO VISUAL
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -264,7 +267,6 @@ def aplicar_estilo_visual():
         .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        /* HEADER CLEAN */
         .header-unified {
             background-color: white; padding: 20px 40px; border-radius: 16px;
             border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px;
@@ -272,18 +274,15 @@ def aplicar_estilo_visual():
         }
         .header-subtitle { color: #718096; font-size: 1.1rem; font-weight: 700; margin: 0; letter-spacing: 0.5px; border-left: 2px solid #E2E8F0; padding-left: 15px; }
 
-        /* ABAS */
         .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
         .stTabs [data-baseweb="tab"] { height: 36px; border-radius: 18px !important; background-color: white; border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px; transition: all 0.2s ease; }
         .stTabs [aria-selected="true"] { background-color: #FF6B6B !important; color: white !important; border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3); }
         
-        /* PROGRESSO */
         .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
         .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
 
-        /* DASHBOARD */
         .dash-hero { background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2); }
         .apple-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); color: white; font-weight: 800; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
 
@@ -314,17 +313,14 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
         
-        /* HOME CARD STYLES (VIBRANTE) */
+        /* HOME CARD STYLES */
         .home-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px;
             display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
         }
-        .home-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
-        .home-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
-        .home-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
-        
-        .icon-box { 
+        .home-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); }
+        .home-icon-box { 
             width: 70px; height: 70px; border-radius: 18px; 
             display: flex; align-items: center; justify-content: center; 
             font-size: 2.2rem; margin-bottom: 15px; 
@@ -337,6 +333,11 @@ def aplicar_estilo_visual():
         
         .rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
+        
+        .dna-bar-container { margin-bottom: 12px; }
+        .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
+        .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
+        .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -345,7 +346,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V75 - STUDENT AGENCY)
+# 6. INTELIGÊNCIA ARTIFICIAL (V76)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -376,7 +377,6 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # --- PROMPT V75.0 (AGÊNCIA ESTUDANTIL) ---
         prompt_sys = """
         Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
         
@@ -524,7 +524,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v75.0 Student Agency</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v76.0 Bulletproof</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -540,7 +540,7 @@ st.markdown(f"""
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "🗺️ Meu Mapa", "Documento"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab_mapa, tab8 = st.tabs(abas)
 
-with tab0: # INÍCIO (RESTORED - CLASSIC)
+with tab0: # INÍCIO
     if api_key:
         with st.spinner("Gerando inspiração..."):
             try:
@@ -733,7 +733,7 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab_mapa: # MAPA ESTUDANTE
+with tab_mapa: # MAPA ESTUDANTE (NATIVO - SEM ERROS)
     render_progresso()
     st.markdown(f"""
     <div style="background: linear-gradient(90deg, #6B46C1 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: white; margin-bottom: 20px;">
@@ -745,8 +745,8 @@ with tab_mapa: # MAPA ESTUDANTE
     if st.session_state.dados['ia_sugestao']:
         texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_ESTUDANTE")
         if texto_mapa:
-            graph = gerar_grafico_estudante(texto_mapa)
-            st.graphviz_chart(graph, use_container_width=True)
+            dot = gerar_dot_nativo(texto_mapa)
+            st.graphviz_chart(dot, use_container_width=True)
             st.info("💡 Dica para o Professor: Imprima este mapa e cole na capa do caderno do aluno!")
         else:
             st.warning("O mapa ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
