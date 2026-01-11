@@ -212,7 +212,6 @@ def aplicar_estilo_visual():
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
-        div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
         .header-subtitle { color: #718096; font-size: 1.1rem; font-weight: 700; margin: 0; letter-spacing: 0.5px; border-left: 2px solid #E2E8F0; padding-left: 15px; }
@@ -280,7 +279,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V87 - TEXTO PURO E CLARO)
+# 6. INTELIGÊNCIA ARTIFICIAL (V87 - TEXTO GAMIFICADO + ALIADOS)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -300,21 +299,48 @@ def gerar_noticia_ia(api_key):
         return res.choices[0].message.content
     except: return "O cérebro aprende durante toda a vida."
 
+# --- FUNÇÃO DALL-E 3 (AGORA COM PROMPT DE MAPA MENTAL VISUAL) ---
+def gerar_imagem_dalle_mapa(api_key, dados_aluno, texto_estrategias):
+    if not api_key: return None, "Configure a API Key."
+    try:
+        client = OpenAI(api_key=api_key)
+        hf = dados_aluno['hiperfoco'] if dados_aluno['hiperfoco'] else "aprendizado criativo"
+        
+        # PROMPT ESPECÍFICO PARA MAPA MENTAL VISUAL
+        prompt_dalle = f"""
+        A visually engaging mind map illustration pinned on a corkboard, designed for a student.
+        Theme: {hf} (use visual elements from this theme).
+        Style: Colorful, friendly, Pixar-like animation style, high quality.
+        Central Element: A bright, glowing core representing "MY POWERS".
+        Branches: 4 or 5 distinct colorful branches radiating from the center, each ending in a sticky note or icon representing these concepts:
+        {texto_estrategias[:500]}
+        The text on the image should be minimal or illegible artistic representation, focusing on the visual symbols (brain, calm breathing, school desk, calendar).
+        """
+
+        with st.spinner("🎨 A IA está desenhando seu mapa de poderes... (15s)"):
+            response = client.images.generate(
+                model="dall-e-3", prompt=prompt_dalle, size="1024x1024", quality="standard", n=1,
+            )
+        return response.data[0].url, None
+    except Exception as e:
+        return None, str(e)
+
 def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     if not api_key: return None, "⚠️ Configure a Chave API."
     try:
         client = OpenAI(api_key=api_key)
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
+        rede = ", ".join(dados['rede_apoio']) if dados['rede_apoio'] else "Equipe Escolar"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
         
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # --- PROMPT V87 (FOCO EM TEXTO ESTRUTURADO) ---
         prompt_sys = """
         Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
-        SUA MISSÃO: Criar um PEI Técnico e um CONTEÚDO GAMIFICADO EM TEXTO PARA O ALUNO.
+        
+        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um CONTEÚDO GAMIFICADO EM TEXTO (para o aluno).
         
         --- TAGS OBRIGATÓRIAS ---
         [ANALISE_FARMA] ... [FIM_ANALISE_FARMA]
@@ -346,6 +372,9 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         
         🚶‍♂️ **Recarga de Energia**
         [Dica de pausa]
+
+        🤝 **Meus Aliados (Com quem posso contar)**
+        [Liste família e rede de apoio como aliados de jogo]
         
         🎨 **Dica:** Você pode desenhar este mapa e colar adesivos!
         [FIM_MAPA_TEXTO_GAMIFICADO]
@@ -362,6 +391,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
         EVIDÊNCIAS: {evid}
+        FAMILIA/REDE: {familia} / {rede}
         LAUDO: {contexto_pdf[:3000] if contexto_pdf else "Nenhum."}
         """
         
@@ -468,7 +498,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v87.0 Text First</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v88.0 Text First</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -481,7 +511,7 @@ st.markdown(f"""
 </div>""", unsafe_allow_html=True)
 
 # ABAS (REORDENADAS: MAPA É A ÚLTIMA E INDEPENDENTE)
-abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento", "🗺️ Meu Mapa"]
+abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento", "🗺️ Meu Mapa da Jornada"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
 with tab0: # INÍCIO
@@ -778,14 +808,44 @@ with tab_mapa: # MEU MAPA DA JORNADA
     </div>
     """, unsafe_allow_html=True)
 
-    if st.session_state.dados['ia_sugestao']:
-        texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_TEXTO_GAMIFICADO")
-        if texto_mapa:
-            with st.container(border=True):
-                st.markdown(texto_mapa)
+    col_text_map, col_dalle_map = st.columns([1.5, 2])
+    
+    # --- COLUNA DA ESQUERDA: TEXTO SIMPLES E LIMPO ---
+    with col_text_map:
+        st.markdown("#### ⚡ Meus Poderes & Missões (Texto)")
+        if st.session_state.dados['ia_sugestao']:
+            texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_TEXTO_GAMIFICADO")
+            if texto_mapa:
+                with st.container(border=True):
+                    st.markdown(texto_mapa)
+            else:
+                st.warning("O mapa de texto ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
         else:
-            st.warning("O mapa de texto ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
-    else:
-        st.info("Gere o plano na aba IA primeiro.")
+            st.info("Gere o plano na aba IA primeiro.")
+
+    # --- COLUNA DA DIREITA: IMAGEM QUE LÊ O TEXTO ---
+    with col_dalle_map:
+        st.markdown("#### 🎨 Meu Quadro Visual (DALL-E)")
+        st.markdown("""<p style="font-size:0.85rem; color:#718096;">Gera um infográfico estilo 'Mapa Mental' baseado exatamente no texto ao lado.</p>""", unsafe_allow_html=True)
+        
+        texto_para_imagem = ""
+        if st.session_state.dados['ia_sugestao']:
+             texto_para_imagem = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_TEXTO_GAMIFICADO")
+
+        if st.button("✨ Criar Mapa Visual (Baseado no Texto)", type="primary", use_container_width=True):
+            if texto_para_imagem and st.session_state.dados['hiperfoco']:
+                # Chama a função integrada (prompt com texto)
+                url, err = gerar_imagem_dalle_integrada(api_key, st.session_state.dados, texto_para_imagem)
+                if url:
+                    st.session_state.dalle_image_url = url
+                    st.success("Mapa visual gerado com sucesso!")
+                else:
+                    st.error(f"Erro ao gerar imagem: {err}")
+            else:
+                st.warning("Certifique-se de que o plano de texto foi gerado e o Hiperfoco está definido.")
+        
+        if st.session_state.dalle_image_url:
+            st.image(st.session_state.dalle_image_url, use_column_width=True, caption="Visualização das suas estratégias")
+            st.markdown(f'<a href="{st.session_state.dalle_image_url}" download="Mapa_Visual_Integrado.png" target="_blank" style="display:block; text-decoration:none; background-color:#0F52BA; color:white; padding:10px; border-radius:8px; text-align:center; margin-top:10px;">📥 Baixar Imagem do Mapa</a>', unsafe_allow_html=True)
 
 st.markdown("---")
