@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CARDS SIMÉTRICOS + BARRA FINA)
+# 2. ESTILO VISUAL (CORREÇÃO DE CACHE E LAYOUT)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -35,16 +35,16 @@ def aplicar_estilo_visual():
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         
-        .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
+        .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         /* HEADER */
         .header-unified {
-            background-color: white; padding: 25px 40px; border-radius: 16px;
-            border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px;
-            display: flex; align-items: center; gap: 25px;
+            background-color: white; padding: 20px 40px; border-radius: 16px;
+            border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px;
+            display: flex; align-items: center; gap: 20px;
         }
-        
+
         /* ABAS CLEAN */
         .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
         .stTabs [data-baseweb="tab"] {
@@ -57,10 +57,12 @@ def aplicar_estilo_visual():
             border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO (FINA 3px) */
+        /* BARRA DE PROGRESSO (CSS FORÇADO) */
+        .prog-container {
+            width: 100%; position: relative; margin: 0 0 40px 0;
+        }
         .prog-track {
             width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px;
-            position: relative; margin: 0 0 40px 0;
         }
         .prog-fill {
             height: 100%; border-radius: 1.5px; 
@@ -68,12 +70,12 @@ def aplicar_estilo_visual():
             box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
         .prog-icon {
-            position: absolute; top: -23px; font-size: 1.8rem; 
+            position: absolute; top: -24px; font-size: 1.8rem; 
             transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
         }
 
-        /* DASHBOARD HERO + APPLE AVATAR */
+        /* DASHBOARD HERO */
         .dash-hero {
             background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%);
             border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px;
@@ -81,73 +83,82 @@ def aplicar_estilo_visual():
             box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2);
         }
         .apple-avatar {
-            width: 65px; height: 65px; border-radius: 50%;
-            background: linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%);
-            color: #0F52BA; font-weight: 800; font-size: 1.8rem;
+            width: 60px; height: 60px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4);
+            color: white; font-weight: 800; font-size: 1.6rem;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.4);
         }
 
-        /* METRIC CARDS (DONUTS & COMPLEXITY) */
+        /* METRIC CARDS (UNIFORMES) */
         .metric-card {
             background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 160px; /* Altura Fixa */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: transform 0.2s;
+            height: 150px; /* Altura Fixa */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
-        .metric-card:hover { transform: translateY(-3px); }
         
         /* Donut CSS */
         .css-donut {
             width: 70px; height: 70px; border-radius: 50%;
             background: conic-gradient(var(--fill) var(--p), #EDF2F7 0);
             display: flex; align-items: center; justify-content: center;
-            margin-bottom: 10px; position: relative;
+            margin-bottom: 8px; position: relative;
         }
         .css-donut::after { content: ""; position: absolute; width: 54px; height: 54px; border-radius: 50%; background: white; }
         .d-val { position: absolute; z-index: 2; font-size: 1.3rem; font-weight: 800; color: #2D3748; }
         .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
 
-        /* COMPLEXITY ICON (NEUTRO MAS COLORIDO PELO CONTEXTO) */
+        /* COMPLEXITY ICON */
         .comp-icon-box {
-            width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; margin-bottom: 10px; background: #F7FAFC;
+            width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; margin-bottom: 8px; background: #F7FAFC;
         }
 
-        /* DETAIL CARDS (SIMETRIA FORÇADA) */
-        .detail-card {
-            border-radius: 16px; padding: 25px; 
-            min-height: 240px; /* ALTURA MÍNIMA IGUAL PARA TODOS */
-            height: 100%;
-            display: flex; flex-direction: column;
+        /* DETAIL CARDS (SOFT COLORS & SIMETRIA) */
+        .soft-card {
+            border-radius: 12px; padding: 20px; 
+            min-height: 200px; /* Altura Mínima */
+            height: 100%; display: flex; flex-direction: column;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);
+            border-left: 5px solid; /* Borda Colorida */
         }
         
-        .dc-orange { background-color: #FFF5F5; border-color: #FED7D7; }
-        .dc-blue { background-color: #EBF8FF; border-color: #BEE3F8; }
-        .dc-yellow { background-color: #FFFFF0; border-color: #FEFCBF; }
-        .dc-purple { background-color: #FAF5FF; border-color: #E9D8FD; }
-        .dc-green { background-color: #F0FFF4; border-color: #C6F6D5; }
+        .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
+        .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
+        .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
+        .sc-cyan { background-color: #E6FFFA; border-left-color: #0BC5EA; }
 
-        .dc-head { 
-            font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; 
+        .sc-head { 
+            font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; 
             display: flex; align-items: center; gap: 8px; color: #4A5568; letter-spacing: 0.5px;
         }
-        .dc-body { font-size: 0.9rem; line-height: 1.6; font-weight: 600; color: #2D3748; flex-grow: 1; }
+        .sc-body { font-size: 0.9rem; line-height: 1.5; color: #2D3748; font-weight: 500; }
         
-        /* Ícones Grandes para preencher espaço */
-        .big-icon-bg {
-            font-size: 3rem; opacity: 0.1; position: absolute; right: 20px; bottom: 20px; pointer-events: none;
-        }
-
         /* LISTA BNCC */
-        .bncc-li { margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #3182CE; font-size: 0.85rem; }
+        .bncc-li { margin-bottom: 6px; padding-left: 8px; border-left: 3px solid #63B3ED; font-size: 0.85rem; }
 
-        /* DNA BARS */
-        .dna-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; }
-        .dna-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
-        .dna-track { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
-        .dna-fill { height: 100%; border-radius: 3px; }
+        /* BARRAS DE SUPORTE */
+        .sup-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 8px; border-radius: 6px; display: flex; align-items: center; gap: 6px; }
+        .sup-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
+        .sup-track { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+        .sup-fill { height: 100%; border-radius: 3px; }
+
+        /* CARDS HOME */
+        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+        .rich-card {
+            background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
+            height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
+        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
+        .icon-box { width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 10px; }
+        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
+        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
+        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
+        .ic-green { background-color: #F0FFF4; color: #38A169; }
 
         /* INPUTS & BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
@@ -155,12 +166,12 @@ def aplicar_estilo_visual():
         }
         div[data-testid="column"] .stButton button { 
             border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; 
-            background-color: #0F52BA !important; color: white !important; border: none !important;
+            background-color: var(--brand-blue) !important; color: white !important; border: none !important;
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         
-        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: #0F52BA !important; border-color: #0F52BA !important; }
-        div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: #0F52BA !important; }
+        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
+        div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
         .stToggle { margin-top: 10px; }
         
@@ -214,7 +225,7 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 5. UTILITÁRIOS
+# 5. UTILITÁRIOS & LÓGICA
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
@@ -254,25 +265,23 @@ def extrair_resumo_estrategia(texto):
     if "ESTRATÉGIAS" in texto:
         partes = texto.split("ESTRATÉGIAS")
         resumo = partes[1].split('\n')[1:4]
-        return " ".join(resumo).replace('*', '').strip()[:250]
+        return " ".join(resumo).replace('*', '').strip()[:200]
     return "Gere o plano na aba IA para ver o resumo estratégico."
 
+# ALGORITMO COMPLEXIDADE (DETERMINA O 4º CARD)
 def calcular_complexidade_pei(dados):
-    # Carga
     n_bar = sum(len(v) for v in dados['barreiras_selecionadas'].values())
     n_suporte_alto = sum(1 for v in dados['niveis_suporte'].values() if v in ["Substancial", "Muito Substancial"])
-    carga = n_bar + n_suporte_alto
     
-    # Recursos
     recursos = 0
     if dados['rede_apoio']: recursos += 3
     if dados['lista_medicamentos']: recursos += 2
     
-    saldo = carga - recursos
+    score = (n_bar + n_suporte_alto) - recursos
     
-    # RETORNA: Texto, Cor Fundo, Cor Texto
-    if saldo <= 3: return "FLUIDA", "#38A169" # Verde
-    if saldo <= 8: return "ATENÇÃO", "#DD6B20" # Laranja
+    # Retorna: Label, Cor do Ícone/Texto
+    if score <= 2: return "FLUIDA", "#38A169" # Verde
+    if score <= 7: return "ATENÇÃO", "#D69E2E" # Laranja
     return "CRÍTICA", "#E53E3E" # Vermelho
 
 def salvar_aluno(dados):
@@ -297,7 +306,7 @@ def excluir_aluno(nome_arq):
     except: return False
 
 def calcular_progresso():
-    # SE A IA JÁ FOI GERADA, O TRABALHO TÁ PRONTO (100%)
+    # REGRA: SE IA GERADA = 100%
     if st.session_state.dados['ia_sugestao']: return 100
     
     pontos = 0
@@ -309,6 +318,7 @@ def calcular_progresso():
     if d['hiperfoco']: pontos += 1
     if any(d['barreiras_selecionadas'].values()): pontos += 1
     if d['estrategias_ensino']: pontos += 1
+    
     return int((pontos / total) * 90)
 
 def render_progresso():
@@ -324,10 +334,10 @@ def render_progresso():
         icon = "🏆"
         bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)" # Verde
     
-    # CSS Inline para forçar
+    # CSS Inline no HTML para garantir prioridade
     st.markdown(f"""
-    <div class="prog-track">
-        <div class="prog-fill" style="width: {p}%; background: {bar_color};"></div>
+    <div class="prog-container">
+        <div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div>
         <div class="prog-icon" style="left: {p}%;">{icon}</div>
     </div>
     """, unsafe_allow_html=True)
@@ -359,14 +369,17 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         client = OpenAI(api_key=api_key)
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
-        
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
         prompt_sys = """
         Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
-        DIRETRIZ MANDATÓRIA: CITE CÓDIGOS ALFANUMÉRICOS DA BNCC (ex: EF03LP01).
+        
+        DIRETRIZ MANDATÓRIA (NÃO IGNORE):
+        1. CITE CÓDIGOS ALFANUMÉRICOS DA BNCC (ex: EF03LP01 - Descrição).
+        2. Analise medicação ({meds}).
+        
         ESTRUTURA:
         1. 🌟 VISÃO DO ESTUDANTE: Resumo.
         2. 💊 FATOR MEDICAMENTOSO: Análise.
@@ -486,7 +499,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v60.0 Symphony</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v61.0 Polish</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -686,40 +699,40 @@ with tab8: # DASHBOARD (THE FORTRESS - FINAL)
         </div>
         """, unsafe_allow_html=True)
         
-        # 4 COLUNAS NO TOPO
+        # 4 COLUNAS NO TOPO (COM NOVO ALGORITMO)
         c_kpi1, c_kpi2, c_kpi3, c_kpi4 = st.columns(4)
         with c_kpi1:
             n_pot = len(st.session_state.dados['potencias'])
             color_p = "#38A169" if n_pot > 0 else "#CBD5E0"
-            st.markdown(f"""<div class="metric-card"><div class="css-donut" style="--p: {n_pot*10}%; --fill: {color_p};"><div class="donut-value">{n_pot}</div></div><div class="donut-label">Potencialidades</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="metric-card"><div class="css-donut" style="--p: {n_pot*10}%; --fill: {color_p};"><div class="d-val">{n_pot}</div></div><div class="d-lbl">Potencialidades</div></div>""", unsafe_allow_html=True)
         with c_kpi2:
             n_bar = sum(len(v) for v in st.session_state.dados['barreiras_selecionadas'].values())
             color_b = "#E53E3E" if n_bar > 5 else "#DD6B20"
-            st.markdown(f"""<div class="metric-card"><div class="css-donut" style="--p: {n_bar*5}%; --fill: {color_b};"><div class="donut-value">{n_bar}</div></div><div class="donut-label">Barreiras</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="metric-card"><div class="css-donut" style="--p: {n_bar*5}%; --fill: {color_b};"><div class="d-val">{n_bar}</div></div><div class="d-lbl">Barreiras</div></div>""", unsafe_allow_html=True)
         with c_kpi3:
              hf = st.session_state.dados['hiperfoco'] or "-"
-             st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">🚀</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="donut-label">Hiperfoco</div></div>""", unsafe_allow_html=True)
+             st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">🚀</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="d-lbl">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
              # NÍVEL DE ATENÇÃO (ALGORITMO V2)
              txt_comp, cor_bg, cor_txt = calcular_complexidade_pei(st.session_state.dados)
-             st.markdown(f"""<div class="metric-card"><div class="comp-icon-box"><i class="ri-alert-line" style="color:{cor_txt};"></i></div><div style="font-weight:800; font-size:1.1rem; color:{cor_txt};">{txt_comp}</div><div class="donut-label">Nível de Atenção</div></div>""", unsafe_allow_html=True)
+             st.markdown(f"""<div class="metric-card"><div class="comp-icon-box"><i class="ri-alert-line" style="color:{cor_txt};"></i></div><div style="font-weight:800; font-size:1.1rem; color:{cor_txt};">{txt_comp}</div><div class="d-lbl">Nível de Atenção</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         
-        # GRID DOS CARDS DE DETALHE (SIMETRIA)
+        # GRID DOS CARDS DE DETALHE (SOFT COLORS)
         c_r1, c_r2 = st.columns(2)
         with c_r1:
             # CARD 1: MEDICAÇÃO (SOFT ORANGE)
             if st.session_state.dados['lista_medicamentos']:
-                st.markdown(f"""<div class="detail-card dc-orange"><div class="dc-head"><i class="ri-medicine-bottle-fill" style="color:#DD6B20;"></i> Atenção Farmacológica</div><div class="dc-body">Aluno em uso de medicação contínua. Verifique a aba Estudante para detalhes.</div><div class="big-icon-bg">💊</div></div>""", unsafe_allow_html=True)
+                st.markdown(f"""<div class="soft-card sc-orange"><div class="sc-head"><i class="ri-medicine-bottle-fill" style="color:#DD6B20;"></i> Atenção Farmacológica</div><div class="sc-body">Aluno em uso de medicação contínua. Verifique a aba Estudante para detalhes.</div></div>""", unsafe_allow_html=True)
             else:
-                st.markdown(f"""<div class="detail-card dc-green"><div class="dc-head"><i class="ri-checkbox-circle-fill" style="color:#38A169;"></i> Medicação</div><div class="dc-body">Nenhuma medicação informada.</div><div class="big-icon-bg">✅</div></div>""", unsafe_allow_html=True)
+                st.markdown(f"""<div class="soft-card sc-green"><div class="sc-head"><i class="ri-checkbox-circle-fill" style="color:#38A169;"></i> Medicação</div><div class="sc-body">Nenhuma medicação informada.</div></div>""", unsafe_allow_html=True)
             
             st.write("")
             
             # CARD 3: ESTRATÉGIA (SOFT YELLOW/GOLD)
             resumo = extrair_resumo_estrategia(st.session_state.dados['ia_sugestao'])
-            st.markdown(f"""<div class="detail-card dc-yellow"><div class="dc-head"><i class="ri-lightbulb-flash-fill" style="color:#D69E2E;"></i> Estratégia Principal</div><div class="dc-body">"{resumo}"</div><div class="big-icon-bg">💡</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#D69E2E;"></i> Estratégia Principal</div><div class="sc-body">"{resumo}"</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
             # CARD 2: BNCC (SOFT BLUE + LISTA)
@@ -730,17 +743,17 @@ with tab8: # DASHBOARD (THE FORTRESS - FINAL)
             else:
                 html_lista = "Gere o plano na aba IA para ver os códigos."
             
-            st.markdown(f"""<div class="detail-card dc-blue"><div class="dc-head"><i class="ri-compass-3-fill" style="color:#3182CE;"></i> Matriz BNCC</div><div class="dc-body">{html_lista}</div><div class="big-icon-bg">🎯</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="soft-card sc-blue"><div class="sc-head"><i class="ri-compass-3-fill" style="color:#3182CE;"></i> Matriz BNCC</div><div class="sc-body">{html_lista}</div></div>""", unsafe_allow_html=True)
             
             st.write("")
 
             # CARD 4: REDE (SOFT PURPLE)
             rede = ", ".join(st.session_state.dados['rede_apoio']) if st.session_state.dados['rede_apoio'] else "Não informada"
-            st.markdown(f"""<div class="detail-card dc-purple"><div class="dc-head"><i class="ri-team-fill" style="color:#805AD5;"></i> Rede de Apoio</div><div class="dc-body">{rede}</div><div class="big-icon-bg">🤝</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="soft-card sc-cyan"><div class="sc-head"><i class="ri-team-fill" style="color:#0BC5EA;"></i> Rede de Apoio</div><div class="sc-body">{rede}</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         st.markdown("##### 🧬 DNA de Suporte (Detalhamento)")
-        st.markdown('<div class="dna-legend">ℹ️ Barras maiores indicam áreas que exigem mais adaptação e suporte intenso.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sup-legend">ℹ️ Barras maiores indicam áreas que exigem mais adaptação e suporte intenso.</div>', unsafe_allow_html=True)
         dna_c1, dna_c2 = st.columns(2)
         areas = list(LISTAS_BARREIRAS.keys())
         for i, area in enumerate(areas):
@@ -753,9 +766,9 @@ with tab8: # DASHBOARD (THE FORTRESS - FINAL)
             if val > 70: color = "#E53E3E"
             
             target.markdown(f"""
-            <div class="dna-bar-container">
-                <div class="dna-bar-flex"><span>{area}</span><span>{qtd} barreiras</span></div>
-                <div class="dna-bar-bg"><div class="dna-bar-fill" style="width:{val}%; background:{color};"></div></div>
+            <div class="sup-track">
+                <div class="sup-row"><span>{area}</span><span>{qtd} barreiras</span></div>
+                <div class="sup-track"><div class="sup-fill" style="width:{val}%; background:{color};"></div></div>
             </div>
             """, unsafe_allow_html=True)
 
