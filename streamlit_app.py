@@ -105,11 +105,22 @@ def calcular_complexidade_pei(dados):
     if saldo <= 7: return "ATENÇÃO", "#FFFFF0", "#D69E2E"
     return "CRÍTICA", "#FFF5F5", "#C53030"
 
+# --- EXTRAÇÃO DE TAGS (REFORÇADA) ---
 def extrair_tag_ia(texto, tag):
-    padrao = fr'\[{tag}\](.*?)(\[|$)'
+    if not texto: return ""
+    # Tenta encontrar a tag exata
+    padrao = fr'\[{tag}\](.*?)(\[FIM_{tag}\]|\[|$)'
     match = re.search(padrao, texto, re.DOTALL | re.IGNORECASE)
     if match: 
         return match.group(1).strip()
+    
+    # Fallback para MAPA_TEXTO_GAMIFICADO se a tag falhar
+    if tag == "MAPA_TEXTO_GAMIFICADO":
+        if "⚡" in texto and "**" in texto:
+             # Tenta pegar do primeiro emoji de raio até o fim ou próxima tag
+             match_fallback = re.search(r'(⚡.*?)(?=\[|$)', texto, re.DOTALL)
+             if match_fallback: return match_fallback.group(1).strip()
+    
     return ""
 
 def extrair_metas_estruturadas(texto):
@@ -246,16 +257,6 @@ def aplicar_estilo_visual():
         .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 600; z-index: 2; flex-grow: 1; }
         .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
         
-        .bloom-tag { background: #EBF8FF; color: #3182CE; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; margin-right: 5px; border: 1px solid #BEE3F8; display: inline-block; margin-bottom: 5px; }
-        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
-
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
-        div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
-        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
-        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: #0F52BA !important; border-color: #0F52BA !important; }
-        .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
-        .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
-        
         .home-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .home-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
         .home-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
@@ -272,6 +273,15 @@ def aplicar_estilo_visual():
         .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
         .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
         .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .bloom-tag { background: #EBF8FF; color: #3182CE; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; margin-right: 5px; border: 1px solid #BEE3F8; display: inline-block; margin-bottom: 5px; }
+        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
+        
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
+        div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
+        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
+        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: #0F52BA !important; border-color: #0F52BA !important; }
+        .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
+        .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -280,7 +290,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V89 - TEXTO GAMIFICADO + IMAGEM)
+# 6. INTELIGÊNCIA ARTIFICIAL (V90 - PROMPT REFORÇADO + REGEN)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -300,7 +310,7 @@ def gerar_noticia_ia(api_key):
         return res.choices[0].message.content
     except: return "O cérebro aprende durante toda a vida."
 
-# --- FUNÇÃO DALL-E 3 (AGORA RECEBE O TEXTO DAS ESTRATÉGIAS) ---
+# --- FUNÇÃO DALL-E 3 (INTEGRADA AO TEXTO) ---
 def gerar_imagem_dalle_integrada(api_key, dados_aluno, texto_estrategias):
     if not api_key: return None, "Configure a API Key."
     if not texto_estrategias: return None, "Texto das estratégias não encontrado."
@@ -308,7 +318,6 @@ def gerar_imagem_dalle_integrada(api_key, dados_aluno, texto_estrategias):
         client = OpenAI(api_key=api_key)
         hf = dados_aluno['hiperfoco'] if dados_aluno['hiperfoco'] else "aprendizado criativo"
         
-        # PROMPT QUE LÊ O TEXTO E CRIA O MAPA VISUAL
         prompt_dalle = f"""
         A creative, colorful infographic illustration of a 'Student Power Map' pinned on a corkboard.
         Title area: "MEU MAPA DE PODER".
@@ -330,7 +339,7 @@ def gerar_imagem_dalle_integrada(api_key, dados_aluno, texto_estrategias):
     except Exception as e:
         return None, str(e)
 
-def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
+def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", regenerar=False):
     if not api_key: return None, "⚠️ Configure a Chave API."
     try:
         client = OpenAI(api_key=api_key)
@@ -340,8 +349,13 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        prompt_sys = """
-        Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
+        # Se for regeneração, pede algo diferente
+        extra_instruction = ""
+        if regenerar:
+            extra_instruction = " (ATENÇÃO: O usuário pediu para REGENERAR. Use uma abordagem diferente, novas estratégias e um tom mais motivador)."
+
+        prompt_sys = f"""
+        Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.{extra_instruction}
         SUA MISSÃO: Criar um PEI Técnico e um CONTEÚDO GAMIFICADO EM TEXTO PARA O ALUNO.
         
         --- TAGS OBRIGATÓRIAS ---
@@ -384,7 +398,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         ESTRUTURA GERAL:
         1. 🌟 AVALIAÇÃO DE REPERTÓRIO: Foco na potência.
         2. 🧩 DIRETRIZES DE ADAPTAÇÃO: DUA e Avaliação.
-        """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
+        """
         
         prompt_user = f"""
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
@@ -500,7 +514,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v89.0 Final Script</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v90.0 Full Text Fix</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -660,7 +674,7 @@ with tab6: # MONITORAMENTO
     with c3: st.session_state.dados['parecer_geral'] = st.selectbox("Parecer Geral", ["Manter Estratégias", "Aumentar Suporte", "Reduzir Suporte (Autonomia)", "Alterar Metodologia", "Encaminhar para Especialista"], index=0)
     with c4: st.session_state.dados['proximos_passos_select'] = st.multiselect("Ações Futuras", ["Reunião com Família", "Encaminhamento Clínico", "Adaptação de Material", "Mudança de Lugar em Sala", "Novo PEI", "Observação em Sala"])
 
-with tab7: # IA
+with tab7: # IA (COM NOVO BOTÃO DE REGENERAÇÃO)
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria Pedagógica com IA", unsafe_allow_html=True)
     
@@ -687,6 +701,12 @@ with tab7: # IA
                 else: st.snow()
             else: st.error(err)
         
+        # BOTÃO NOVO DE REGENERAÇÃO
+        if st.session_state.dados['ia_sugestao']:
+            if st.button("🔄 Não gostou? Gerar Nova Abordagem", use_container_width=True):
+                 res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text, regenerar=True)
+                 if res: st.session_state.dados['ia_sugestao'] = res; st.rerun()
+
         with st.expander("📚 Base Técnica & Legal"):
             st.markdown("""
             **1. Documentos Norteadores**
@@ -801,24 +821,23 @@ with tab8: # DASHBOARD FINAL (V74)
             json_dados = json.dumps(st.session_state.dados, default=str)
             st.download_button("💾 Baixar Arquivo do Aluno (.json)", json_dados, f"PEI_{st.session_state.dados['nome']}.json", "application/json")
 
-with tab_mapa: # MEU MAPA (ÚLTIMA ABA E INDEPENDENTE)
+with tab_mapa: # MAPA FINAL
     render_progresso()
     st.markdown(f"""
     <div style="background: linear-gradient(90deg, #F6E05E 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: #2D3748; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <h3 style="margin:0; color:#2D3748;">🗺️ Meu Mapa da Jornada</h3>
-        <p style="margin:5px 0 0 0; font-weight:600;">Estratégias visuais para o estudante (Imprimir e Colar no Caderno).</p>
+        <p style="margin:5px 0 0 0; font-weight:600;">Olá, {st.session_state.dados['nome'].split()[0] if st.session_state.dados['nome'] else 'Estudante'}! Este é o seu plano de jogo para aprender melhor.</p>
     </div>
     """, unsafe_allow_html=True)
     
     col_text_map, col_dalle_map = st.columns([1.5, 2])
     
-    # --- COLUNA DA ESQUERDA: TEXTO SIMPLES E LIMPO ---
+    # TEXTO SIMPLES E CLARO
     with col_text_map:
-        st.markdown("#### ⚡ Meus Poderes & Missões (Texto)")
+        st.markdown("#### ⚡ Meus Poderes & Missões")
         if st.session_state.dados['ia_sugestao']:
             texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_TEXTO_GAMIFICADO")
             if texto_mapa:
-                # EXIBIÇÃO DIRETA EM MARKDOWN (ZERO ERRO)
                 with st.container(border=True):
                     st.markdown(texto_mapa)
             else:
@@ -826,19 +845,18 @@ with tab_mapa: # MEU MAPA (ÚLTIMA ABA E INDEPENDENTE)
         else:
             st.info("Gere o plano na aba IA primeiro.")
 
-    # --- COLUNA DA DIREITA: IMAGEM QUE LÊ O TEXTO ---
+    # IMAGEM VISUAL (GERADA PELO TEXTO)
     with col_dalle_map:
         st.markdown("#### 🎨 Meu Quadro Visual (DALL-E)")
         st.markdown("""<p style="font-size:0.85rem; color:#718096;">Gera um infográfico estilo 'Mapa Mental' baseado exatamente no texto ao lado.</p>""", unsafe_allow_html=True)
         
-        # Pega o texto atualizado para o prompt
         texto_para_imagem = ""
         if st.session_state.dados['ia_sugestao']:
              texto_para_imagem = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_TEXTO_GAMIFICADO")
 
         if st.button("✨ Criar Mapa Visual (Baseado no Texto)", type="primary", use_container_width=True):
             if texto_para_imagem and st.session_state.dados['hiperfoco']:
-                # Chama a nova função integrada que lê o texto
+                # Chama a função integrada (prompt com texto)
                 url, err = gerar_imagem_dalle_integrada(api_key, st.session_state.dados, texto_para_imagem)
                 if url:
                     st.session_state.dalle_image_url = url
