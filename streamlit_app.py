@@ -258,7 +258,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (VIBRANT CARDS + CLEAN TABS)
+# 5. ESTILO VISUAL (VIBRANT CARDS + GLOW TABS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -267,7 +267,7 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; background-color: #F7FAFC; }
         .block-container { padding-top: 1.5rem !important; padding-bottom: 5rem !important; }
         
-        /* 1. NAVEGAÇÃO "PÍLULA" CLEAN (TEXTO CAIXA ALTA) */
+        /* 1. NAVEGAÇÃO "GLOW" CLEAN */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .stTabs [data-baseweb="tab-list"] { 
@@ -294,7 +294,7 @@ def aplicar_estilo_visual():
             transition: all 0.2s ease;
             box-shadow: 0 1px 2px rgba(0,0,0,0.03);
             flex-shrink: 0;
-            text-transform: uppercase; /* CAIXA ALTA */
+            text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
@@ -304,12 +304,14 @@ def aplicar_estilo_visual():
             background-color: #EDF2F7;
         }
 
+        /* ESTADO SELECIONADO: TRANSPARENTE COM BRILHO PÁLIDO */
         .stTabs [aria-selected="true"] { 
-            background-color: #3182CE !important; 
-            color: #FFFFFF !important; 
-            border-color: #3182CE !important; 
+            background-color: transparent !important; 
+            color: #3182CE !important; /* Texto Azul para contraste */
+            border: 1px solid #3182CE !important; /* Borda fina definindo a forma */
             font-weight: 800;
-            box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2);
+            /* O BRILHO PÁLIDO (Glow) */
+            box-shadow: 0 0 12px rgba(49, 130, 206, 0.4), inset 0 0 5px rgba(49, 130, 206, 0.1) !important;
         }
 
         /* 2. CARD DE INSIGHT (AMARELO VIBRANTE) */
@@ -920,7 +922,7 @@ abas = [
 ]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
-with tab0: # INÍCIO (LAYOUT VIBRANTE + ABAS CLEAN)
+with tab0: # INÍCIO (LAYOUT VIBRANTE + ABAS GLOW)
     if api_key:
         with st.spinner("Conectando à IA..."):
             try:
