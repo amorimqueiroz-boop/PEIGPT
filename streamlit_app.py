@@ -12,7 +12,7 @@ import os
 import re
 import glob
 import random
-# REMOVIDO: import graphviz (Causa do erro corrigida)
+# IMPORT GRAPHVIZ REMOVIDO PARA EVITAR ERROS
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -28,7 +28,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (TOP LEVEL)
+# 2. LISTAS DE DADOS
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -133,16 +133,17 @@ def extrair_resumo_estrategia(texto):
         return re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
     return "Gere o plano na aba IA para ver o resumo."
 
-# --- GERADOR DE MAPA NATIVO (SEM IMPORT GRAPHVIZ) ---
+# --- GERADOR DE GRÁFICO (STRING DOT PURA) ---
 def gerar_dot_nativo(texto_mapa):
-    # Gera string DOT que o Streamlit entende nativamente
+    # Cria a string DOT que o st.graphviz_chart entende nativamente
     dot = 'digraph G {\n'
     dot += '  rankdir="LR";\n'
     dot += '  bgcolor="transparent";\n'
     dot += '  node [fontname="Arial", shape=box, style="filled,rounded", color="#D69E2E", fontcolor="white"];\n'
+    dot += '  edge [color="#A0AEC0"];\n'
     
     if not texto_mapa:
-        dot += '  "Gere o plano na IA" [color="#E53E3E"];\n'
+        dot += '  "Gere o plano" [color="#E53E3E"];\n'
     else:
         linhas = texto_mapa.strip().split('\n')
         for linha in linhas:
@@ -151,15 +152,15 @@ def gerar_dot_nativo(texto_mapa):
                 origem = partes[0].strip().replace('"', '')
                 destino = partes[1].strip().replace('"', '')
                 
-                # Cores baseadas no contexto (Amarelo/Escola)
+                # Cores baseadas no contexto (Amarelo Suave para Estudante)
                 fill = "#D69E2E" # Gold default
-                if "Potência" in origem or "Hiperfoco" in origem: fill = "#ECC94B" 
-                elif "Escola" in origem or "Aula" in origem: fill = "#D69E2E" 
-                elif "Casa" in origem: fill = "#B7791F" 
+                if "Superpoder" in origem or "Hiperfoco" in origem: fill = "#F6AD55" # Laranja Suave
+                elif "Escola" in origem or "Aula" in origem: fill = "#ECC94B" # Amarelo Ouro
+                elif "Casa" in origem: fill = "#B7791F" # Bronze
                 
                 dot += f'  "{origem}" [fillcolor="{fill}", color="{fill}"];\n'
                 dot += f'  "{destino}" [fillcolor="white", fontcolor="#2D3748", color="#CBD5E0"];\n'
-                dot += f'  "{origem}" -> "{destino}" [color="#A0AEC0"];\n'
+                dot += f'  "{origem}" -> "{destino}";\n'
     
     dot += '}'
     return dot
@@ -257,7 +258,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (CORREÇÕES NA HOME E ABA AMARELA)
+# 5. ESTILO VISUAL (HOME VIBRANTE V68 + DASH CLEAN)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -278,9 +279,6 @@ def aplicar_estilo_visual():
         .stTabs [data-baseweb="tab"] { height: 36px; border-radius: 18px !important; background-color: white; border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px; transition: all 0.2s ease; }
         .stTabs [aria-selected="true"] { background-color: #FF6B6B !important; color: white !important; border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3); }
         
-        /* ESTILIZAR A ABA ESPECÍFICA DO MAPA (AMARELO - TENTATIVA VIA CSS) */
-        /* Nota: Selecionar abas específicas via CSS puro no Streamlit é difícil, mas o conteúdo terá o destaque */
-
         .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
@@ -331,7 +329,7 @@ def aplicar_estilo_visual():
             display: flex; align-items: center; justify-content: center; 
             font-size: 2.2rem; margin-bottom: 15px; 
         }
-        /* CORES VIBRANTES FORÇADAS */
+        /* CORES VIBRANTES */
         .ic-blue { background-color: #EBF8FF !important; color: #3182CE !important; border: 1px solid #BEE3F8 !important; }
         .ic-gold { background-color: #FFFFF0 !important; color: #D69E2E !important; border: 1px solid #FAF089 !important; }
         .ic-pink { background-color: #FFF5F7 !important; color: #D53F8C !important; border: 1px solid #FED7E2 !important; }
@@ -352,7 +350,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V76)
+# 6. INTELIGÊNCIA ARTIFICIAL (V77 - MAPA DO ESTUDANTE)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -386,7 +384,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         prompt_sys = """
         Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
         
-        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um MAPA DE INTERVENÇÃO (para a escola).
+        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um MAPA DE INTERVENÇÃO (Linguagem para o Aluno).
         
         --- TAGS OBRIGATÓRIAS ---
         
@@ -403,12 +401,12 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         [MATRIZ_BNCC] ... [FIM_MATRIZ_BNCC]
         
         [MAPA_VISUAL]
-        Crie uma estrutura visual de grafo (setas) com foco em INTERVENÇÕES ESCOLARES.
+        Crie um grafo para o ALUNO imprimir e colar no caderno (Linguagem de 1ª pessoa).
         Use estritamente este formato: NÓ_PAI -> NÓ_FILHO
         Exemplo:
-        Potência -> Usar Hiperfoco em Matemática
-        Escola -> Flexibilizar tempo de prova
-        Sala -> Lugar na frente
+        Meu Superpoder -> Usar Minecraft na Matemática
+        Na Escola -> Pedir tempo se cansar
+        Em Casa -> Fazer pausas de 5 min
         (Crie 3-4 ramos baseados no perfil do aluno)
         [FIM_MAPA_VISUAL]
         
@@ -530,7 +528,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v76.0 Stable</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v77.0 Final Map</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -739,12 +737,12 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab_mapa: # MAPA (AMARELO PARA ESCOLA)
+with tab_mapa: # MAPA (AGORA AMARELO/DOURADO - ESCOLA)
     render_progresso()
     st.markdown(f"""
     <div style="background: linear-gradient(90deg, #F6E05E 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: #2D3748; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <h3 style="margin:0; color:#2D3748;">🗺️ Mapa de Intervenção Estratégica</h3>
-        <p style="margin:5px 0 0 0; font-weight:600;">Visualização de estratégias para equipe escolar e família.</p>
+        <p style="margin:5px 0 0 0; font-weight:600;">Visualização de estratégias para o estudante (Imprimir e Colar no Caderno).</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -753,7 +751,7 @@ with tab_mapa: # MAPA (AMARELO PARA ESCOLA)
         if texto_mapa:
             dot = gerar_dot_nativo(texto_mapa)
             st.graphviz_chart(dot, use_container_width=True)
-            st.info("💡 Este mapa resume as conexões entre a potência do aluno e as adaptações necessárias.")
+            st.info("💡 Este mapa resume as conexões entre a potência do aluno e as adaptações necessárias. Linguagem adaptada para o aluno.")
         else:
             st.warning("O mapa ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
     else:
