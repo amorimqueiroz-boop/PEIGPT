@@ -108,27 +108,24 @@ def extrair_tag_ia(texto, tag):
     if match: return match.group(1).strip()
     return ""
 
-def extrair_meta_curto_prazo(texto):
-    if not texto: return "Gere o plano na aba IA."
+def extrair_metas_estruturadas(texto):
     bloco = extrair_tag_ia(texto, "METAS_SMART")
-    if bloco:
-        linhas = bloco.split('\n')
-        for l in linhas:
-            if "Curto" in l or "2 meses" in l:
-                return re.sub(r'^[\-\*]+', '', l).strip()
-        return linhas[0] if linhas else "Ver detalhamento no PDF."
-    return "Metas não definidas."
-
-def extrair_resumo_estrategia(texto):
-    if not texto: return "Plano ainda não gerado."
-    conteudo = extrair_tag_ia(texto, "ESTRATEGIA_MASTER")
-    if not conteudo and "ESTRATÉGIAS" in texto:
-        partes = texto.split("ESTRATÉGIAS")
-        conteudo = partes[1].split("ADAPTAÇÕES")[0] if "ADAPTAÇÕES" in partes[1] else partes[1]
+    if not bloco: return None
     
-    if conteudo:
-        return re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
-    return "Gere o plano na aba IA para ver o resumo."
+    metas = {"Curto": "Definir...", "Medio": "Definir...", "Longo": "Definir..."}
+    linhas = bloco.split('\n')
+    for l in linhas:
+        l_clean = re.sub(r'^[\-\*]+', '', l).strip()
+        if "Curto" in l or "2 meses" in l: metas["Curto"] = l_clean.split(":")[-1].strip()
+        elif "Médio" in l or "Semestre" in l: metas["Medio"] = l_clean.split(":")[-1].strip()
+        elif "Longo" in l or "Ano" in l: metas["Longo"] = l_clean.split(":")[-1].strip()
+    return metas
+
+def extrair_bloom(texto):
+    bloco = extrair_tag_ia(texto, "TAXONOMIA_BLOOM")
+    if not bloco: return ["Identificar", "Compreender", "Aplicar"]
+    # Limpa e transforma em lista
+    return [v.strip() for v in bloco.split(',')]
 
 def get_pro_icon(nome_profissional):
     p = nome_profissional.lower()
@@ -163,12 +160,6 @@ def limpar_texto_pdf(texto):
     t = re.sub(r'\[.*?\]', '', texto) 
     t = t.replace('**', '').replace('__', '').replace('### ', '').replace('## ', '').replace('# ', '')
     return re.sub(r'[^\x00-\xff]', '', t)
-
-def extrair_linhas_bncc(texto):
-    padrao = r'([A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}.*?)(?=\n|$)'
-    if not texto: return []
-    linhas = re.findall(padrao, texto)
-    return list(set([l.strip().replace('**', '') for l in linhas if len(l) > 10]))
 
 def salvar_aluno(dados):
     if not dados['nome']: return False, "Nome obrigatório."
@@ -223,7 +214,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (HOME RESTAURADA + DASHBOARD V72)
+# 5. ESTILO VISUAL
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -244,7 +235,6 @@ def aplicar_estilo_visual():
         .stTabs [data-baseweb="tab"] { height: 36px; border-radius: 18px !important; background-color: white; border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px; transition: all 0.2s ease; }
         .stTabs [aria-selected="true"] { background-color: #FF6B6B !important; color: white !important; border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3); }
         
-        /* PROGRESSO */
         .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
@@ -260,7 +250,7 @@ def aplicar_estilo_visual():
         .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
         .comp-icon-box { margin-bottom: 5px; }
 
-        .soft-card { border-radius: 12px; padding: 20px; min-height: 200px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 5px solid; position: relative; overflow: hidden; }
+        .soft-card { border-radius: 12px; padding: 20px; min-height: 220px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 5px solid; position: relative; overflow: hidden; }
         .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
         .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
         .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
@@ -270,34 +260,14 @@ def aplicar_estilo_visual():
         .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 600; z-index: 2; flex-grow: 1; }
         .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
         
-        /* RESTAURAÇÃO HOME VIBRANTE (V68) */
-        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-        .rich-card {
-            background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-            position: relative; overflow: hidden;
-        }
-        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
-        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
-        
-        .icon-box { 
-            width: 65px; height: 65px; border-radius: 15px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 2rem; margin-bottom: 15px; 
-        }
-        /* FORÇANDO CORES DA HOME */
-        .ic-blue { background-color: #EBF8FF !important; color: #3182CE !important; }
-        .ic-gold { background-color: #FFFFF0 !important; color: #D69E2E !important; }
-        .ic-pink { background-color: #FFF5F7 !important; color: #D53F8C !important; }
-        .ic-green { background-color: #F0FFF4 !important; color: #38A169 !important; }
-
         .dna-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; font-style: italic; display: flex; align-items: center; gap: 6px;}
         .dna-bar-container { margin-bottom: 12px; }
         .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
         .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
         .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+        .bloom-tag { background: #EBF8FF; color: #3182CE; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; margin-right: 5px; border: 1px solid #BEE3F8; display: inline-block; margin-bottom: 5px; }
+        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
 
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
         div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
@@ -305,7 +275,18 @@ def aplicar_estilo_visual():
         div[data-baseweb="checkbox"] div[class*="checked"] { background-color: #0F52BA !important; border-color: #0F52BA !important; }
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
-        .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
+        
+        .rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+        .rich-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; }
+        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
+        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
+        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
+        
+        .icon-box { width: 65px; height: 65px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 15px; }
+        .ic-blue { background-color: #EBF8FF !important; color: #3182CE !important; }
+        .ic-gold { background-color: #FFFFF0 !important; color: #D69E2E !important; }
+        .ic-pink { background-color: #FFF5F7 !important; color: #D53F8C !important; }
+        .ic-green { background-color: #F0FFF4 !important; color: #38A169 !important; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -314,7 +295,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V72)
+# 6. INTELIGÊNCIA ARTIFICIAL (BLOOM + METAS SMART)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -345,46 +326,35 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # --- PROMPT V72 (METAS CLARAS) ---
+        # --- PROMPT V74.0 (BLOOM & METAS) ---
         prompt_sys = """
-        Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação (MEC/Brasil).
+        Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
         
-        SUA MISSÃO: Cruzar dados clínicos e escolares para criar um PEI Assertivo e Legalmente Embasado.
+        SUA MISSÃO: Cruzar dados para criar um PEI com Taxonomia de Bloom e Metas SMART.
         
-        --- REFERENCIAIS (CITE QUANDO PERTINENTE) ---
-        1. NOTA TÉCNICA SEESP/MEC nº 24/2010.
-        2. MANUAL DO PEI (UNESP/ENICÉIA MENDES).
-        3. DUA (Desenho Universal para Aprendizagem).
+        --- ESTRUTURA OBRIGATÓRIA ---
         
-        --- ESTRUTURA DE RESPOSTA ---
-        
-        1. 🌟 AVALIAÇÃO DE REPERTÓRIO (NÍVEL ATUAL):
-           Foque no que o aluno JÁ CONSEGUE fazer. Mude o foco do déficit para a competência.
+        1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
+           Foque no que o aluno JÁ CONSEGUE fazer.
         
         [ANALISE_FARMA]
-        Analise os fármacos ({meds}). Indique efeitos colaterais e impacto na rotina.
+        Analise os fármacos ({meds}). Efeitos colaterais e impacto.
         [FIM_ANALISE_FARMA]
         
-        [MATRIZ_BNCC]
-        Liste habilidades cirúrgicas. Formato:
-        - RECOMPOSIÇÃO: [CÓDIGO] Descrição.
-        - ANO VIGENTE: [CÓDIGO] Descrição.
-        [FIM_MATRIZ_BNCC]
-        
-        [ESTRATEGIA_MASTER]
-        Escreva UMA estratégia principal usando o Hiperfoco ("{hiperfoco}") como alavanca (Scaffolding).
-        [FIM_ESTRATEGIA_MASTER]
+        [TAXONOMIA_BLOOM]
+        Liste APENAS 3 verbos de comando da Taxonomia de Bloom adequados ao nível cognitivo atual do aluno, separados por vírgula. 
+        Exemplo: Identificar, Classificar, Nomear
+        [FIM_TAXONOMIA_BLOOM]
         
         [METAS_SMART]
-        Metas Específicas e Temporais:
-        - CURTO PRAZO (2 meses): Meta...
-        - MÉDIO PRAZO (Semestre): Meta...
-        - LONGO PRAZO (Ano): Meta...
+        - CURTO PRAZO (2 meses): Meta Específica...
+        - MÉDIO PRAZO (Semestre): Meta Específica...
+        - LONGO PRAZO (Ano): Meta Específica...
         [FIM_METAS_SMART]
         
         2. 🧩 DIRETRIZES DE ADAPTAÇÃO:
-           - Acesso (DUA): Recursos e estratégias.
-           - Avaliação: Prova oral, ledor, tempo estendido (Cite a Lei).
+           - Acesso (DUA).
+           - Avaliação (Lei).
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
@@ -394,9 +364,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
         EVIDÊNCIAS: {evid}
-        
-        DOCUMENTOS ANEXOS (LAUDO):
-        {contexto_pdf[:3000] if contexto_pdf else "Apenas checklist do professor disponível."}
+        LAUDO: {contexto_pdf[:3000] if contexto_pdf else "Nenhum."}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -502,7 +470,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v73.0 Hybrid</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v74.0 Bloom</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -544,6 +512,8 @@ with tab0: # INÍCIO (RESTORED - CLASSIC)
     with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
     if api_key: st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
 
+# ... [TABS 1-6 IDENTICAL TO V73] ...
+
 with tab1: # ESTUDANTE
     render_progresso()
     st.markdown("<div class='form-section-title'><i class='ri-user-smile-line'></i> Identidade & Matrícula</div>", unsafe_allow_html=True)
@@ -563,7 +533,6 @@ with tab1: # ESTUDANTE
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
-        # --- LISTA DE MEDICAMENTOS (CORRIGIDA) ---
         if usa_med:
             c1, c2, c3 = st.columns([3, 2, 2])
             nm = c1.text_input("Nome", key="nm_med")
@@ -572,7 +541,6 @@ with tab1: # ESTUDANTE
             if st.button("Adicionar"):
                 st.session_state.dados['lista_medicamentos'].append({"nome": nm, "posologia": pos, "obs": "", "escola": admin_escola}); st.rerun()
         
-        # LISTA FORA DO IF DE ADICIONAR PARA APARECER SEMPRE
         if st.session_state.dados['lista_medicamentos']:
             st.write("---")
             for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
@@ -716,7 +684,7 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD FINAL (REVOLUTION)
+with tab8: # DASHBOARD FINAL (V74)
     render_progresso()
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
@@ -736,7 +704,7 @@ with tab8: # DASHBOARD FINAL (REVOLUTION)
         </div>
         """, unsafe_allow_html=True)
         
-        # 4 COLUNAS (COM REDE DE APOIO NO LUGAR DE META)
+        # 4 COLUNAS - TOPO
         c_kpi1, c_kpi2, c_kpi3, c_kpi4 = st.columns(4)
         with c_kpi1:
             n_pot = len(st.session_state.dados['potencias'])
@@ -747,10 +715,10 @@ with tab8: # DASHBOARD FINAL (REVOLUTION)
             color_b = "#E53E3E" if n_bar > 5 else "#DD6B20"
             st.markdown(f"""<div class="metric-card"><div class="css-donut" style="--p: {n_bar*5}%; --fill: {color_b};"><div class="d-val">{n_bar}</div></div><div class="d-lbl">Barreiras</div></div>""", unsafe_allow_html=True)
         with c_kpi3:
-             # REDE DE APOIO NO CARD SUPERIOR
-             prof_count = len(st.session_state.dados['rede_apoio'])
-             rede_icon = "🤝" if prof_count > 0 else "⚠️"
-             st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">{rede_icon}</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{prof_count} Profissionais</div><div class="d-lbl">Rede de Apoio</div></div>""", unsafe_allow_html=True)
+             # HIPERFOCO VOLTOU!
+             hf = st.session_state.dados['hiperfoco'] or "-"
+             hf_emoji = get_hiperfoco_emoji(hf)
+             st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">{hf_emoji}</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="d-lbl">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
              txt_comp, bg_c, txt_c = calcular_complexidade_pei(st.session_state.dados)
              st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div class="comp-icon-box"><i class="ri-error-warning-line" style="color:{txt_c}; font-size: 2rem;"></i></div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
@@ -760,7 +728,7 @@ with tab8: # DASHBOARD FINAL (REVOLUTION)
         # GRID DOS CARDS DE DETALHE
         c_r1, c_r2 = st.columns(2)
         with c_r1:
-            # CARD 1: MEDICAÇÃO (MINIMALISTA)
+            # CARD 1: MEDICAÇÃO
             tem_med = len(st.session_state.dados['lista_medicamentos']) > 0
             if tem_med:
                 st.markdown(f"""<div class="soft-card sc-orange"><div class="sc-head"><i class="ri-medicine-bottle-fill" style="color:#DD6B20;"></i> Atenção Farmacológica</div><div class="sc-body">Aluno em uso de medicação contínua. Verifique a aba Estudante para detalhes e posologia.</div><div class="bg-icon">💊</div></div>""", unsafe_allow_html=True)
@@ -769,37 +737,46 @@ with tab8: # DASHBOARD FINAL (REVOLUTION)
             
             st.write("")
             
-            # CARD 3: META DE CURTO PRAZO (EXTRAÍDA DA IA)
-            # Como a IA gera [METAS_SMART], vou extrair apenas o Curto Prazo para o Card
-            bloco_metas = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "METAS_SMART")
-            meta_curta = "Gere o plano na aba IA."
-            if bloco_metas:
-                # Pega a primeira linha que parece ser uma meta
-                linhas = [l for l in bloco_metas.split('\n') if "Curto" in l or "2 meses" in l]
-                if linhas: meta_curta = re.sub(r'[\-\*]+', '', linhas[0]).strip()
+            # CARD 3: METAS EVOLUTIVAS (NOVO VISUAL)
+            metas = extrair_metas_estruturadas(st.session_state.dados['ia_sugestao'])
+            if metas:
+                html_metas = f"""
+                <div class="meta-row"><span style="font-size:1.2rem;">🏁</span> <b>Curto (2m):</b> {metas['Curto']}</div>
+                <div class="meta-row"><span style="font-size:1.2rem;">🧗</span> <b>Médio (6m):</b> {metas['Medio']}</div>
+                <div class="meta-row"><span style="font-size:1.2rem;">🏔️</span> <b>Longo (1a):</b> {metas['Longo']}</div>
+                """
+            else:
+                html_metas = "Gere o plano na aba IA para ver o cronograma."
             
-            st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-flag-2-fill" style="color:#D69E2E;"></i> Meta de Curto Prazo (2 Meses)</div><div class="sc-body" style="font-size:0.85rem;">"{meta_curta}"</div><div class="bg-icon">🏁</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-flag-2-fill" style="color:#D69E2E;"></i> Cronograma de Metas</div><div class="sc-body">{html_metas}</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
-            # CARD 2: CICLO DE MONITORAMENTO
-            prox_rev = st.session_state.dados['monitoramento_data'].strftime("%d/%m/%Y")
-            status = st.session_state.dados['status_meta']
+            # CARD 2: TAXONOMIA DE BLOOM (NOVO)
+            verbos = extrair_bloom(st.session_state.dados['ia_sugestao'])
+            html_verbos = "".join([f'<span class="bloom-tag">{v}</span>' for v in verbos])
+            
             st.markdown(f"""
             <div class="soft-card sc-blue">
-                <div class="sc-head"><i class="ri-calendar-check-fill" style="color:#3182CE;"></i> Ciclo de Monitoramento</div>
+                <div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#3182CE;"></i> Taxonomia de Bloom (Verbos)</div>
                 <div class="sc-body">
-                    <div style="font-size:1.5rem; font-weight:800; color:#2B6CB0; margin-bottom:5px;">{prox_rev}</div>
-                    <div style="font-size:0.8rem; text-transform:uppercase; font-weight:700; color:#718096;">Próxima Revisão</div>
-                    <div style="margin-top:15px; padding:5px 10px; background:#EBF8FF; border-radius:8px; display:inline-block; font-size:0.85rem; font-weight:700; color:#2C5282;">Status: {status}</div>
+                    <div style="margin-bottom:10px; font-size:0.85rem; color:#4A5568;">Verbos de comando sugeridos para atividades:</div>
+                    {html_verbos}
                 </div>
-                <div class="bg-icon">📅</div>
+                <div class="bg-icon">🧠</div>
             </div>""", unsafe_allow_html=True)
             
             st.write("")
 
-            # CARD 4: ESTRATÉGIA PRINCIPAL
-            estrategia = extrair_resumo_estrategia(st.session_state.dados['ia_sugestao'])
-            st.markdown(f"""<div class="soft-card sc-cyan"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#0BC5EA;"></i> Estratégia Principal</div><div class="sc-body" style="font-style:italic;">"{estrategia}"</div><div class="bg-icon">💡</div></div>""", unsafe_allow_html=True)
+            # CARD 4: REDE DE APOIO (MOVED HERE)
+            rede_html = ""
+            if st.session_state.dados['rede_apoio']:
+                for prof in st.session_state.dados['rede_apoio']:
+                    icon = get_pro_icon(prof)
+                    rede_html += f'<span class="rede-chip">{icon} {prof}</span> '
+            else:
+                rede_html = "<span style='opacity:0.6;'>Sem rede de apoio.</span>"
+            
+            st.markdown(f"""<div class="soft-card sc-cyan"><div class="sc-head"><i class="ri-team-fill" style="color:#0BC5EA;"></i> Rede de Apoio</div><div class="sc-body">{rede_html}</div><div class="bg-icon">🤝</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         st.markdown("##### 🧬 DNA de Suporte (Detalhamento)")
