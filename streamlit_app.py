@@ -21,7 +21,7 @@ def get_favicon():
     return "🗺️"
 
 st.set_page_config(
-    page_title="PEI 360º Integrated Map",
+    page_title="PEI 360º Student Map",
     page_icon=get_favicon(),
     layout="wide",
     initial_sidebar_state="expanded"
@@ -204,7 +204,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL
+# 5. ESTILO VISUAL (VIBRANTE E GAMIFICADO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -212,6 +212,7 @@ def aplicar_estilo_visual():
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
+        div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
         .header-subtitle { color: #718096; font-size: 1.1rem; font-weight: 700; margin: 0; letter-spacing: 0.5px; border-left: 2px solid #E2E8F0; padding-left: 15px; }
@@ -245,6 +246,17 @@ def aplicar_estilo_visual():
         .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 600; z-index: 2; flex-grow: 1; }
         .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
         
+        .bloom-tag { background: #EBF8FF; color: #3182CE; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; margin-right: 5px; border: 1px solid #BEE3F8; display: inline-block; margin-bottom: 5px; }
+        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
+
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
+        div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
+        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
+        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: #0F52BA !important; border-color: #0F52BA !important; }
+        .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
+        .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
+        
+        /* HOME CARD STYLES */
         .home-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .home-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
         .home-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
@@ -256,13 +268,27 @@ def aplicar_estilo_visual():
         .ic-green { background-color: #F0FFF4 !important; color: #38A169 !important; border: 1px solid #C6F6D5 !important; }
         .rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         
-        .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
-        .dna-bar-container { margin-bottom: 12px; }
-        .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
-        .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
-        .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
-        .bloom-tag { background: #EBF8FF; color: #3182CE; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; margin-right: 5px; border: 1px solid #BEE3F8; display: inline-block; margin-bottom: 5px; }
-        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
+        /* CARD DE MISSÃO DO ALUNO (ESTILO POST-IT) */
+        .gamified-card {
+            background-color: #FEFCBF; 
+            border-left: 5px solid #D69E2E;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            font-family: 'Nunito', sans-serif;
+        }
+        .gamified-title {
+            color: #744210;
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .gamified-body {
+            color: #2D3748;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -271,7 +297,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V85 - DALL-E INTEGRADO AO TEXTO)
+# 6. INTELIGÊNCIA ARTIFICIAL (V85 - DALL-E & TEXTO GAMIFICADO)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -291,26 +317,25 @@ def gerar_noticia_ia(api_key):
         return res.choices[0].message.content
     except: return "O cérebro aprende durante toda a vida."
 
-# --- FUNÇÃO DALL-E 3 (AGORA RECEBE O TEXTO DAS ESTRATÉGIAS) ---
-def gerar_imagem_dalle_integrada(api_key, dados_aluno, texto_estrategias):
+# --- FUNÇÃO DALL-E 3 (AGORA COM PROMPT DE MAPA MENTAL VISUAL) ---
+def gerar_imagem_dalle_mapa(api_key, dados_aluno, texto_estrategias):
     if not api_key: return None, "Configure a API Key."
-    if not texto_estrategias: return None, "Texto das estratégias não encontrado."
     try:
         client = OpenAI(api_key=api_key)
         hf = dados_aluno['hiperfoco'] if dados_aluno['hiperfoco'] else "aprendizado criativo"
         
-        # PROMPT QUE LÊ O TEXTO
+        # PROMPT ESPECÍFICO PARA MAPA MENTAL VISUAL
         prompt_dalle = f"""
-        Infographic illustration designed as a colorful mind map pinned to a corkboard.
-        Title at the center: "MEUS PODERES & ESTRATÉGIAS".
-        Surrounding the center are distinct, connecting nodes/panels visually representing these specific strategies from the text below:
-        ---
-        {texto_estrategias}
-        ---
-        Style: Playful, encouraging, visually appealing for a student, like a well-organized bulletin board with drawings and notes. Use the theme of {hf} where appropriate as visual decoration.
+        A visually engaging mind map illustration pinned on a corkboard, designed for a student.
+        Theme: {hf} (use visual elements from this theme).
+        Style: Colorful, friendly, Pixar-like animation style, high quality.
+        Central Element: A bright, glowing core representing "MY POWERS".
+        Branches: 4 or 5 distinct colorful branches radiating from the center, each ending in a sticky note or icon representing these concepts:
+        {texto_estrategias[:500]}
+        The text on the image should be minimal or illegible artistic representation, focusing on the visual symbols (brain, calm breathing, school desk, calendar).
         """
 
-        with st.spinner("🎨 A IA está desenhando o mapa com suas estratégias... (15s)"):
+        with st.spinner("🎨 A IA está desenhando seu mapa de poderes... (15s)"):
             response = client.images.generate(
                 model="dall-e-3", prompt=prompt_dalle, size="1024x1024", quality="standard", n=1,
             )
@@ -344,14 +369,16 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         [MATRIZ_BNCC] ... [FIM_MATRIZ_BNCC]
         
         [MAPA_TEXTO_GAMIFICADO]
-        (Gere um texto em 1ª pessoa, com emojis, listando 4-5 estratégias chave. Use o formato de título em negrito seguido da descrição).
-        Exemplo de formato desejado:
-        ⚡ **Meu Mapa de Poderes** ⚡
-        🧠 **Super Foco (Aprendizado)**
-        Explicação de como usar o hiperfoco...
-        🌬️ **Calma Interior (Ansiedade)**
-        Técnica de respiração...
-        (etc...)
+        (Gere um texto em 1ª pessoa, com emojis, listando 4-5 estratégias chave. Use Markdown simples com títulos em negrito).
+        Exemplo:
+        **⚡ Meus Superpoderes (Hiperfoco):**
+        Explicação curta e motivadora...
+        **🌬️ Calma Interior (Ansiedade):**
+        Dica prática...
+        **🕒 Botão de Pausa (Em Sala):**
+        Estratégia...
+        **📁 Mestre da Organização:**
+        Dica de rotina...
         [FIM_MAPA_TEXTO_GAMIFICADO]
         
         ESTRUTURA GERAL:
@@ -484,7 +511,7 @@ st.markdown(f"""
     <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
-# ABAS
+# ABAS (REORDENADAS: MAPA É A ÚLTIMA)
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento", "🗺️ Meu Mapa da Jornada"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
@@ -681,7 +708,7 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab_mapa: # MAPA GAMIFICADO (VISUAL BOARD)
+with tab_mapa: # MAPA VISUAL DEFINITIVO (SEM GRAPHVIZ)
     render_progresso()
     st.markdown(f"""
     <div style="background: linear-gradient(90deg, #F6E05E 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: #2D3748; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -692,13 +719,13 @@ with tab_mapa: # MAPA GAMIFICADO (VISUAL BOARD)
     
     col_text_map, col_dalle_map = st.columns([1.5, 2])
     
-    # --- COLUNA DA ESQUERDA: TEXTO SIMPLES ---
+    # --- COLUNA DA ESQUERDA: TEXTO SIMPLES E LIMPO ---
     with col_text_map:
         st.markdown("#### ⚡ Meus Poderes & Missões (Texto)")
         if st.session_state.dados['ia_sugestao']:
             texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_TEXTO_GAMIFICADO")
             if texto_mapa:
-                # Exibição simples e direta em um container, como solicitado
+                # EXIBIÇÃO DIRETA EM MARKDOWN (ZERO ERRO)
                 with st.container(border=True):
                     st.markdown(texto_mapa)
             else:
@@ -706,20 +733,20 @@ with tab_mapa: # MAPA GAMIFICADO (VISUAL BOARD)
         else:
             st.info("Gere o plano na aba IA primeiro.")
 
-    # --- COLUNA DA DIREITA: IMAGEM GERADA PELO TEXTO ---
+    # --- COLUNA DA DIREITA: IMAGEM QUE LÊ O TEXTO ---
     with col_dalle_map:
-        st.markdown("#### 🎨 Meu Quadro Visual (DALL-E Integado)")
+        st.markdown("#### 🎨 Meu Quadro Visual (DALL-E)")
         st.markdown("""<p style="font-size:0.85rem; color:#718096;">Gera um infográfico estilo 'Mapa Mental' baseado exatamente no texto ao lado.</p>""", unsafe_allow_html=True)
         
-        # Extrai o texto novamente para garantir que temos a versão mais recente para a imagem
+        # Pega o texto atualizado para o prompt
         texto_para_imagem = ""
         if st.session_state.dados['ia_sugestao']:
              texto_para_imagem = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_TEXTO_GAMIFICADO")
 
         if st.button("✨ Criar Mapa Visual (Baseado no Texto)", type="primary", use_container_width=True):
             if texto_para_imagem and st.session_state.dados['hiperfoco']:
-                # Chama a nova função que recebe o texto
-                url, err = gerar_imagem_dalle_integrada(api_key, st.session_state.dados, texto_para_imagem)
+                # Chama a nova função integrada
+                url, err = gerar_imagem_dalle_mapa(api_key, st.session_state.dados, texto_para_imagem)
                 if url:
                     st.session_state.dalle_image_url = url
                     st.success("Mapa visual gerado com sucesso!")
