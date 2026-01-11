@@ -12,7 +12,7 @@ import os
 import re
 import glob
 import random
-# IMPORT GRAPHVIZ REMOVIDO PARA EVITAR ERROS
+# SEM IMPORT GRAPHVIZ
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -28,7 +28,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS
+# 2. LISTAS DE DADOS (TOP LEVEL)
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -133,9 +133,8 @@ def extrair_resumo_estrategia(texto):
         return re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
     return "Gere o plano na aba IA para ver o resumo."
 
-# --- GERADOR DE GRÁFICO (STRING DOT PURA) ---
+# --- GERADOR DE GRÁFICO (DOT NATIVO) ---
 def gerar_dot_nativo(texto_mapa):
-    # Cria a string DOT que o st.graphviz_chart entende nativamente
     dot = 'digraph G {\n'
     dot += '  rankdir="LR";\n'
     dot += '  bgcolor="transparent";\n'
@@ -149,14 +148,14 @@ def gerar_dot_nativo(texto_mapa):
         for linha in linhas:
             if "->" in linha:
                 partes = linha.split("->")
-                origem = partes[0].strip().replace('"', '')
-                destino = partes[1].strip().replace('"', '')
+                origem = partes[0].strip().replace('"', "'")
+                destino = partes[1].strip().replace('"', "'")
                 
-                # Cores baseadas no contexto (Amarelo Suave para Estudante)
-                fill = "#D69E2E" # Gold default
-                if "Superpoder" in origem or "Hiperfoco" in origem: fill = "#F6AD55" # Laranja Suave
-                elif "Escola" in origem or "Aula" in origem: fill = "#ECC94B" # Amarelo Ouro
-                elif "Casa" in origem: fill = "#B7791F" # Bronze
+                # Cores Amarelas/Douradas (Student Agency)
+                fill = "#D69E2E" 
+                if "Superpoder" in origem or "Hiperfoco" in origem: fill = "#F6AD55" 
+                elif "Escola" in origem or "Aula" in origem: fill = "#ECC94B" 
+                elif "Casa" in origem: fill = "#B7791F" 
                 
                 dot += f'  "{origem}" [fillcolor="{fill}", color="{fill}"];\n'
                 dot += f'  "{destino}" [fillcolor="white", fontcolor="#2D3748", color="#CBD5E0"];\n'
@@ -258,7 +257,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (HOME VIBRANTE V68 + DASH CLEAN)
+# 5. ESTILO VISUAL (HÍBRIDO: HOME VIBRANTE + DASH CLEAN)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -350,7 +349,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V77 - MAPA DO ESTUDANTE)
+# 6. INTELIGÊNCIA ARTIFICIAL (V78 - MAPA 1ª PESSOA)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -384,7 +383,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         prompt_sys = """
         Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
         
-        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um MAPA DE INTERVENÇÃO (Linguagem para o Aluno).
+        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um MAPA DE INTERVENÇÃO (para o aluno).
         
         --- TAGS OBRIGATÓRIAS ---
         
@@ -401,7 +400,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         [MATRIZ_BNCC] ... [FIM_MATRIZ_BNCC]
         
         [MAPA_VISUAL]
-        Crie um grafo para o ALUNO imprimir e colar no caderno (Linguagem de 1ª pessoa).
+        Crie um grafo em 1ª PESSOA para o aluno.
         Use estritamente este formato: NÓ_PAI -> NÓ_FILHO
         Exemplo:
         Meu Superpoder -> Usar Minecraft na Matemática
@@ -528,7 +527,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v77.0 Final Map</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v78.0 Interactivity</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -737,21 +736,26 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab_mapa: # MAPA (AGORA AMARELO/DOURADO - ESCOLA)
+with tab_mapa: # MAPA (AMARELO - ATUALIZADO)
     render_progresso()
     st.markdown(f"""
     <div style="background: linear-gradient(90deg, #F6E05E 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: #2D3748; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <h3 style="margin:0; color:#2D3748;">🗺️ Mapa de Intervenção Estratégica</h3>
-        <p style="margin:5px 0 0 0; font-weight:600;">Visualização de estratégias para o estudante (Imprimir e Colar no Caderno).</p>
+        <p style="margin:5px 0 0 0; font-weight:600;">Visualização de estratégias para o estudante (Imprimir, Colar ou Enviar pelo WhatsApp).</p>
     </div>
     """, unsafe_allow_html=True)
     
+    # BOTÃO PARA GERAR/ATUALIZAR O MAPA MANUALMENTE
+    if st.button("🎨 Gerar/Atualizar Mapa Visual", type="primary"):
+        # Força o re-render
+        st.rerun()
+
     if st.session_state.dados['ia_sugestao']:
         texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_VISUAL")
         if texto_mapa:
             dot = gerar_dot_nativo(texto_mapa)
             st.graphviz_chart(dot, use_container_width=True)
-            st.info("💡 Este mapa resume as conexões entre a potência do aluno e as adaptações necessárias. Linguagem adaptada para o aluno.")
+            st.info("💡 Dica: Tire um print deste mapa e compartilhe com a família ou equipe.")
         else:
             st.warning("O mapa ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
     else:
