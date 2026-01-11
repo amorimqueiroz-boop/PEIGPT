@@ -48,6 +48,7 @@ LISTA_ALFABETIZACAO = [
     "Ortográfico (Escrita convencional consolidada)"
 ]
 
+# AS CHAVES AQUI DEVEM SER EXATAMENTE IGUAIS ÀS CHAMADAS NA TAB 4
 LISTAS_BARREIRAS = {
     "Funções Cognitivas": ["Atenção Sustentada/Focada", "Memória de Trabalho (Operacional)", "Flexibilidade Mental", "Planejamento e Organização", "Velocidade de Processamento", "Abstração e Generalização"],
     "Comunicação e Linguagem": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Pragmática (Uso social da língua)", "Processamento Auditivo", "Intenção Comunicativa"],
@@ -736,7 +737,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v110.0 Gold Master</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v110.1 Bug Fix</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -886,7 +887,7 @@ with tab3: # REDE
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais que atendem o aluno:", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'])
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações Clínicas Importantes (o que os terapeutas pediram?)", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPEAMENTO
+with tab4: # MAPEAMENTO (CORRIGIDO)
     render_progresso()
     with st.container(border=True):
         st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#0F52BA'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
@@ -901,17 +902,21 @@ with tab4: # MAPEAMENTO
         def render_cat_barreira(coluna, titulo, chave_json):
             with coluna:
                 st.markdown(f"**{titulo}**")
-                itens = LISTAS_BARREIRAS[chave_json]
-                b_salvas = [b for b in st.session_state.dados['barreiras_selecionadas'].get(chave_json, []) if b in itens]
-                sel = st.multiselect("Selecione:", itens, key=f"ms_{chave_json}", default=b_salvas, label_visibility="collapsed")
-                st.session_state.dados['barreiras_selecionadas'][chave_json] = sel
-                if sel:
-                    for x in sel:
-                        st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
-                st.write("")
-        render_cat_barreira(c_bar1, "Funções Cognitivas", "Cognitivo")
-        render_cat_barreira(c_bar1, "Sensorial e Motor", "Sensorial/Motor")
-        render_cat_barreira(c_bar2, "Comunicação e Linguagem", "Comunicacional")
+                if chave_json in LISTAS_BARREIRAS:
+                    itens = LISTAS_BARREIRAS[chave_json]
+                    b_salvas = [b for b in st.session_state.dados['barreiras_selecionadas'].get(chave_json, []) if b in itens]
+                    sel = st.multiselect("Selecione:", itens, key=f"ms_{chave_json}", default=b_salvas, label_visibility="collapsed")
+                    st.session_state.dados['barreiras_selecionadas'][chave_json] = sel
+                    if sel:
+                        for x in sel:
+                            st.session_state.dados['niveis_suporte'][f"{chave_json}_{x}"] = st.select_slider(x, ["Autônomo", "Monitorado", "Substancial", "Muito Substancial"], value=st.session_state.dados['niveis_suporte'].get(f"{chave_json}_{x}", "Monitorado"), key=f"sl_{chave_json}_{x}")
+                    st.write("")
+                else:
+                    st.error(f"Erro de chave: {chave_json}")
+        
+        render_cat_barreira(c_bar1, "Funções Cognitivas", "Funções Cognitivas")
+        render_cat_barreira(c_bar1, "Sensorial e Motor", "Sensorial e Motor")
+        render_cat_barreira(c_bar2, "Comunicação e Linguagem", "Comunicação e Linguagem")
         render_cat_barreira(c_bar2, "Acadêmico", "Acadêmico")
         render_cat_barreira(c_bar3, "Socioemocional", "Socioemocional")
 
