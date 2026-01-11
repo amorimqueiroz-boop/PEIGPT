@@ -28,7 +28,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (ROBUSTAS & TÉCNICAS)
+# 2. LISTAS DE DADOS
 # ==============================================================================
 LISTA_SERIES = [
     "Educação Infantil (Creche)", "Educação Infantil (Pré-Escola)", 
@@ -263,7 +263,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (DESIGN OVERHAUL v112.0)
+# 5. ESTILO VISUAL (MINIMALIST GRAY v113.0)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -272,50 +272,59 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; background-color: #F7FAFC; }
         .block-container { padding-top: 1.5rem !important; padding-bottom: 5rem !important; }
         
-        /* 1. NAVEGAÇÃO CHIQUE E FLUIDA (TABS) */
+        /* 1. NAVEGAÇÃO "PÍLULA" MINIMALISTA */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
+        
         .stTabs [data-baseweb="tab-list"] { 
-            gap: 12px; 
-            flex-wrap: wrap; 
-            margin-bottom: 30px; 
-            justify-content: center;
-            padding: 10px;
+            gap: 8px; 
+            display: flex;
+            flex-wrap: nowrap; /* Força uma linha única */
+            overflow-x: auto; /* Permite rolagem horizontal se necessário */
+            white-space: nowrap;
+            padding: 10px 5px;
+            /* Esconde barra de rolagem */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
+
         .stTabs [data-baseweb="tab"] { 
-            height: 45px; 
-            border-radius: 25px !important; 
-            background-color: white; 
+            height: 38px; 
+            border-radius: 20px !important; 
+            background-color: #FFFFFF; 
             border: 1px solid #E2E8F0; 
             color: #718096; 
-            font-weight: 700; 
-            font-size: 0.9rem; 
-            padding: 0 25px; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            padding: 0 20px; 
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            flex-shrink: 0; /* Impede que a aba encolha */
         }
+        
         .stTabs [data-baseweb="tab"]:hover {
-            transform: translateY(-2px);
-            border-color: #0F52BA;
-            color: #0F52BA;
-        }
-        .stTabs [aria-selected="true"] { 
-            background: linear-gradient(135deg, #0F52BA 0%, #0062E6 100%) !important; 
-            color: white !important; 
-            border-color: transparent !important; 
-            box-shadow: 0 4px 12px rgba(15, 82, 186, 0.3);
+            border-color: #CBD5E0;
+            color: #4A5568;
         }
 
-        /* 2. CARD DE INSIGHT (VIBRANTE) */
+        .stTabs [aria-selected="true"] { 
+            background-color: #EDF2F7 !important; /* Cinza muito claro */
+            color: #2D3748 !important; /* Cinza escuro */
+            border-color: #CBD5E0 !important;
+            font-weight: 800;
+        }
+
+        /* 2. CARD DE INSIGHT (VIDA NOVA) */
         .insight-card {
             background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px;
             color: white;
             display: flex;
-            align-items: flex-start;
-            gap: 20px;
-            box-shadow: 0 10px 20px rgba(118, 75, 162, 0.25);
-            margin-top: 20px;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.2);
+            margin-top: 30px;
             position: relative;
             overflow: hidden;
         }
@@ -323,33 +332,33 @@ def aplicar_estilo_visual():
             content: "";
             position: absolute;
             top: -20px; right: -20px;
-            width: 100px; height: 100px;
-            background: rgba(255,255,255,0.1);
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.15);
             border-radius: 50%;
         }
         .insight-icon {
+            font-size: 1.8rem;
             background: rgba(255,255,255,0.2);
-            width: 50px; height: 50px;
+            width: 45px; height: 45px;
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(4px);
         }
 
-        /* 3. CARDS DA HOME (MODERN GRID) */
+        /* 3. CARDS DA HOME (CLEAN) */
         .home-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
         }
         .rich-card {
             background: white;
-            border-radius: 16px;
-            padding: 25px;
+            border-radius: 12px;
+            padding: 20px;
             border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
             text-decoration: none;
             color: inherit;
             display: flex;
@@ -358,42 +367,42 @@ def aplicar_estilo_visual():
             text-align: center;
             position: relative;
             overflow: hidden;
+            height: 100%;
         }
         .rich-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.06);
             border-color: #CBD5E0;
         }
-        .rich-card-top {
-            width: 100%;
-            height: 6px;
-            position: absolute;
-            top: 0; left: 0;
-        }
-        .rc-icon {
-            width: 60px; height: 60px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-        }
-        .rc-title { font-weight: 800; font-size: 1.1rem; color: #2D3748; margin-bottom: 8px; }
-        .rc-desc { font-size: 0.85rem; color: #718096; line-height: 1.4; }
+        .rich-card-top { width: 100%; height: 4px; position: absolute; top: 0; left: 0; }
+        .rc-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px; }
+        .rc-title { font-weight: 800; font-size: 1rem; color: #2D3748; margin-bottom: 5px; }
+        .rc-desc { font-size: 0.8rem; color: #718096; line-height: 1.3; }
 
-        /* OUTROS ESTILOS MANTIDOS */
-        .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
-        .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
+        /* OUTROS */
+        .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
+        .prog-container { width: 100%; position: relative; margin: 0 0 30px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
         .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
         
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
-        div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 8px !important; border-color: #E2E8F0 !important; }
+        div[data-testid="column"] .stButton button { border-radius: 8px !important; font-weight: 700 !important; height: 45px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
-        .segmento-badge { display: inline-block; padding: 5px 12px; border-radius: 15px; font-weight: 800; font-size: 0.8rem; color: white; margin-top: 5px; }
+        .segmento-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 0.75rem; color: white; margin-top: 5px; }
+        
+        /* FOOTER ASSINATURA */
+        .footer-signature {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #E2E8F0;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #A0AEC0;
+        }
         
         /* DASHBOARD */
-        .dash-hero { background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2); }
+        .dash-hero { background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(15, 82, 186, 0.15); }
         .apple-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); color: white; font-weight: 800; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
         .metric-card { background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .soft-card { border-radius: 12px; padding: 20px; min-height: 220px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 5px solid; position: relative; overflow: hidden; }
@@ -823,8 +832,6 @@ with st.sidebar:
         if ok: st.success(msg)
         else: st.error(msg)
     st.markdown("---")
-    data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v112.0 Design Overhaul</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -836,16 +843,15 @@ st.markdown(f"""
     <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
-# ABAS (10 Abas)
-abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento", "🗺️ Jornada do Aluno"]
+# ABAS (10 Abas com Emojis nas Strings)
+abas = ["🏠 Início", "👤 Estudante", "📝 Evidências", "🤝 Rede de Apoio", "🚧 Potencialidades & Barreiras", "🛠️ Plano de Ação", "🔄 Monitoramento", "🤖 Consultoria IA", "📄 Documento", "🗺️ Jornada do Aluno"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
-with tab0: # INÍCIO (DESIGN OVERHAUL)
+with tab0: # INÍCIO (LAYOUT ATUALIZADO)
     if api_key:
         with st.spinner("Conectando à IA..."):
             try:
                 client = OpenAI(api_key=api_key)
-                # Tentativa de frase do dia
                 saudacao = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase muito curta e motivadora para professor de educação inclusiva."}], max_tokens=30).choices[0].message.content
                 noticia = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica relâmpago (1 frase) sobre neurociência na escola."}], max_tokens=40).choices[0].message.content
             except:
@@ -861,21 +867,10 @@ with tab0: # INÍCIO (DESIGN OVERHAUL)
             </div>
             <div style="font-size:3rem; opacity:0.2;"><i class="ri-heart-pulse-line"></i></div>
         </div>""", unsafe_allow_html=True)
-
-        # INSIGHT CARD (GLASSMORPHISM)
-        st.markdown(f"""
-        <div class="insight-card">
-            <div class="insight-icon"><i class="ri-lightbulb-flash-line"></i></div>
-            <div>
-                <h4 style="margin:0; color:white;">Insight do Dia</h4>
-                <p style="margin:5px 0 0 0; font-size:0.95rem; opacity:0.9;">{noticia}</p>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # GRID DE CARDS
+    # GRID DE CARDS (AGORA VEM ANTES DO INSIGHT)
     st.markdown("""
     <div class="home-grid">
         <a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card">
@@ -904,6 +899,18 @@ with tab0: # INÍCIO (DESIGN OVERHAUL)
         </a>
     </div>
     """, unsafe_allow_html=True)
+
+    # INSIGHT CARD (AGORA POR ÚLTIMO)
+    if api_key:
+        st.markdown(f"""
+        <div class="insight-card">
+            <div class="insight-icon"><i class="ri-lightbulb-flash-line"></i></div>
+            <div>
+                <h4 style="margin:0; color:white;">Insight do Dia</h4>
+                <p style="margin:5px 0 0 0; font-size:0.95rem; opacity:0.9;">{noticia}</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -1297,4 +1304,5 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
     else:
         st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
 
-st.markdown("---")
+# Footer final (Version signature)
+st.markdown("<div class='footer-signature'>PEI 360º v113.0 Minimalist Gray UI - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
