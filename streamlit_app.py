@@ -48,7 +48,6 @@ LISTA_ALFABETIZACAO = [
     "Ortográfico (Escrita convencional consolidada)"
 ]
 
-# AS CHAVES AQUI DEVEM SER EXATAMENTE IGUAIS ÀS CHAMADAS NA TAB 4
 LISTAS_BARREIRAS = {
     "Funções Cognitivas": ["Atenção Sustentada/Focada", "Memória de Trabalho (Operacional)", "Flexibilidade Mental", "Planejamento e Organização", "Velocidade de Processamento", "Abstração e Generalização"],
     "Comunicação e Linguagem": ["Linguagem Expressiva (Fala)", "Linguagem Receptiva (Compreensão)", "Pragmática (Uso social da língua)", "Processamento Auditivo", "Intenção Comunicativa"],
@@ -126,18 +125,32 @@ def get_hiperfoco_emoji(texto):
     if "espaço" in t: return "🪐"
     return "🚀"
 
-def get_segmento_info(serie):
-    """Retorna informações sobre o segmento escolar para UX"""
-    if not serie: return "Segmento não definido", "Selecione a série para ver as diretrizes."
-    if "Educação Infantil" in serie:
-        return "Educação Infantil", "Foco Pedagógico: **Campos de Experiência** e **Direitos de Aprendizagem** (BNCC). Prioriza-se o desenvolvimento integral, o brincar e a socialização."
-    if "Fund. I" in serie:
-        return "Anos Iniciais (Fund. I)", "Foco Pedagógico: **Alfabetização e Letramento**, construção de repertório matemático e rotina de estudante."
-    if "Fund. II" in serie:
-        return "Anos Finais (Fund. II)", "Foco Pedagógico: **Organização e Autonomia** frente a múltiplos professores, construção de identidade e pensamento abstrato."
-    if "EM" in serie or "Médio" in serie or "EJA" in serie:
-        return "Ensino Médio / EJA", "Foco Pedagógico: **Projeto de Vida**, preparação para o mundo do trabalho/acadêmico e autonomia intelectual plena."
-    return "Geral", "Adaptação curricular padrão."
+def detectar_nivel_ensino(serie_str):
+    """
+    Mapeamento RÍGIDO do nível de ensino para evitar confusão da IA.
+    Retorna: 'EI' (Infantil), 'FI' (Fund I), 'FII' (Fund II), 'EM' (Médio)
+    """
+    if not serie_str: return "INDEFINIDO"
+    s = serie_str.lower()
+    if "infantil" in s: return "EI"
+    if "1º ano" in s or "2º ano" in s or "3º ano" in s or "4º ano" in s or "5º ano" in s: return "FI"
+    if "6º ano" in s or "7º ano" in s or "8º ano" in s or "9º ano" in s: return "FII"
+    if "série" in s or "médio" in s or "eja" in s: return "EM"
+    return "INDEFINIDO"
+
+def get_segmento_info_visual(serie):
+    """Retorna cor e texto para feedback visual do segmento"""
+    nivel = detectar_nivel_ensino(serie)
+    if nivel == "EI":
+        return "Educação Infantil", "blue", "Foco: Campos de Experiência (BNCC) e Desenvolvimento Integral."
+    elif nivel == "FI":
+        return "Anos Iniciais (Fund. I)", "green", "Foco: Alfabetização, Letramento e Construção de Habilidades."
+    elif nivel == "FII":
+        return "Anos Finais (Fund. II)", "orange", "Foco: Autonomia, Identidade e Abstração (Múltiplos Professores)."
+    elif nivel == "EM":
+        return "Ensino Médio / EJA", "purple", "Foco: Projeto de Vida e Preparação Acadêmica/Profissional."
+    else:
+        return "Selecione a Série", "grey", "Aguardando seleção..."
 
 def calcular_complexidade_pei(dados):
     n_bar = sum(len(v) for v in dados['barreiras_selecionadas'].values())
@@ -323,6 +336,7 @@ def aplicar_estilo_visual():
         .game-card { background-color: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 6px solid; }
         .gc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .gc-title { font-weight: 800; font-size: 1.1rem; color: #2D3748; }
+        .segmento-badge { display: inline-block; padding: 5px 12px; border-radius: 15px; font-weight: 800; font-size: 0.8rem; color: white; margin-top: 5px; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -395,10 +409,11 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO ---
+        # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO (CORREÇÃO LÓGICA) ---
         serie = dados['serie'] or ""
+        nivel_ensino = detectar_nivel_ensino(serie) # Usa a função de detecção robusta
+        
         alfabetizacao = dados.get('nivel_alfabetizacao', 'Não Avaliado')
-        is_educacao_infantil = "Educação Infantil" in serie
         
         # PROMPT DE IDENTIDADE (UNIVERSAL)
         prompt_identidade = """
@@ -419,7 +434,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
              [/ATENÇÃO CRÍTICA]
              """
 
-        if is_educacao_infantil:
+        if nivel_ensino == "EI":
             # === EDUCAÇÃO INFANTIL (BNCC: CAMPOS E DIREITOS) ===
             perfil_ia = """
             Você é um Especialista em EDUCAÇÃO INFANTIL e Inclusão.
@@ -455,11 +470,11 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
             
         else:
             # === FUNDAMENTAL E MÉDIO (BLOOM, SMART E HABILIDADES) ===
-            if "Fund. I" in serie:
-                perfil_ia = "Você é um Especialista em ANOS INICIAIS. Foco: Alfabetização, Letramento e BNCC."
-            elif "Fund. II" in serie:
-                perfil_ia = "Você é um Especialista em ANOS FINAIS. Foco: Autonomia, Identidade e Habilidades BNCC."
-            elif "EM" in serie or "Médio" in serie or "EJA" in serie:
+            if nivel_ensino == "FI":
+                perfil_ia = "Você é um Especialista em ANOS INICIAIS (Fund I). Foco: Alfabetização, Letramento e BNCC."
+            elif nivel_ensino == "FII":
+                perfil_ia = "Você é um Especialista em ANOS FINAIS (Fund II). Foco: Autonomia, Identidade, Organização e Habilidades BNCC."
+            elif nivel_ensino == "EM":
                 perfil_ia = "Você é um Especialista em ENSINO MÉDIO. Foco: Projeto de Vida e Habilidades BNCC."
             else:
                 perfil_ia = "Você é um Especialista em Inclusão Escolar."
@@ -543,6 +558,7 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     try:
         client = OpenAI(api_key=api_key)
         serie = dados['serie'] or ""
+        nivel_ensino = detectar_nivel_ensino(serie) # Usa a detecção correta
         hiperfoco = dados['hiperfoco'] or "brincadeiras"
         
         # --- FIREWALL DE CONTEXTO ---
@@ -559,7 +575,7 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
         """
 
         # --- LÓGICA DE SEGMENTAÇÃO DO MAPA ---
-        if "Educação Infantil" in serie:
+        if nivel_ensino == "EI":
             prompt_sys = f"""
             Você é um Criador de Histórias Visuais para crianças pequenas (4-5 anos).
             {regras_ouro}
@@ -576,7 +592,7 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
             👋 **Saída:** (Emoji sobre abraçar a família)
             """
             
-        elif "Fund. I" in serie:
+        elif nivel_ensino == "FI":
             prompt_sys = f"""
             Você é um Game Master para crianças de 6 a 10 anos.
             {regras_ouro}
@@ -593,7 +609,7 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
             🤝 **Aliados:** (Professora e amigos)
             """
             
-        else:
+        else: # FII e EM
             prompt_sys = f"""
             Você é um Narrador de RPG para adolescentes.
             {regras_ouro}
@@ -721,6 +737,9 @@ with st.sidebar:
     if logo: st.image(logo, width=120)
     if 'OPENAI_API_KEY' in st.secrets: api_key = st.secrets['OPENAI_API_KEY']; st.success("✅ OpenAI OK")
     else: api_key = st.text_input("Chave OpenAI:", type="password")
+    
+    st.info("⚠️ **Aviso de IA:** O conteúdo é gerado por inteligência artificial. Revise todas as informações antes de aplicar. O professor é o responsável final pelo documento.")
+    
     st.markdown("### 📂 Carregar Backup")
     uploaded_json = st.file_uploader("Arquivo .json", type="json")
     if uploaded_json:
@@ -737,7 +756,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v110.1 Bug Fix</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v111.0 UX Education & Logic Fix</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -787,13 +806,20 @@ with tab1: # ESTUDANTE
     st.session_state.dados['nasc'] = c2.date_input("Nascimento", value=st.session_state.dados.get('nasc', date(2015, 1, 1)))
     try: serie_idx = LISTA_SERIES.index(st.session_state.dados['serie']) if st.session_state.dados['serie'] in LISTA_SERIES else 0
     except: serie_idx = 0
-    st.session_state.dados['serie'] = c3.selectbox("Série/Ano", LISTA_SERIES, index=serie_idx, placeholder="Selecione...", help="O segmento escolar define como a IA vai estruturar o PEI (BNCC, Bloom ou Projetos).")
+    st.session_state.dados['serie'] = c3.selectbox("Série/Ano", LISTA_SERIES, index=serie_idx, placeholder="Selecione...", help="A escolha correta da série define como a IA vai estruturar o PEI (BNCC Infantil, Bloom ou Projetos).")
+    
+    # --- FEEDBACK VISUAL DO SEGMENTO ---
+    if st.session_state.dados['serie']:
+        nome_seg, cor_seg, desc_seg = get_segmento_info_visual(st.session_state.dados['serie'])
+        c3.markdown(f"<div class='segmento-badge' style='background-color:{cor_seg}'>{nome_seg}</div>", unsafe_allow_html=True)
+    # -----------------------------------
+
     st.session_state.dados['turma'] = c4.text_input("Turma", st.session_state.dados['turma'])
     
     st.markdown("<div class='form-section-title'><i class='ri-history-line'></i> Histórico & Contexto Familiar</div>", unsafe_allow_html=True)
     c_hist, c_fam = st.columns(2)
-    st.session_state.dados['historico'] = c_hist.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Retenções, trocas de escola, relatórios anteriores.")
-    st.session_state.dados['familia'] = c_fam.text_area("Dinâmica Familiar", st.session_state.dados['familia'], help="Quem cuida, rotina em casa, apoio nas tarefas.")
+    st.session_state.dados['historico'] = c_hist.text_area("Histórico Escolar", st.session_state.dados['historico'], help="Relate retenções, trocas de escola, avanços e desafios anteriores.")
+    st.session_state.dados['familia'] = c_fam.text_area("Dinâmica Familiar", st.session_state.dados['familia'], help="Quem cuida, como é a rotina em casa, quem apoia nas tarefas.")
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem convive com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'])
     
     st.divider()
@@ -954,14 +980,24 @@ with tab7: # IA (CONSULTORIA PEDAGÓGICA)
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria Pedagógica com IA", unsafe_allow_html=True)
     
-    # Exibir qual segmento a IA detectou
-    seg_nome, seg_desc = get_segmento_info(st.session_state.dados['serie'])
-    st.info(f"ℹ️ **Modo Especialista Ativo:** {seg_nome}\n\n{seg_desc}")
+    # Exibir qual segmento a IA detectou (agora com cor e texto)
+    if st.session_state.dados['serie']:
+        seg_nome, seg_cor, seg_desc = get_segmento_info_visual(st.session_state.dados['serie'])
+        st.markdown(f"""
+        <div style="background-color: #F7FAFC; border-left: 5px solid {seg_cor}; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <strong style="color: {seg_cor}; font-size: 1.1rem;">ℹ️ Modo Especialista: {seg_nome}</strong><br>
+            <span style="color: #4A5568;">{seg_desc}</span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.warning("⚠️ Selecione a Série/Ano na aba 'Estudante' para ativar o especialista correto.")
     
     col_left, col_right = st.columns([1, 2])
     with col_left:
         nome_aluno = st.session_state.dados['nome'].split()[0] if st.session_state.dados['nome'] else "o estudante"
         
+        st.warning("⚠️ **Atenção:** A IA pode cometer erros. Revise todo o conteúdo gerado.")
+
         # Botão 1: PEI Técnico Padrão
         if st.button(f"✨ Criar Estratégia Técnica (PEI)", type="primary", use_container_width=True):
             res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text, modo_pratico=False)
@@ -1052,8 +1088,9 @@ with tab8: # DOCUMENTO (PDF TÉCNICO & DASHBOARD)
             st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-flag-2-fill" style="color:#D69E2E;"></i> Cronograma de Metas</div><div class="sc-body">{html_metas}</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
-            # LÓGICA DE EXIBIÇÃO BLOOM vs BNCC
-            is_ei = "Educação Infantil" in (st.session_state.dados['serie'] or "")
+            # LÓGICA DE EXIBIÇÃO BLOOM vs BNCC (CORRIGIDA)
+            nivel = detecting_nivel_ensino = detectar_nivel_ensino(st.session_state.dados['serie'])
+            is_ei = nivel == "EI"
             
             if is_ei:
                 direitos = extrair_campos_experiencia(st.session_state.dados['ia_sugestao'])
@@ -1114,8 +1151,13 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
     </div>
     """, unsafe_allow_html=True)
     
-    seg_nome, seg_desc = get_segmento_info(st.session_state.dados['serie'])
-    st.info(f"🎮 **Gamificação Adaptada:** O sistema detectou **{seg_nome}**. O roteiro abaixo será gerado com linguagem e metáforas adequadas para essa faixa etária.")
+    seg_nome, seg_cor, seg_desc = get_segmento_info_visual(st.session_state.dados['serie'])
+    st.markdown(f"""
+    <div style="background-color: #F7FAFC; border-left: 5px solid {seg_cor}; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size:0.9rem;">
+        🎮 <strong>Modo Gamificação:</strong> {seg_nome} <br>
+        O roteiro será adaptado com linguagem e metáforas adequadas para essa faixa etária.
+    </div>
+    """, unsafe_allow_html=True)
 
     if st.session_state.dados['ia_sugestao']:
         # Botão para Gerar o Mapa (Chama a IA Gamificada)
