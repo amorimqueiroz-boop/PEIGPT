@@ -12,7 +12,6 @@ import os
 import re
 import glob
 import random
-# SEM IMPORT GRAPHVIZ
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -103,10 +102,18 @@ def calcular_complexidade_pei(dados):
     if saldo <= 7: return "ATENÇÃO", "#FFFFF0", "#D69E2E"
     return "CRÍTICA", "#FFF5F5", "#C53030"
 
+# --- EXTRAÇÃO REFORÇADA (CORREÇÃO DE ERRO) ---
 def extrair_tag_ia(texto, tag):
+    # Tenta encontrar a tag ignorando maiúsculas/minúsculas
+    # O re.DOTALL faz o . pegar quebras de linha
     padrao = fr'\[{tag}\](.*?)(\[|$)'
-    match = re.search(padrao, texto, re.DOTALL)
-    if match: return match.group(1).strip()
+    match = re.search(padrao, texto, re.DOTALL | re.IGNORECASE)
+    
+    if match: 
+        conteudo = match.group(1).strip()
+        # Limpa blocos de código markdown se a IA colocar
+        conteudo = conteudo.replace('```graphviz', '').replace('```', '').strip()
+        return conteudo
     return ""
 
 def extrair_metas_estruturadas(texto):
@@ -142,17 +149,18 @@ def gerar_dot_nativo(texto_mapa):
     dot += '  edge [color="#A0AEC0"];\n'
     
     if not texto_mapa:
-        dot += '  "Gere o plano" [color="#E53E3E"];\n'
+        dot += '  "Sem Dados" [color="#E53E3E"];\n'
     else:
         linhas = texto_mapa.strip().split('\n')
         for linha in linhas:
             if "->" in linha:
                 partes = linha.split("->")
-                origem = partes[0].strip().replace('"', "'")
-                destino = partes[1].strip().replace('"', "'")
+                # Remove aspas e espaços extras que quebram o DOT
+                origem = partes[0].strip().replace('"', "'").replace("'", "")
+                destino = partes[1].strip().replace('"', "'").replace("'", "")
                 
-                # Cores Amarelas/Douradas (Student Agency)
-                fill = "#D69E2E" 
+                # Cores baseadas no contexto (Amarelo Suave para Estudante)
+                fill = "#D69E2E" # Gold default
                 if "Superpoder" in origem or "Hiperfoco" in origem: fill = "#F6AD55" 
                 elif "Escola" in origem or "Aula" in origem: fill = "#ECC94B" 
                 elif "Casa" in origem: fill = "#B7791F" 
@@ -257,12 +265,12 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (HÍBRIDO: HOME VIBRANTE + DASH CLEAN)
+# 5. ESTILO VISUAL (CORRIGIDO PARA AMARELO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        @import url('[https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap)');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
         .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
@@ -313,7 +321,7 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
         
-        /* HOME CARD STYLES (VIBRANTE) */
+        /* HOME CARD STYLES */
         .home-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px;
@@ -342,14 +350,14 @@ def aplicar_estilo_visual():
         .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
         .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
     </style>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="[https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css](https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css)" rel="stylesheet">
     """
     st.markdown(estilo, unsafe_allow_html=True)
 
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V78 - MAPA 1ª PESSOA)
+# 6. INTELIGÊNCIA ARTIFICIAL (V79 - EXTRAÇÃO ROBUSTA)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -385,7 +393,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         
         SUA MISSÃO: Criar um PEI Técnico (para o professor) e um MAPA DE INTERVENÇÃO (para o aluno).
         
-        --- TAGS OBRIGATÓRIAS ---
+        --- TAGS OBRIGATÓRIAS (NÃO MUDE A GRAFIA) ---
         
         [ANALISE_FARMA] ... [FIM_ANALISE_FARMA]
         [TAXONOMIA_BLOOM] 3 verbos cognitivos. Ex: Identificar, Classificar [FIM_TAXONOMIA_BLOOM]
@@ -527,7 +535,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v78.0 Interactivity</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v79.0 Connection Fix</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -563,10 +571,10 @@ with tab0: # INÍCIO
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="home-card hc-blue"><div class="home-icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card-link"><div class="home-card hc-gold"><div class="home-icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="home-card hc-pink"><div class="home-icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
-    with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="home-card hc-green"><div class="home-icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<a href="[https://diversa.org.br/educacao-inclusiva/](https://diversa.org.br/educacao-inclusiva/)" target="_blank" class="rich-card-link"><div class="home-card hc-blue"><div class="home-icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<a href="[https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm)" target="_blank" class="rich-card-link"><div class="home-card hc-gold"><div class="home-icon-box ic-gold"><i class="ri-scales-3-line"></i></div><h3>Legislação</h3><p>Lei Brasileira de Inclusão e Decretos.</p></div></a>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<a href="[https://institutoneurosaber.com.br/](https://institutoneurosaber.com.br/)" target="_blank" class="rich-card-link"><div class="home-card hc-pink"><div class="home-icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
+    with c4: st.markdown("""<a href="[http://basenacionalcomum.mec.gov.br/](http://basenacionalcomum.mec.gov.br/)" target="_blank" class="rich-card-link"><div class="home-card hc-green"><div class="home-icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
     if api_key: st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
 
 with tab1: # ESTUDANTE
@@ -747,7 +755,6 @@ with tab_mapa: # MAPA (AMARELO - ATUALIZADO)
     
     # BOTÃO PARA GERAR/ATUALIZAR O MAPA MANUALMENTE
     if st.button("🎨 Gerar/Atualizar Mapa Visual", type="primary"):
-        # Força o re-render
         st.rerun()
 
     if st.session_state.dados['ia_sugestao']:
