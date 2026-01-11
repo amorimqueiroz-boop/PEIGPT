@@ -12,16 +12,16 @@ import os
 import re
 import glob
 import random
-import requests # Necessário para baixar a imagem do DALL-E
+import requests
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
 # ==============================================================================
 def get_favicon():
-    return "🌟"
+    return "📘"
 
 st.set_page_config(
-    page_title="PEI 360º Visual Magic",
+    page_title="PEI 360º",
     page_icon=get_favicon(),
     layout="wide",
     initial_sidebar_state="expanded"
@@ -57,7 +57,8 @@ default_state = {
     'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
     'ia_sugestao': '', 'outros_acesso': '', 'outros_ensino': '', 
     'monitoramento_data': date.today(), 
-    'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': []
+    'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': [],
+    'dalle_image_url': ''
 }
 
 if 'dados' not in st.session_state: st.session_state.dados = default_state
@@ -66,7 +67,6 @@ else:
         if key not in st.session_state.dados: st.session_state.dados[key] = val
 
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
-if 'dalle_image_url' not in st.session_state: st.session_state.dalle_image_url = ""
 
 # ==============================================================================
 # 4. LÓGICA E UTILITÁRIOS
@@ -137,64 +137,60 @@ def extrair_resumo_estrategia(texto):
         return re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
     return "Gere o plano na aba IA para ver o resumo."
 
-# --- GERADOR DE GRÁFICO GAMIFICADO (DOT NATIVO VIBRANTE) ---
-def gerar_dot_gamificado(texto_mapa):
+# --- GERADOR DE MAPA LEGÍVEL E BONITO (DOT REMASTERED) ---
+def gerar_dot_legivel(texto_mapa):
     dot = 'digraph G {\n'
-    # Configurações Gerais Vibrantes
-    dot += '  rankdir="LR";\n' # Esquerda para direita
-    dot += '  bgcolor="transparent";\n'
-    dot += '  splines=ortho;\n' # Linhas mais retas, estilo circuito
-    dot += '  nodesep=0.6;\n'
-    dot += '  ranksep=0.8;\n'
+    # Fundo branco e layout horizontal
+    dot += '  rankdir="LR";\n'
+    dot += '  bgcolor="white";\n'
+    dot += '  splines=curved;\n'
+    dot += '  nodesep=0.4;\n'
+    dot += '  ranksep=0.6;\n'
     
-    # Estilo Padrão dos Nós (Caixas Arredondadas Vibrantes)
-    dot += '  node [fontname="Nunito, Arial", fontsize=12, shape=box, style="filled,rounded", color="none", fontcolor="white", penwidth=2, margin=0.2];\n'
-    # Estilo Padrão das Arestas (Setas Grossas)
-    dot += '  edge [fontname="Nunito, Arial", fontsize=10, color="#CBD5E0", arrowhead=normal, penwidth=1.5];\n'
+    # Estilo Padrão (Caixas arredondadas, fundo claro, texto preto)
+    dot += '  node [fontname="Arial", fontsize=11, shape=box, style="filled,rounded", color="none", fontcolor="black", margin=0.15];\n'
+    dot += '  edge [fontname="Arial", fontsize=9, color="#A0AEC0", arrowsize=0.6];\n'
     
-    if not texto_mapa or "->" not in texto_mapa:
-        dot += '  "Gere o Plano na Aba IA" [shape=octagon, fillcolor="#E53E3E"];\n'
+    if not texto_mapa:
+        dot += '  "Gere o plano na IA" [fillcolor="#FED7D7"];\n'
     else:
         linhas = texto_mapa.strip().split('\n')
         for linha in linhas:
             if "->" in linha:
                 partes = linha.split("->")
-                # Limpeza agressiva de caracteres que quebram o DOT
-                origem_raw = partes[0].strip().replace('"', '').replace("'", "")
-                destino_raw = partes[1].strip().replace('"', '').replace("'", "")
+                origem_raw = partes[0].strip().replace('"', "'").replace("[", "").replace("]", "")
+                destino_raw = partes[1].strip().replace('"', "'").replace("[", "").replace("]", "")
                 
-                # Lógica de Estilização Gamificada baseada em palavras-chave
-                def get_node_style(texto):
-                    t_low = texto.lower()
-                    # Power-ups / Hiperfoco (Dourado/Laranja vibrante)
-                    if any(x in t_low for x in ["poder", "hiperfoco", "meu jeito", "potência"]):
-                        return 'shape=diamond, fillcolor="linear-gradient(135deg, #F6AD55, #ED8936)", fontcolor="white", fontsize=13, fontname="Arial Black"'
-                    # Missões / Tarefas (Azul vibrante)
-                    elif any(x in t_low for x in ["missão", "desafio", "tarefa", "fazer"]):
-                        return 'shape=component, fillcolor="linear-gradient(135deg, #4299E1, #3182CE)", fontcolor="white"'
-                    # Checkpoints / Conquistas (Verde vibrante)
-                    elif any(x in t_low for x in ["conquista", "prêmio", "aprender", "consegui"]):
-                        return 'shape=star, fillcolor="linear-gradient(135deg, #48BB78, #38A169)", fontcolor="white"'
-                    # Suporte / Ajuda (Roxo vibrante)
-                    elif any(x in t_low for x in ["ajuda", "prof", "pedir", "apoio"]):
-                        return 'shape=ellipse, fillcolor="linear-gradient(135deg, #9F7AEA, #805AD5)", fontcolor="white"'
-                    # Padrão (Amarelo/Laranja Suave - Escola)
-                    else:
-                        return 'fillcolor="linear-gradient(135deg, #ECC94B, #D69E2E)", fontcolor="#2D3748"'
+                # Cores Pastéis (Legibilidade Máxima)
+                fill = "#EDF2F7" # Cinza claro default
+                
+                # Lógica de Cores baseada no conteúdo
+                lower_o = origem_raw.lower()
+                
+                if "poder" in lower_o or "hiperfoco" in lower_o: 
+                    fill = "#FEFCBF" # Amarelo Pastel
+                elif "nervoso" in lower_o or "ansied" in lower_o or "medo" in lower_o: 
+                    fill = "#FED7D7" # Vermelho Pastel
+                elif "foca" in lower_o or "atenc" in lower_o or "escola" in lower_o: 
+                    fill = "#BEE3F8" # Azul Pastel
+                elif "casa" in lower_o or "descanso" in lower_o: 
+                    fill = "#C6F6D5" # Verde Pastel
+                
+                # Adicionar Emojis se não tiver (Garante visual)
+                def ensure_emoji(txt):
+                    if any(c in txt for c in "⚡😰🎯🏠💧🎧⏱️"): return txt
+                    if "nervoso" in txt.lower(): return "😰 " + txt
+                    if "foca" in txt.lower(): return "🎯 " + txt
+                    if "poder" in txt.lower(): return "⚡ " + txt
+                    if "casa" in txt.lower(): return "🏠 " + txt
+                    return "🔹 " + txt
 
-                style_origem = get_node_style(origem_raw)
-                style_destino = get_node_style(destino_raw)
-                
-                # Adiciona Emojis se não tiver
-                origem_label = origem_raw if any(c in origem_raw for c in "⚡🎮🧠🏫🏠") else f"⚡ {origem_raw}"
-                destino_label = destino_raw if any(c in destino_raw for c in "✨✅🛡️🎯") else f"🎯 {destino_raw}"
+                origem_label = ensure_emoji(origem_raw)
+                destino_label = ensure_emoji(destino_raw)
 
-                dot += f'  "{origem_raw}" [label="{origem_label}", {style_origem}];\n'
-                dot += f'  "{destino_raw}" [label="{destino_label}", {style_destino}];\n'
-                
-                # Aresta animada (conceitual, cores diferentes)
-                edge_color = "#F6AD55" if "poder" in origem_raw.lower() else "#A0AEC0"
-                dot += f'  "{origem_raw}" -> "{destino_raw}" [color="{edge_color}"];\n'
+                dot += f'  "{origem_raw}" [label="{origem_label}", fillcolor="{fill}"];\n'
+                dot += f'  "{destino_raw}" [label="{destino_label}", fillcolor="white", color="#E2E8F0", style="filled,rounded"];\n'
+                dot += f'  "{origem_raw}" -> "{destino_raw}";\n'
     
     dot += '}'
     return dot
@@ -292,7 +288,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (VIBRANTE & GAMIFICADO)
+# 5. ESTILO VISUAL (HOME VIBRANTE + DASH CLEAN)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -348,7 +344,7 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
         
-        /* HOME CARD STYLES */
+        /* HOME CARD STYLES (VIBRANTE) */
         .home-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px;
@@ -384,7 +380,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V80 - DALL-E & GAMIFICAÇÃO)
+# 6. INTELIGÊNCIA ARTIFICIAL (V81 - AUTORREGULAÇÃO & EMOJIS)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -409,24 +405,18 @@ def gerar_imagem_dalle(api_key, dados_aluno):
     if not api_key: return None, "Configure a API Key."
     try:
         client = OpenAI(api_key=api_key)
-        
-        # Cria um prompt criativo baseado no hiperfoco
-        hf = dados_aluno['hiperfoco'] if dados_aluno['hiperfoco'] else "aprendizado criativo e exploração"
+        hf = dados_aluno['hiperfoco'] if dados_aluno['hiperfoco'] else "aprendizado criativo"
         serie = dados_aluno['serie']
         
         prompt_dalle = f"""
         A cheerful, vibrant, Pixar-style animated illustration of a young student character (approximate age for {serie}) in a fantastical world inspired by {hf}. 
-        The student is happily engaged in a learning adventure, using glowing, magical tools that represent their strengths to overcome friendly challenges. 
+        The student is happily engaged in a learning adventure, using glowing, magical tools that represent their strengths. 
         The atmosphere is triumphant, colorful, and full of hope. No text in the image.
         """
 
         with st.spinner("🎨 A IA está pintando sua jornada... (Isso leva uns 15s)"):
             response = client.images.generate(
-                model="dall-e-3",
-                prompt=prompt_dalle,
-                size="1024x1024",
-                quality="standard",
-                n=1,
+                model="dall-e-3", prompt=prompt_dalle, size="1024x1024", quality="standard", n=1,
             )
         return response.data[0].url, None
     except Exception as e:
@@ -444,12 +434,11 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
         prompt_sys = """
-        Você é um Especialista Sênior em Neuroeducação e Design Instrucional Inclusivo.
+        Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
         
-        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um MAPA DE MISSÕES GAMIFICADO (para o aluno).
-        Use linguagem encorajadora e baseada em forças.
+        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um MAPA VISUAL DE AUTORREGULAÇÃO (para o aluno).
         
-        --- TAGS OBRIGATÓRIAS (NÃO MUDE A GRAFIA) ---
+        --- TAGS OBRIGATÓRIAS ---
         
         [ANALISE_FARMA] ... [FIM_ANALISE_FARMA]
         [TAXONOMIA_BLOOM] 3 verbos cognitivos. Ex: Identificar, Classificar [FIM_TAXONOMIA_BLOOM]
@@ -464,14 +453,16 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         [MATRIZ_BNCC] ... [FIM_MATRIZ_BNCC]
         
         [MAPA_VISUAL]
-        Crie um grafo em 1ª PESSOA usando LINGUAGEM DE JOGO/GAMIFICAÇÃO.
-        Use termos como: "Meu Superpoder", "Missão Diária", "Power-up", "Checkpoint", "Aliados".
+        Crie um grafo em 1ª PESSOA com DICAS PRÁTICAS DE AUTORREGULAÇÃO.
+        Use EMOJIS OBRIGATORIAMENTE em todos os nós.
         Use estritamente este formato: NÓ_PAI -> NÓ_FILHO
         Exemplo:
-        Meu Superpoder (Hiperfoco) -> Ativar Power-up de Matemática
-        Missão na Escola -> Pedir Ajuda ao Aliado (Prof)
-        Checkpoint em Casa -> Recarregar Bateria (Pausa)
-        (Crie 4-5 ramos baseados no perfil do aluno, focando em suas potências)
+        Meus Poderes ⚡ -> Usar Minecraft na Matemática 🎮
+        Se ficar nervoso 😰 -> Beber água gelada 💧
+        Se ficar nervoso 😰 -> Pedir para sair um pouco 🚪
+        Para Focar 🎯 -> Usar fones de ouvido 🎧
+        Em Casa 🏠 -> Pausas de 5min ⏱️
+        (Crie 4-5 ramos úteis para a rotina do aluno)
         [FIM_MAPA_VISUAL]
         
         ESTRUTURA GERAL:
@@ -592,7 +583,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v80.0 Visual Magic</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v81.0 Map Fix</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -604,9 +595,9 @@ st.markdown(f"""
     <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
-# ABAS (REORDENADAS: MAPA É A ÚLTIMA)
-abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento", "🗺️ Meu Mapa da Jornada"]
-tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
+# ABAS
+abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "🗺️ Mapa de Intervenção", "Documento"]
+tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab_mapa, tab8 = st.tabs(abas)
 
 with tab0: # INÍCIO
     if api_key:
@@ -801,6 +792,55 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
+with tab_mapa: # MAPA AMARELO (CORRIGIDO PARA SEMPRE EXIBIR)
+    render_progresso()
+    st.markdown(f"""
+    <div style="background: linear-gradient(90deg, #F6E05E 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: #2D3748; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <h3 style="margin:0; color:#2D3748;">🗺️ Mapa de Intervenção Estratégica</h3>
+        <p style="margin:5px 0 0 0; font-weight:600;">Visualização de estratégias para o estudante (Imprimir, Colar ou Enviar pelo WhatsApp).</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # BOTÃO PARA GERAR MAPA INDEPENDENTE
+    if st.button("🎨 Gerar/Atualizar Mapa Visual", type="primary"):
+        st.rerun()
+
+    if st.session_state.dados['ia_sugestao']:
+        texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_VISUAL")
+        if texto_mapa:
+            dot = gerar_dot_legivel(texto_mapa)
+            st.graphviz_chart(dot, use_container_width=True)
+            st.info("💡 Dica: Tire um print deste mapa e compartilhe com a família ou equipe.")
+        else:
+            st.warning("O mapa ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
+    else:
+        st.info("Preencha os dados e gere o plano na aba IA para ver o mapa aqui.")
+    
+    st.divider()
+    
+    # SEÇÃO DO DALL-E 3
+    st.markdown("#### 🎨 Ilustração Mágica (DALL-E 3)")
+    st.markdown("""<p style="font-size:0.9rem; color:#718096;">Gere uma imagem única baseada no <b>Hiperfoco</b> do aluno, estilo animação da Pixar. <br>⚠️ Nota: Esta ação tem um custo maior de API e leva cerca de 15 segundos.</p>""", unsafe_allow_html=True)
+    
+    col_dalle_btn, col_dalle_img = st.columns([1, 2])
+    
+    with col_dalle_btn:
+        if st.button("✨ Gerar Ilustração Mágica", type="primary", use_container_width=True):
+            if st.session_state.dados['hiperfoco']:
+                url, err = gerar_imagem_dalle(api_key, st.session_state.dados)
+                if url:
+                    st.session_state.dalle_image_url = url
+                    st.success("Imagem gerada com sucesso!")
+                else:
+                    st.error(f"Erro ao gerar imagem: {err}")
+            else:
+                st.warning("Por favor, defina um Hiperfoco na aba 'Potencialidades' primeiro.")
+
+    with col_dalle_img:
+        if st.session_state.dalle_image_url:
+            st.image(st.session_state.dalle_image_url, caption="Sua Jornada de Aprendizagem Personalizada", use_column_width=True)
+            st.markdown(f'<a href="{st.session_state.dalle_image_url}" download="Minha_Jornada_Magica.png" target="_blank" style="display:inline-block; text-decoration:none; background-color:#0F52BA; color:white; padding:10px 20px; border-radius:8px; font-weight:bold; text-align:center;">📥 Baixar Imagem (Abrir Nova Aba)</a>', unsafe_allow_html=True)
+
 with tab8: # DASHBOARD FINAL (V74)
     render_progresso()
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
@@ -892,57 +932,5 @@ with tab8: # DASHBOARD FINAL (V74)
             st.write("")
             json_dados = json.dumps(st.session_state.dados, default=str)
             st.download_button("💾 Baixar Arquivo do Aluno (.json)", json_dados, f"PEI_{st.session_state.dados['nome']}.json", "application/json")
-
-with tab_mapa: # MAPA + DALL-E (A ÚLTIMA ABA)
-    render_progresso()
-    st.markdown(f"""
-    <div style="background: linear-gradient(90deg, #F6E05E 0%, #D69E2E 100%); padding: 25px; border-radius: 20px; color: #2D3748; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-        <h3 style="margin:0; color:#2D3748;">🗺️ Meu Mapa da Jornada (Gamificado)</h3>
-        <p style="margin:5px 0 0 0; font-weight:600;">Sua aventura de aprendizagem personalizada! Imprima e cole no caderno.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # SEÇÃO DO GRÁFICO GAMIFICADO
-    st.markdown("#### 🕹️ Missões & Power-ups")
-    if st.button("🔄 Atualizar Mapa Visual", type="primary"):
-        st.rerun()
-
-    if st.session_state.dados['ia_sugestao']:
-        texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_VISUAL")
-        if texto_mapa:
-            # Usa o novo gerador gamificado e vibrante
-            dot = gerar_dot_gamificado(texto_mapa)
-            st.graphviz_chart(dot, use_container_width=True)
-        else:
-            st.warning("O mapa gamificado ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
-    else:
-        st.info("Preencha os dados e gere o plano na aba IA para ver suas missões aqui.")
-    
-    st.divider()
-    
-    # SEÇÃO DO DALL-E 3
-    st.markdown("#### 🎨 Ilustração Mágica (DALL-E 3)")
-    st.markdown("""<p style="font-size:0.9rem; color:#718096;">Gere uma imagem única baseada no <b>Hiperfoco</b> do aluno, estilo animação da Pixar. <br>⚠️ Nota: Esta ação tem um custo maior de API e leva cerca de 15 segundos.</p>""", unsafe_allow_html=True)
-    
-    col_dalle_btn, col_dalle_img = st.columns([1, 2])
-    
-    with col_dalle_btn:
-        if st.button("✨ Gerar Ilustração Mágica", type="primary", use_container_width=True):
-            if st.session_state.dados['hiperfoco']:
-                url, err = gerar_imagem_dalle(api_key, st.session_state.dados)
-                if url:
-                    st.session_state.dalle_image_url = url
-                    st.success("Imagem gerada com sucesso!")
-                else:
-                    st.error(f"Erro ao gerar imagem: {err}")
-            else:
-                st.warning("Por favor, defina um Hiperfoco na aba 'Potencialidades' primeiro.")
-
-    with col_dalle_img:
-        if st.session_state.dalle_image_url:
-            st.image(st.session_state.dalle_image_url, caption="Sua Jornada de Aprendizagem Personalizada", use_column_width=True)
-            # Botão para baixar a imagem (gambiarra necessária pois st.download_button não baixa URL direta)
-            st.markdown(f'<a href="{st.session_state.dalle_image_url}" download="Minha_Jornada_Magica.png" target="_blank" style="display:inline-block; text-decoration:none; background-color:#0F52BA; color:white; padding:10px 20px; border-radius:8px; font-weight:bold; text-align:center;">📥 Baixar Imagem (Abrir Nova Aba)</a>', unsafe_allow_html=True)
-            st.caption("Clique com o botão direito na imagem que abrir e selecione 'Salvar imagem como...'. O link expira em 1 hora.")
 
 st.markdown("---")
