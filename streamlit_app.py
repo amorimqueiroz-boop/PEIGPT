@@ -45,7 +45,7 @@ LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", 
 LISTA_FAMILIA = ["Mãe", "Pai", "Mãe (2ª)", "Pai (2º)", "Avó", "Avô", "Irmão(s)", "Tio(a)", "Padrasto", "Madrasta", "Tutor Legal", "Abrigo Institucional"]
 
 # ==============================================================================
-# 3. GERENCIAMENTO DE ESTADO
+# 3. GERENCIAMENTO DE ESTADO (BLINDADO)
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -58,7 +58,7 @@ default_state = {
     'ia_sugestao': '', 'outros_acesso': '', 'outros_ensino': '', 
     'monitoramento_data': date.today(), 
     'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': [],
-    'dalle_image_url': '' # Initialize here to prevent AttributeError
+    'dalle_image_url': '' # Inicialização explícita
 }
 
 if 'dados' not in st.session_state: st.session_state.dados = default_state
@@ -66,12 +66,11 @@ else:
     for key, val in default_state.items():
         if key not in st.session_state.dados: st.session_state.dados[key] = val
 
-# Check again just in case 'dados' was loaded from a file without this key
+# Garante que a variável de imagem exista mesmo se o estado for recarregado
 if 'dalle_image_url' not in st.session_state:
     st.session_state.dalle_image_url = ""
 
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
-
 
 # ==============================================================================
 # 4. LÓGICA E UTILITÁRIOS
@@ -142,40 +141,34 @@ def extrair_resumo_estrategia(texto):
         return re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
     return "Gere o plano na aba IA para ver o resumo."
 
-# --- DEFINIÇÃO DA FUNÇÃO QUE FALTAVA ---
-def gerar_dot_legivel(texto_mapa):
+# --- GERADOR DE MAPA NATIVO (NOME PADRONIZADO: gerar_dot_nativo) ---
+def gerar_dot_nativo(texto_mapa):
     dot = 'digraph G {\n'
     dot += '  rankdir="LR";\n'
-    dot += '  bgcolor="white";\n'
-    dot += '  splines=curved;\n'
-    dot += '  nodesep=0.4;\n'
-    dot += '  ranksep=0.6;\n'
-    
-    dot += '  node [fontname="Arial", fontsize=11, shape=box, style="filled,rounded", color="none", fontcolor="black", margin=0.15];\n'
+    dot += '  bgcolor="white";\n'  # Fundo Branco
+    dot += '  node [fontname="Arial", fontsize=10, shape=box, style="filled,rounded", fontcolor="black", margin=0.1];\n'
     dot += '  edge [fontname="Arial", fontsize=9, color="#A0AEC0", arrowsize=0.6];\n'
     
     if not texto_mapa:
-        dot += '  "Gere o plano na IA" [fillcolor="#FED7D7"];\n'
+        dot += '  "Sem Dados" [fillcolor="#FED7D7"];\n'
     else:
         linhas = texto_mapa.strip().split('\n')
         for linha in linhas:
             if "->" in linha:
                 partes = linha.split("->")
+                # Remove aspas e colchetes que quebram o DOT
                 origem_raw = partes[0].strip().replace('"', "'").replace("[", "").replace("]", "")
                 destino_raw = partes[1].strip().replace('"', "'").replace("[", "").replace("]", "")
                 
-                fill = "#EDF2F7" 
+                # Cores Pastéis
+                fill = "#FEFCBF" 
                 lower_o = origem_raw.lower()
+                if "poder" in lower_o or "hiperfoco" in lower_o: fill = "#F6AD55"
+                elif "nervoso" in lower_o or "ansied" in lower_o: fill = "#FED7D7"
+                elif "foc" in lower_o or "atenc" in lower_o: fill = "#BEE3F8"
+                elif "casa" in lower_o: fill = "#C6F6D5"
                 
-                if "poder" in lower_o or "hiperfoco" in lower_o: 
-                    fill = "#FEFCBF" 
-                elif "nervoso" in lower_o or "ansied" in lower_o: 
-                    fill = "#FED7D7" 
-                elif "foca" in lower_o or "atenc" in lower_o or "escola" in lower_o: 
-                    fill = "#BEE3F8" 
-                elif "casa" in lower_o or "descanso" in lower_o: 
-                    fill = "#C6F6D5" 
-                
+                # Garante Emojis
                 def ensure_emoji(txt):
                     if any(c in txt for c in "⚡😰🎯🏠💧🎧⏱️"): return txt
                     if "nervoso" in txt.lower(): return "😰 " + txt
@@ -343,6 +336,7 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
         
+        /* HOME CARD STYLES */
         .home-card {
             background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px;
@@ -357,6 +351,7 @@ def aplicar_estilo_visual():
             display: flex; align-items: center; justify-content: center; 
             font-size: 2.2rem; margin-bottom: 15px; 
         }
+        /* CORES VIBRANTES */
         .ic-blue { background-color: #EBF8FF !important; color: #3182CE !important; border: 1px solid #BEE3F8 !important; }
         .ic-gold { background-color: #FFFFF0 !important; color: #D69E2E !important; border: 1px solid #FAF089 !important; }
         .ic-pink { background-color: #FFF5F7 !important; color: #D53F8C !important; border: 1px solid #FED7E2 !important; }
@@ -579,7 +574,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v82.0 Golden Map</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v83.0 Stable Fix</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -803,7 +798,7 @@ with tab_mapa: # MAPA AMARELO (CORRIGIDO PARA BRANCO E LEGÍVEL)
     if st.session_state.dados['ia_sugestao']:
         texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_VISUAL")
         if texto_mapa:
-            dot = gerar_dot_legivel(texto_mapa)
+            dot = gerar_dot_legivel(texto_mapa) # NOME CORRETO DA FUNÇÃO
             st.graphviz_chart(dot, use_container_width=True)
             st.info("💡 Dica: Tire um print deste mapa e compartilhe com a família ou equipe.")
         else:
