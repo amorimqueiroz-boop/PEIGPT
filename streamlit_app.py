@@ -263,7 +263,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (MINIMALIST GRAY v113.0)
+# 5. ESTILO VISUAL (MONOCHROME & GOLD v114.0)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -272,17 +272,16 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; background-color: #F7FAFC; }
         .block-container { padding-top: 1.5rem !important; padding-bottom: 5rem !important; }
         
-        /* 1. NAVEGAÇÃO "PÍLULA" MINIMALISTA */
+        /* 1. NAVEGAÇÃO "PÍLULA" MONOCROMÁTICA (O PULO DO GATO) */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .stTabs [data-baseweb="tab-list"] { 
             gap: 8px; 
             display: flex;
-            flex-wrap: nowrap; /* Força uma linha única */
-            overflow-x: auto; /* Permite rolagem horizontal se necessário */
+            flex-wrap: nowrap;
+            overflow-x: auto;
             white-space: nowrap;
             padding: 10px 5px;
-            /* Esconde barra de rolagem */
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
@@ -299,50 +298,47 @@ def aplicar_estilo_visual():
             padding: 0 20px; 
             transition: all 0.2s ease;
             box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-            flex-shrink: 0; /* Impede que a aba encolha */
+            flex-shrink: 0;
+            
+            /* O PULO DO GATO: Deixa os emojis CINZAS (escala de cinza) */
+            filter: grayscale(100%); 
         }
         
         .stTabs [data-baseweb="tab"]:hover {
             border-color: #CBD5E0;
             color: #4A5568;
+            background-color: #F7FAFC;
         }
 
         .stTabs [aria-selected="true"] { 
-            background-color: #EDF2F7 !important; /* Cinza muito claro */
-            color: #2D3748 !important; /* Cinza escuro */
+            background-color: #EDF2F7 !important;
+            color: #1A202C !important;
             border-color: #CBD5E0 !important;
             font-weight: 800;
+            /* Traz um pouco de cor de volta ao selecionar, ou mantém cinza mais forte */
+            filter: grayscale(0%); 
         }
 
-        /* 2. CARD DE INSIGHT (VIDA NOVA) */
+        /* 2. CARD DE INSIGHT (AMARELO CLARO) */
         .insight-card {
-            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-            border-radius: 20px;
+            background-color: #FFFFF0;
+            border-radius: 12px;
             padding: 20px;
-            color: white;
+            color: #2D3748;
             display: flex;
             align-items: center;
             gap: 15px;
-            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid #D69E2E;
             margin-top: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-        .insight-card::before {
-            content: "";
-            position: absolute;
-            top: -20px; right: -20px;
-            width: 80px; height: 80px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 50%;
         }
         .insight-icon {
-            font-size: 1.8rem;
-            background: rgba(255,255,255,0.2);
-            width: 45px; height: 45px;
-            border-radius: 12px;
+            font-size: 1.5rem;
+            color: #D69E2E;
+            background: rgba(214, 158, 46, 0.15);
+            width: 40px; height: 40px;
+            border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(4px);
         }
 
         /* 3. CARDS DA HOME (CLEAN) */
@@ -906,8 +902,8 @@ with tab0: # INÍCIO (LAYOUT ATUALIZADO)
         <div class="insight-card">
             <div class="insight-icon"><i class="ri-lightbulb-flash-line"></i></div>
             <div>
-                <h4 style="margin:0; color:white;">Insight do Dia</h4>
-                <p style="margin:5px 0 0 0; font-size:0.95rem; opacity:0.9;">{noticia}</p>
+                <h4 style="margin:0; color:#2D3748;">Insight do Dia</h4>
+                <p style="margin:5px 0 0 0; font-size:0.95rem; opacity:0.9; color:#4A5568;">{noticia}</p>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1305,4 +1301,4 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
         st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
 
 # Footer final (Version signature)
-st.markdown("<div class='footer-signature'>PEI 360º v113.0 Minimalist Gray UI - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+st.markdown("<div class='footer-signature'>PEI 360º v114.0 Minimalist Gray UI - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
