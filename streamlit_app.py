@@ -84,6 +84,7 @@ def get_hiperfoco_emoji(texto):
     if "carro" in t or "trem" in t or "rodas" in t: return "🏎️"
     if "espaço" in t or "astronomia" in t: return "🪐"
     if "leitura" in t or "livro" in t: return "📚"
+    if "pok" in t: return "⚡"
     return "🚀"
 
 def calcular_complexidade_pei(dados):
@@ -151,7 +152,6 @@ def ler_pdf(arquivo):
 
 def limpar_texto_pdf(texto):
     if not texto: return ""
-    # Remove tags como [ANALISE_FARMA] e substitui por quebra de linha ou nada
     t = re.sub(r'\[.*?\]', '', texto) 
     t = t.replace('**', '').replace('__', '').replace('### ', '').replace('## ', '').replace('# ', '')
     return re.sub(r'[^\x00-\xff]', '', t)
@@ -200,10 +200,10 @@ def render_progresso():
     if p >= 50: icon = "🛸"
     if p >= 80: icon = "🌌"
     
-    # CHEGADA: BARRA AZUL (PARA NÃO BRIGAR COM VERMELHO)
+    # CHEGADA: AZUL CELESTE/CIANO (ACESSO/SUCESSO)
     if p >= 100: 
         icon = "🏆"
-        bar_color = "linear-gradient(90deg, #0F52BA 0%, #004E92 100%)" # Azul Royal
+        bar_color = "linear-gradient(90deg, #00C6FF 0%, #0072FF 100%)" 
     
     st.markdown(f"""
     <div class="prog-container">
@@ -223,14 +223,13 @@ def aplicar_estilo_visual():
         .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        /* HEADER COM SUBTÍTULO ESTILIZADO */
+        /* HEADER COM LOGO E SUBTÍTULO APENAS */
         .header-unified {
             background-color: white; padding: 20px 40px; border-radius: 16px;
             border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px;
             display: flex; align-items: center; gap: 20px;
         }
-        .header-title { color: #0F52BA; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; margin: 0; line-height:1.1; }
-        .header-subtitle { color: #718096; font-size: 0.9rem; font-weight: 600; margin: 0; }
+        .header-subtitle { color: #718096; font-size: 1.1rem; font-weight: 700; margin: 0; letter-spacing: 0.5px; }
 
         /* ABAS CLEAN */
         .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
@@ -255,7 +254,7 @@ def aplicar_estilo_visual():
         .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
         .comp-icon-box { margin-bottom: 5px; }
 
-        /* DETAIL CARDS (SOFT COLORS) */
+        /* DETAIL CARDS */
         .soft-card { border-radius: 12px; padding: 25px; min-height: 260px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 5px solid; position: relative; overflow: hidden; }
         .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
         .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
@@ -275,7 +274,7 @@ def aplicar_estilo_visual():
         .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
         .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
 
-        /* INPUTS & BOTÕES */
+        /* UI ELEMENTS */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
         div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
@@ -283,7 +282,7 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
         
-        /* RESTAURAR CORES DA HOME (FORÇADO) */
+        /* RESTAURAR CORES VIBRANTES DA HOME */
         .rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; }
         .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
@@ -303,7 +302,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (COM REFERÊNCIAS BIBLIOGRÁFICAS)
+# 6. INTELIGÊNCIA ARTIFICIAL (ULTIMATE PROMPT)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -334,28 +333,29 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # --- PROMPT V68.0 (COM CITAÇÕES E ESTRUTURA CLARA) ---
+        # --- PROMPT V69.0 (ULTIMATE AUTHORITY) ---
         prompt_sys = """
         Você é um Especialista Sênior em Neuroeducação, Inclusão, Currículo BNCC e Legislação Educacional Brasileira.
         
-        SUA MISSÃO: Cruzar dados clínicos e escolares para criar um PEI Assertivo, Científico e Prático.
+        SUA MISSÃO: Cruzar dados clínicos e escolares para criar um PEI Assertivo, Científico e Legalmente Embasado.
         
-        --- BASE DE CONHECIMENTO (REFERÊNCIAS OBRIGATÓRIAS) ---
-        Use estes autores para embasar suas diretrizes quando pertinente:
-        1. MANTOAN (2021): Foco na diferenciação pedagógica e fim da segregação.
-        2. PLETSCH (2020): Crítica à "laudagem" excludente; foco no currículo comum.
-        3. DALL SOTO (2024) / META 4 PNE: Direito inegociável à educação regular.
-        4. MENDES: Ensino colaborativo e co-docência como estratégia.
+        --- DOCUMENTOS NORTEADORES OBRIGATÓRIOS ---
+        Baseie suas diretrizes nestes referenciais:
+        1. NOTA TÉCNICA SEESP/MEC nº 24/2010: Fundamental para o AEE e plano individualizado.
+        2. MANUAL PEI (UNESP/ENICÉIA MENDES): Referência em Ensino Colaborativo.
+        3. DUA (Desenho Universal para Aprendizagem): Múltiplas formas de engajamento e expressão.
+        4. TANNÚS-VALADÃO & MENDES: O "passo a passo" acadêmico do PEI.
+        5. INSTITUTO RODRIGO MENDES: Flexibilização curricular.
         
         --- REGRAS DE OURO ---
         1. USE AS TAGS EXATAS (Essenciais para o sistema).
-        2. LINGUAGEM TÉCNICA: Use "ZDP (Vygotsky)", "Andaimagem", "Funções Executivas", "Dupla Codificação".
+        2. LINGUAGEM TÉCNICA: Use "ZDP (Vygotsky)", "Andaimagem", "Funções Executivas".
         3. ASSERTIVIDADE: Use "Recomenda-se", "É imperativo". Evite "pode ser".
         
         --- ESTRUTURA DA RESPOSTA ---
         
-        1. 🌟 QUEM É O ESTUDANTE (SÍNTESE BIOPSICOSSOCIAL):
-           Cruze diagnóstico + histórico + evidências. Cite brevemente um autor da base para justificar a visão inclusiva.
+        1. 🌟 AVALIAÇÃO DE REPERTÓRIO (QUEM É O ESTUDANTE):
+           Foque no que ele JÁ CONSEGUE fazer (Potencialidades), não apenas no déficit. Cruze diagnóstico + histórico + evidências.
         
         [ANALISE_FARMA]
         Analise os fármacos ({meds}). Indique efeitos colaterais (sono, sede, irritabilidade) e o impacto pedagógico direto.
@@ -371,13 +371,16 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         Escreva UMA estratégia prática usando o Hiperfoco ("{hiperfoco}") como alavanca de aprendizagem (Scaffolding). Seja específico no "como fazer".
         [FIM_ESTRATEGIA_MASTER]
         
-        2. ⚠️ PONTOS DE ATENÇÃO:
-           Alertas comportamentais, sensoriais ou sinais de crise.
+        2. 🎯 METAS SMART (Sespecíficas, Mensuráveis, Atingíveis, Relevantes, Temporais):
+           - Curto Prazo (2 meses).
+           - Médio Prazo (Semestre).
+           - Longo Prazo (Ano Letivo).
         
-        3. 🧩 DIRETRIZES DE ADAPTAÇÃO E EMBASAMENTO:
-           - Acesso ao Currículo (DUA).
-           - Recursos: Pistas visuais, tecnologia assistiva, material concreto.
-           - Avaliação: Prova oral, ledor, tempo estendido (Cite a Lei/Decreto se couber).
+        3. 🧩 DIRETRIZES DE ADAPTAÇÃO E CRONOGRAMA:
+           - Acesso ao Currículo (DUA): Cite estratégias concretas.
+           - Adaptação de Conteúdo: Priorização de objetivos essenciais da BNCC.
+           - Avaliação Diferenciada: Prova oral, ledor, tempo estendido (Cite a Lei/Decreto se couber).
+           - Cronograma de Revisão: Sugira periodicidade (ex: bimestral).
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
@@ -496,7 +499,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v68.0 Masterpiece</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v69.0 Authority</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -505,10 +508,7 @@ img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 110px;">' i
 st.markdown(f"""
 <div class="header-unified">
     {img_html}
-    <div>
-        <div class="header-title">PEI 360º</div>
-        <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
-    </div>
+    <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
 # ABAS
@@ -559,20 +559,26 @@ with tab1: # ESTUDANTE
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'])
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
+        
+        # --- LISTA DE MEDICAMENTOS (CORRIGIDA) ---
         if usa_med:
-            # REMOVIDO CAMPO "EFEITOS" - IA FARÁ A ANÁLISE
             c1, c2, c3 = st.columns([3, 2, 2])
             nm = c1.text_input("Nome", key="nm_med")
             pos = c2.text_input("Posologia", key="pos_med")
             admin_escola = c3.checkbox("Administrado na escola?", key="adm_esc")
             if st.button("Adicionar"):
-                # OBS vazia, pois IA vai preencher no relatório
                 st.session_state.dados['lista_medicamentos'].append({"nome": nm, "posologia": pos, "obs": "", "escola": admin_escola}); st.rerun()
+        
+        # O LOOP DEVE FICAR FORA DO IF DE ADICIONAR PARA APARECER SEMPRE
+        if st.session_state.dados['lista_medicamentos']:
+            st.write("---")
             for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
                 tag = " [NA ESCOLA]" if m.get('escola') else ""
-                display_txt = f"💊 **{m['nome']}** ({m['posologia']}){tag}"
-                st.info(display_txt)
-                if st.button("Remover", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
+                c_txt, c_btn = st.columns([5, 1])
+                c_txt.info(f"💊 **{m['nome']}** ({m['posologia']}){tag}")
+                if c_btn.button("Excluir", key=f"del_{i}"): 
+                    st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
+
     with st.expander("📎 Anexar Laudo (PDF)"):
         up = st.file_uploader("Upload", type="pdf", label_visibility="collapsed")
         if up: st.session_state.pdf_text = ler_pdf(up)
@@ -674,21 +680,16 @@ with tab7: # IA
                 else: st.snow()
             else: st.error(err)
         
-        # --- CARD DE REFERÊNCIAS RETRÁTIL ---
         with st.expander("📚 Referências Bibliográficas e Base Teórica"):
             st.markdown("""
-            **1. Artigos de Revisão e Cenário Atual (2023-2025)**
-            * DALL SOTO, Carla Roberta. *A Educação Inclusiva no Brasil*. Perspectivas Sociais, 2024.
-            * CRISCOULLO, Lia Constantino, et al. *Educação Inclusiva: Desafios e Possibilidades*. SciELO Preprints, 2025.
-            * UCHÔA, M. M. R.; CHACON, J. A. V. *Educação Inclusiva e Educação Especial na perspectiva inclusiva: repensando uma Educação Outra*. Revista Educação Especial (UFSM), 2022.
-
-            **2. Controvérsias e Políticas Públicas**
-            * KASSAR, M. de C. M., et al. *A educação inclusiva e as controvérsias entre a escola regular e a escola especial*. Revista Brasileira de Educação (SciELO), 2020.
-            * PLETSCH, Márcia Denise. *O que há de especial na educação especial brasileira?* Momento - Diálogos em Educação, 2020.
-
-            **3. Autores Clássicos**
-            * Maria Teresa Eglér Mantoan (Unicamp)
-            * Enicéia Gonçalves Mendes (UFSCar)
+            **1. Documentos Norteadores**
+            * NOTA TÉCNICA SEESP/MEC nº 24/2010.
+            * DUA - Desenho Universal para a Aprendizagem.
+            
+            **2. Autores de Referência**
+            * MENDES, Enicéia Gonçalves (Ensino Colaborativo).
+            * MANTOAN, Maria Teresa Eglér (Inclusão Total).
+            * PLETSCH, Márcia Denise (Políticas Públicas).
             """)
 
     with col_right:
@@ -735,7 +736,7 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
              hf_emoji = get_hiperfoco_emoji(hf)
              st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">{hf_emoji}</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="d-lbl">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
-             # NÍVEL DE ATENÇÃO (LÓGICA BLINDADA)
+             # NÍVEL DE ATENÇÃO
              txt_comp, bg_c, txt_c = calcular_complexidade_pei(st.session_state.dados)
              st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div class="comp-icon-box"><i class="ri-error-warning-line" style="color:{txt_c}; font-size: 2rem;"></i></div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
 
@@ -744,7 +745,7 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
         # GRID DOS CARDS DE DETALHE
         c_r1, c_r2 = st.columns(2)
         with c_r1:
-            # CARD 1: MEDICAÇÃO (ANALISE IA + LISTA)
+            # CARD 1: MEDICAÇÃO
             analise_farma = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "ANALISE_FARMA") or "Aguardando análise da IA..."
             lista_meds = []
             for m in st.session_state.dados['lista_medicamentos']:
@@ -760,13 +761,13 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
             
             st.write("")
             
-            # CARD 3: ESTRATÉGIA (ASSERTIVA)
+            # CARD 3: ESTRATÉGIA
             estrategia = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "ESTRATEGIA_MASTER")
             if not estrategia: estrategia = "Gere o plano na aba IA."
             st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#D69E2E;"></i> Estratégia Principal</div><div class="sc-body" style="font-style:italic;">"{estrategia}"</div><div class="bg-icon">💡</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
-            # CARD 2: BNCC (LISTA LIMPA)
+            # CARD 2: BNCC
             raw_bncc = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MATRIZ_BNCC")
             if raw_bncc:
                 linhas = [l.strip() for l in raw_bncc.split('\n') if l.strip()]
