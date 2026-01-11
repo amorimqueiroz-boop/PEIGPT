@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (SOFT COLORS + 4 COLUNAS)
+# 2. ESTILO VISUAL (BARRA FINA + NOVOS CARDS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -52,7 +52,7 @@ def aplicar_estilo_visual():
         }
         .header-unified span { color: var(--brand-blue); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* ABAS CLEAN */
+        /* ABAS CLEAN (SEM EMOJIS, APENAS TEXTO) */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
         .stTabs [data-baseweb="tab"] {
             height: 38px; border-radius: 19px !important; background-color: white; 
@@ -64,18 +64,18 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO */
+        /* BARRA DE PROGRESSO (ULTRA FINA 3px) */
         .minimal-track {
-            width: 100%; height: 4px; background-color: #E2E8F0; border-radius: 2px;
-            position: relative; margin: 0 0 40px 0;
+            width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px;
+            position: relative; margin: 0 0 45px 0;
         }
         .minimal-fill {
-            height: 100%; border-radius: 2px; 
+            height: 100%; border-radius: 1.5px; 
             transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
         .minimal-cursor-icon {
-            position: absolute; top: -24px; font-size: 2rem; 
+            position: absolute; top: -23px; font-size: 1.8rem; 
             transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10;
             filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
         }
@@ -96,8 +96,7 @@ def aplicar_estilo_visual():
 
         /* SOFT CARDS (FUNDOS SUAVES) */
         .soft-card {
-            border-radius: 16px; padding: 20px; height: 100%;
-            display: flex; flex-direction: column;
+            border-radius: 16px; padding: 20px; height: 100%; display: flex; flex-direction: column;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);
         }
         .sc-orange { background-color: #FFF5F5; border-color: #FEB2B2; }
@@ -105,37 +104,34 @@ def aplicar_estilo_visual():
         .sc-green { background-color: #F0FFF4; border-color: #9AE6B4; }
         .sc-yellow { background-color: #FFFFF0; border-color: #FBD38D; }
         .sc-purple { background-color: #FAF5FF; border-color: #D6BCFA; }
+        .sc-header { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; opacity: 0.8; }
+        .sc-content { font-size: 0.9rem; line-height: 1.5; font-weight: 600; color: #2D3748; }
 
-        .sc-header { 
-            font-size: 0.85rem; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; 
-            display: flex; align-items: center; gap: 8px; opacity: 0.8;
-        }
-        .sc-content { font-size: 0.95rem; line-height: 1.6; font-weight: 600; color: #2D3748; }
-
-        /* DONUT CHART */
+        /* DONUT CHART (MÉTRICAS) */
         .donut-card {
-            background: white; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
+            background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
         .css-donut {
-            width: 80px; height: 80px; border-radius: 50%;
+            width: 70px; height: 70px; border-radius: 50%;
             background: conic-gradient(var(--fill-color) var(--p), #EDF2F7 0);
             display: flex; align-items: center; justify-content: center;
-            margin-bottom: 10px; position: relative;
+            margin-bottom: 8px; position: relative;
         }
-        .css-donut::after { content: ""; position: absolute; width: 60px; height: 60px; border-radius: 50%; background: white; }
-        .donut-value { position: absolute; z-index: 2; font-size: 1.4rem; font-weight: 800; color: #2D3748; }
-        .donut-label { text-transform: uppercase; font-size: 0.7rem; color: #718096; font-weight: 700; text-align: center; }
+        .css-donut::after { content: ""; position: absolute; width: 54px; height: 54px; border-radius: 50%; background: white; }
+        .donut-value { position: absolute; z-index: 2; font-size: 1.3rem; font-weight: 800; color: #2D3748; }
+        .donut-label { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
 
         /* LISTA BNCC */
-        .bncc-list-item {
-            margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #3182CE;
-            font-size: 0.9rem;
-        }
+        .bncc-list-item { margin-bottom: 6px; padding-left: 8px; border-left: 3px solid #3182CE; font-size: 0.85rem; }
 
-        /* BARRAS DE SUPORTE */
+        /* DNA BARS */
         .dna-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; }
+        .dna-bar-container { margin-bottom: 12px; }
+        .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
+        .dna-bar-bg { width: 100%; height: 6px; background: #EDF2F7; border-radius: 3px; overflow: hidden; }
+        .dna-bar-fill { height: 100%; border-radius: 3px; }
 
         /* CARDS HOME */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
@@ -218,7 +214,7 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 5. UTILITÁRIOS
+# 5. UTILITÁRIOS & LÓGICA DE INTELIGÊNCIA DO DASHBOARD
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
@@ -247,24 +243,39 @@ def limpar_texto_pdf(texto):
     texto = texto.replace('**', '').replace('__', '').replace('### ', '').replace('## ', '').replace('# ', '')
     return re.sub(r'[^\x00-\xff]', '', texto)
 
-# EXTRAÇÃO LINHA INTEIRA (CÓDIGO + TEXTO)
 def extrair_linhas_bncc(texto):
-    # Pega "EF01LP01" até o final da linha
     padrao = r'([A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}.*?)(?=\n|$)'
     if not texto: return []
     linhas = re.findall(padrao, texto)
-    # Limpeza básica
-    linhas_limpas = [l.strip().replace('**', '') for l in linhas if len(l) > 10]
-    return list(set(linhas_limpas))
+    return list(set([l.strip().replace('**', '') for l in linhas if len(l) > 10]))
 
 def extrair_resumo_estrategia(texto):
     if not texto: return "Plano ainda não gerado."
     if "ESTRATÉGIAS" in texto:
         partes = texto.split("ESTRATÉGIAS")
         resumo = partes[1].split('\n')[1:4]
-        # Pega texto cheio, sem cortes
         return " ".join(resumo).replace('*', '').strip()
     return "Gere o plano na aba IA para ver o resumo estratégico."
+
+# ALGORITMO DE COMPLEXIDADE (NOVO CARD)
+def calcular_complexidade_pei(dados):
+    # 1. Carga (Barreiras + Suporte Alto)
+    n_barreiras = sum(len(v) for v in dados['barreiras_selecionadas'].values())
+    n_suporte_alto = sum(1 for v in dados['niveis_suporte'].values() if v in ["Substancial", "Muito Substancial"])
+    carga = n_barreiras + (n_suporte_alto * 0.5)
+    
+    # 2. Recursos (Mitigadores: Diagnóstico, Medicação, Rede)
+    recursos = 0
+    if dados['diagnostico']: recursos += 1.5 # Diagnóstico ajuda a direcionar
+    if dados['lista_medicamentos']: recursos += 1 # Medicação pode controlar sintomas
+    if dados['rede_apoio']: recursos += 1.5 # Rede externa é crucial
+    
+    # 3. Score Final
+    score = carga - recursos
+    
+    if score <= 2: return "Baixa", "#38A169" # Verde
+    if score <= 6: return "Média", "#DD6B20" # Laranja
+    return "Alta", "#E53E3E" # Vermelho
 
 def salvar_aluno(dados):
     if not dados['nome']: return False, "Nome obrigatório."
@@ -288,9 +299,9 @@ def excluir_aluno(nome_arq):
     except: return False
 
 def calcular_progresso():
-    # SE A IA JÁ FOI GERADA, O TRABALHO TÁ PRONTO (100%)
+    # Lógica de Chegada
     if st.session_state.dados['ia_sugestao']: return 100
-
+    
     pontos = 0
     total = 6 
     d = st.session_state.dados
@@ -305,17 +316,17 @@ def calcular_progresso():
 
 def render_progresso():
     p = calcular_progresso()
-    icon = "🌱"
-    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja
+    # ÍCONES SEMPRE VIRADOS PARA A FRENTE/DIREITA/NEUTROS
+    icon = "🌱" # Semente (Neutro)
+    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)"
     
-    if p >= 20: icon = "🚶"
-    if p >= 50: icon = "🏃"
-    if p >= 80: icon = "🚀"
+    if p >= 20: icon = "🚀" # Foguete (Direita/Cima)
+    if p >= 50: icon = "🛸" # Nave (Direita) - Mudança para não usar boneco correndo
+    if p >= 80: icon = "🌌" # Universo (Neutro)
     
-    # CHEGADA (VERDE)
     if p >= 100: 
-        icon = "🏆"
-        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)" # Verde Vitória
+        icon = "🏆" # Troféu (Neutro)
+        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)"
     
     st.markdown(f"""
     <div class="minimal-track">
@@ -325,7 +336,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (BNCC RIGOROSA)
+# 6. INTELIGÊNCIA ARTIFICIAL (BNCC CÓDIGOS OBRIGATÓRIOS)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -359,16 +370,16 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         prompt_sys = """
         Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
         
-        DIRETRIZ MANDATÓRIA (NÃO IGNORE):
-        1. CITE O CÓDIGO ALFANUMÉRICO E A DESCRIÇÃO da habilidade (ex: EF03LP01 - Ler e escrever...).
-        2. Analise a medicação ({meds}) e seu impacto pedagógico.
+        DIRETRIZ MANDATÓRIA:
+        1. CITE CÓDIGOS ALFANUMÉRICOS DA BNCC (ex: EF03LP01). Isso é vital.
+        2. Analise medicação ({meds}).
         
-        ESTRUTURA DO RELATÓRIO:
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
-        2. 💊 ANÁLISE MEDICAMENTOSA: Se houver, explique.
+        ESTRUTURA:
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo.
+        2. 💊 FATOR MEDICAMENTOSO: Análise.
         3. 🎯 MATRIZ CURRICULAR (BNCC):
-           - RECOMPOSIÇÃO (Anos Anteriores): [CÓDIGO] Descrição Completa.
-           - ANO CORRENTE ({serie}): [CÓDIGO] Descrição Completa.
+           - RECOMPOSIÇÃO: [CÓDIGO] Descrição.
+           - ANO ATUAL ({serie}): [CÓDIGO] Descrição.
         4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso de "{hiperfoco}".
         5. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
@@ -377,7 +388,6 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
         DIAGNÓSTICO: {dados['diagnostico']}
         MEDICAÇÃO: {meds_info}
-        POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
         EVIDÊNCIAS: {evid}
@@ -483,7 +493,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v55.0 Fortress</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v56.0 Fortress</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -523,6 +533,9 @@ with tab0: # INÍCIO
     with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
     with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
     if api_key: st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
+
+# ... (Tab 1 a Tab 6 mantidas idênticas - omitidas por brevidade, mas presentes no código final)
+# Vamos direto para o Dashboard Final com a nova lógica.
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -683,7 +696,7 @@ with tab8: # DASHBOARD (THE FORTRESS)
         </div>
         """, unsafe_allow_html=True)
         
-        # 4 COLUNAS NO TOPO
+        # 4 COLUNAS NO TOPO (COM NOVO ALGORITMO)
         c_kpi1, c_kpi2, c_kpi3, c_kpi4 = st.columns(4)
         with c_kpi1:
             n_pot = len(st.session_state.dados['potencias'])
@@ -697,16 +710,9 @@ with tab8: # DASHBOARD (THE FORTRESS)
              hf = st.session_state.dados['hiperfoco'] or "-"
              st.markdown(f"""<div class="donut-card"><div style="font-size:2.5rem;">🚀</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="donut-label">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
-             # NÍVEL DE ATENÇÃO
-             nivel_atencao = "BAIXA"
-             cor_atencao = "#38A169"
-             if n_bar > 4: 
-                 nivel_atencao = "MÉDIA"
-                 cor_atencao = "#DD6B20"
-             if n_bar > 8:
-                 nivel_atencao = "ALTA"
-                 cor_atencao = "#E53E3E"
-             st.markdown(f"""<div class="donut-card"><div style="font-size:2.5rem; color:{cor_atencao};">⚠️</div><div style="font-weight:800; font-size:1.1rem; color:{cor_atencao}; margin:10px 0;">{nivel_atencao}</div><div class="donut-label">Complexidade</div></div>""", unsafe_allow_html=True)
+             # NÍVEL DE ATENÇÃO (ALGORITMO)
+             nivel_txt, cor_txt = calcular_complexidade_pei(st.session_state.dados)
+             st.markdown(f"""<div class="donut-card"><div style="font-size:2.5rem; color:{cor_txt};">⚠️</div><div style="font-weight:800; font-size:1.1rem; color:{cor_txt}; margin:10px 0;">{nivel_txt}</div><div class="donut-label">Nível de Atenção</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         
