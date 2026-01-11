@@ -18,10 +18,10 @@ import requests
 # 1. CONFIGURAÇÃO INICIAL
 # ==============================================================================
 def get_favicon():
-    return "⚡"
+    return "🗺️"
 
 st.set_page_config(
-    page_title="PEI 360º Visual Board",
+    page_title="PEI 360º Integrated Map",
     page_icon=get_favicon(),
     layout="wide",
     initial_sidebar_state="expanded"
@@ -45,7 +45,7 @@ LISTA_PROFISSIONAIS = ["Psicólogo", "Fonoaudiólogo", "Terapeuta Ocupacional", 
 LISTA_FAMILIA = ["Mãe", "Pai", "Mãe (2ª)", "Pai (2º)", "Avó", "Avô", "Irmão(s)", "Tio(a)", "Padrasto", "Madrasta", "Tutor Legal", "Abrigo Institucional"]
 
 # ==============================================================================
-# 3. GERENCIAMENTO DE ESTADO (CORREÇÃO DE VARIÁVEIS)
+# 3. GERENCIAMENTO DE ESTADO
 # ==============================================================================
 default_state = {
     'nome': '', 'nasc': date(2015, 1, 1), 'serie': None, 'turma': '', 'diagnostico': '', 
@@ -58,7 +58,7 @@ default_state = {
     'ia_sugestao': '', 'outros_acesso': '', 'outros_ensino': '', 
     'monitoramento_data': date.today(), 
     'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': [],
-    'dalle_image_url': '' # Variável da imagem garantida
+    'dalle_image_url': ''
 }
 
 if 'dados' not in st.session_state: st.session_state.dados = default_state
@@ -66,10 +66,7 @@ else:
     for key, val in default_state.items():
         if key not in st.session_state.dados: st.session_state.dados[key] = val
 
-# Reforço de segurança para a variável de imagem
-if 'dalle_image_url' not in st.session_state:
-    st.session_state.dalle_image_url = ""
-
+if 'dalle_image_url' not in st.session_state: st.session_state.dalle_image_url = ""
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
@@ -207,7 +204,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (CARDS VIBRANTES E TABELA DE MISSÕES)
+# 5. ESTILO VISUAL
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -248,16 +245,6 @@ def aplicar_estilo_visual():
         .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 600; z-index: 2; flex-grow: 1; }
         .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
         
-        /* CARD GAMIFICADO (MISSÕES) */
-        .mission-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 5px solid; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .mc-purple { border-left-color: #805AD5; } /* Superpoder */
-        .mc-blue { border-left-color: #3182CE; } /* Escola */
-        .mc-green { border-left-color: #38A169; } /* Organização */
-        .mc-red { border-left-color: #E53E3E; } /* Ansiedade/Calma */
-        .mc-title { font-weight: 800; font-size: 1.1rem; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-        .mc-desc { font-size: 0.95rem; color: #4A5568; }
-
-        /* HOME CARD STYLES */
         .home-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .home-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
         .home-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: #0F52BA; font-weight: 800; }
@@ -284,7 +271,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (V84 - PROMPT ATUALIZADO PARA TEXTO)
+# 6. INTELIGÊNCIA ARTIFICIAL (V85 - DALL-E INTEGRADO AO TEXTO)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -304,25 +291,26 @@ def gerar_noticia_ia(api_key):
         return res.choices[0].message.content
     except: return "O cérebro aprende durante toda a vida."
 
-# --- FUNÇÃO DALL-E 3 (Quadro de Cortiça Gamificado) ---
-def gerar_imagem_dalle(api_key, dados_aluno):
+# --- FUNÇÃO DALL-E 3 (AGORA RECEBE O TEXTO DAS ESTRATÉGIAS) ---
+def gerar_imagem_dalle_integrada(api_key, dados_aluno, texto_estrategias):
     if not api_key: return None, "Configure a API Key."
+    if not texto_estrategias: return None, "Texto das estratégias não encontrado."
     try:
         client = OpenAI(api_key=api_key)
         hf = dados_aluno['hiperfoco'] if dados_aluno['hiperfoco'] else "aprendizado criativo"
-        serie = dados_aluno['serie']
         
+        # PROMPT QUE LÊ O TEXTO
         prompt_dalle = f"""
-        A creative, colorful illustration of a 'Student Power Board' pinned on a corkboard.
-        Style: Pixar/Disney animation, vibrant and friendly.
-        Content: The board features 5 distinct colorful sticky notes or cards with drawings.
-        Theme: Influenced by {hf}. 
-        Details: One card shows a brain/superpower, another shows a 'calm down' breathing technique, another shows a school desk.
-        Atmosphere: Organized, empowering, fun, educational.
-        No text or unreadable text on the cards.
+        Infographic illustration designed as a colorful mind map pinned to a corkboard.
+        Title at the center: "MEUS PODERES & ESTRATÉGIAS".
+        Surrounding the center are distinct, connecting nodes/panels visually representing these specific strategies from the text below:
+        ---
+        {texto_estrategias}
+        ---
+        Style: Playful, encouraging, visually appealing for a student, like a well-organized bulletin board with drawings and notes. Use the theme of {hf} where appropriate as visual decoration.
         """
 
-        with st.spinner("🎨 A IA está criando o quadro de poderes... (15s)"):
+        with st.spinner("🎨 A IA está desenhando o mapa com suas estratégias... (15s)"):
             response = client.images.generate(
                 model="dall-e-3", prompt=prompt_dalle, size="1024x1024", quality="standard", n=1,
             )
@@ -342,41 +330,28 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
 
         prompt_sys = """
         Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
-        
-        SUA MISSÃO: Criar um PEI Técnico (para o professor) e um CONTEÚDO GAMIFICADO PARA O ALUNO.
+        SUA MISSÃO: Criar um PEI Técnico e um CONTEÚDO GAMIFICADO PARA O ALUNO.
         
         --- TAGS OBRIGATÓRIAS ---
-        
         [ANALISE_FARMA] ... [FIM_ANALISE_FARMA]
         [TAXONOMIA_BLOOM] 3 verbos cognitivos. Ex: Identificar, Classificar [FIM_TAXONOMIA_BLOOM]
-        
         [METAS_SMART] 
         - CURTO PRAZO (2 meses): ...
         - MÉDIO PRAZO (Semestre): ...
         - LONGO PRAZO (Ano): ...
         [FIM_METAS_SMART]
-        
         [ESTRATEGIA_MASTER] ... [FIM_ESTRATEGIA_MASTER]
         [MATRIZ_BNCC] ... [FIM_MATRIZ_BNCC]
         
         [MAPA_TEXTO_GAMIFICADO]
-        Crie 4-5 "Cartas de Poder" em linguagem de 1ª Pessoa para o aluno ler.
-        Use Markdown com Emojis.
-        
-        **⚡ Meus Superpoderes (Hiperfoco):**
-        Explique como usar o hiperfoco para aprender. Ex: "Usar Pokémon na matemática".
-        
-        **🌬️ Calma Interior (Ansiedade):**
-        Dica prática. Ex: "Respiração do Dragão".
-        
-        **🕒 Botão de Pausa (Em Sala):**
-        Estratégia de autorregulação. Ex: "Pedir tempo".
-        
-        **📁 Mestre da Organização:**
-        Dica de rotina.
-        
-        **🚶‍♂️ Recarga de Energia:**
-        Dica de pausa.
+        (Gere um texto em 1ª pessoa, com emojis, listando 4-5 estratégias chave. Use o formato de título em negrito seguido da descrição).
+        Exemplo de formato desejado:
+        ⚡ **Meu Mapa de Poderes** ⚡
+        🧠 **Super Foco (Aprendizado)**
+        Explicação de como usar o hiperfoco...
+        🌬️ **Calma Interior (Ansiedade)**
+        Técnica de respiração...
+        (etc...)
         [FIM_MAPA_TEXTO_GAMIFICADO]
         
         ESTRUTURA GERAL:
@@ -497,7 +472,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v84.0 Visual Board</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v85.0 Integrated Map</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -717,51 +692,45 @@ with tab_mapa: # MAPA GAMIFICADO (VISUAL BOARD)
     
     col_text_map, col_dalle_map = st.columns([1.5, 2])
     
+    # --- COLUNA DA ESQUERDA: TEXTO SIMPLES ---
     with col_text_map:
-        st.markdown("#### ⚡ Meus Poderes & Missões")
+        st.markdown("#### ⚡ Meus Poderes & Missões (Texto)")
         if st.session_state.dados['ia_sugestao']:
             texto_mapa = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_TEXTO_GAMIFICADO")
             if texto_mapa:
-                # Renderiza o texto da IA como cards coloridos usando Regex para identificar títulos
-                items = re.split(r'\*\*(.*?)\*\*', texto_mapa)
-                for i in range(1, len(items), 2):
-                    titulo = items[i]
-                    conteudo = items[i+1].strip()
-                    
-                    cor_classe = "mc-blue"
-                    if "poder" in titulo.lower() or "foco" in titulo.lower(): cor_classe = "mc-purple"
-                    elif "calma" in titulo.lower() or "ansiedade" in titulo.lower(): cor_classe = "mc-red"
-                    elif "organiza" in titulo.lower() or "rotina" in titulo.lower(): cor_classe = "mc-green"
-                    
-                    st.markdown(f"""
-                    <div class="mission-card {cor_classe}">
-                        <div class="mc-title">{titulo}</div>
-                        <div class="mc-desc">{conteudo}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                # Exibição simples e direta em um container, como solicitado
+                with st.container(border=True):
+                    st.markdown(texto_mapa)
             else:
                 st.warning("O mapa de texto ainda não foi gerado. Clique em 'Gerar Plano' na aba IA.")
         else:
             st.info("Gere o plano na aba IA primeiro.")
 
+    # --- COLUNA DA DIREITA: IMAGEM GERADA PELO TEXTO ---
     with col_dalle_map:
-        st.markdown("#### 🎨 Meu Quadro Visual (DALL-E)")
-        st.markdown("""<p style="font-size:0.85rem; color:#718096;">Gera uma ilustração única estilo 'Quadro de Avisos' baseada no Hiperfoco.</p>""", unsafe_allow_html=True)
+        st.markdown("#### 🎨 Meu Quadro Visual (DALL-E Integado)")
+        st.markdown("""<p style="font-size:0.85rem; color:#718096;">Gera um infográfico estilo 'Mapa Mental' baseado exatamente no texto ao lado.</p>""", unsafe_allow_html=True)
         
-        if st.button("✨ Criar Ilustração do Mapa", type="primary", use_container_width=True):
-            if st.session_state.dados['hiperfoco']:
-                url, err = gerar_imagem_dalle(api_key, st.session_state.dados)
+        # Extrai o texto novamente para garantir que temos a versão mais recente para a imagem
+        texto_para_imagem = ""
+        if st.session_state.dados['ia_sugestao']:
+             texto_para_imagem = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MAPA_TEXTO_GAMIFICADO")
+
+        if st.button("✨ Criar Mapa Visual (Baseado no Texto)", type="primary", use_container_width=True):
+            if texto_para_imagem and st.session_state.dados['hiperfoco']:
+                # Chama a nova função que recebe o texto
+                url, err = gerar_imagem_dalle_integrada(api_key, st.session_state.dados, texto_para_imagem)
                 if url:
                     st.session_state.dalle_image_url = url
-                    st.success("Imagem gerada!")
+                    st.success("Mapa visual gerado com sucesso!")
                 else:
-                    st.error(f"Erro: {err}")
+                    st.error(f"Erro ao gerar imagem: {err}")
             else:
-                st.warning("Defina o Hiperfoco primeiro!")
+                st.warning("Certifique-se de que o plano de texto foi gerado e o Hiperfoco está definido.")
         
         if st.session_state.dalle_image_url:
-            st.image(st.session_state.dalle_image_url, use_column_width=True)
-            st.markdown(f'<a href="{st.session_state.dalle_image_url}" download="Mapa_Visual.png" target="_blank" style="display:block; text-decoration:none; background-color:#0F52BA; color:white; padding:10px; border-radius:8px; text-align:center; margin-top:10px;">📥 Baixar Imagem</a>', unsafe_allow_html=True)
+            st.image(st.session_state.dalle_image_url, use_column_width=True, caption="Visualização das suas estratégias")
+            st.markdown(f'<a href="{st.session_state.dalle_image_url}" download="Mapa_Visual_Integrado.png" target="_blank" style="display:block; text-decoration:none; background-color:#0F52BA; color:white; padding:10px; border-radius:8px; text-align:center; margin-top:10px;">📥 Baixar Imagem do Mapa</a>', unsafe_allow_html=True)
 
 with tab8: # DASHBOARD FINAL (V74)
     render_progresso()
