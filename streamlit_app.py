@@ -116,20 +116,6 @@ def extrair_tag_ia(texto, tag):
         return match.group(1).strip()
     return ""
 
-def extrair_secao_do_mapa(texto_mapa, chave):
-    """Extrai partes específicas do texto gamificado para popular o PDF"""
-    if not texto_mapa: return "Sem informação."
-    patterns = {
-        "poder": r"(Poder|Superpoder|Hiperfoco).*?:\s*(.*?)(?=\n(\*|\n)|$)",
-        "ansiedade": r"(Calma|Ansiedade|Nervoso|Pânico).*?:\s*(.*?)(?=\n(\*|\n)|$)",
-        "escola": r"(Escola|Sala|Aula|Silêncio).*?:\s*(.*?)(?=\n(\*|\n)|$)",
-        "organizacao": r"(Organiza|Rotina|Mestre|Pasta).*?:\s*(.*?)(?=\n(\*|\n)|$)",
-        "pausa": r"(Pausa|Energia|Recarga|Descanso).*?:\s*(.*?)(?=\n(\*|\n)|$)"
-    }
-    match = re.search(patterns.get(chave, ""), texto_mapa, re.DOTALL | re.IGNORECASE)
-    if match: return match.group(2).strip()
-    return "..."
-
 def extrair_metas_estruturadas(texto):
     bloco = extrair_tag_ia(texto, "METAS_SMART")
     if not bloco: return None
@@ -194,6 +180,15 @@ def excluir_aluno(nome_arq):
     try: os.remove(os.path.join(PASTA_BANCO, nome_arq)); return True
     except: return False
 
+def get_pro_icon(nome_profissional):
+    p = nome_profissional.lower()
+    if "psic" in p: return "🧠"
+    if "fono" in p: return "🗣️"
+    if "terapeuta" in p or "ocupacional" in p: return "🧩"
+    if "neuro" in p or "médic" in p or "psiquiatra" in p: return "🩺"
+    if "prof" in p or "apoio" in p: return "🍎"
+    return "👨‍⚕️"
+
 def calcular_progresso():
     if st.session_state.dados['ia_sugestao']: return 100
     return 50
@@ -220,7 +215,7 @@ def aplicar_estilo_visual():
         
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
         .header-subtitle { color: #718096; font-size: 1.1rem; font-weight: 700; margin: 0; letter-spacing: 0.5px; border-left: 2px solid #E2E8F0; padding-left: 15px; }
-
+        
         .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
         .stTabs [data-baseweb="tab"] { height: 36px; border-radius: 18px !important; background-color: white; border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px; transition: all 0.2s ease; }
         .stTabs [aria-selected="true"] { background-color: #FF6B6B !important; color: white !important; border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3); }
