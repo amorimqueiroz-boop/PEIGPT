@@ -56,7 +56,7 @@ default_state = {
     'niveis_suporte': {}, 
     'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
     'ia_sugestao': '',         # PEI TÉCNICO
-    'ia_mapa_texto': '',       # ROTEIRO GAMIFICADO (NOVO)
+    'ia_mapa_texto': '',       # ROTEIRO GAMIFICADO
     'outros_acesso': '', 'outros_ensino': '', 
     'monitoramento_data': date.today(), 
     'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': []
@@ -111,21 +111,6 @@ def extrair_tag_ia(texto, tag):
     match = re.search(padrao, texto, re.DOTALL)
     if match: return match.group(1).strip()
     return ""
-
-def extrair_secao_do_mapa(texto_mapa, chave):
-    """Extrai partes do texto gamificado para o PDF do tabuleiro"""
-    if not texto_mapa: return "..."
-    # Regex para pegar o texto entre os títulos (que têm emojis ou asteriscos)
-    patterns = {
-        "poder": r"(Poder|Superpoder).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
-        "ansiedade": r"(Calma|Ansiedade).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
-        "escola": r"(Escola|Sala|Aula|Missão).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
-        "organizacao": r"(Organiza|Rotina|Inventário).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)",
-        "aliados": r"(Aliados|Rede|Guilda).*?:\s*(.*?)(?=\n(\*\*|⚡|🧠|🌬️|🕒|📁|🚶|🤝|🎨)|$)"
-    }
-    match = re.search(patterns.get(chave, ""), texto_mapa, re.DOTALL | re.IGNORECASE)
-    if match: return match.group(2).strip()
-    return "..."
 
 def extrair_metas_estruturadas(texto):
     bloco = extrair_tag_ia(texto, "METAS_SMART")
@@ -402,7 +387,7 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF (TÉCNICO & TABULEIRO SEPARADOS)
+# 7. GERADOR PDF (TÉCNICO APENAS)
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -421,28 +406,6 @@ class PDF_Classic(FPDF):
     def section_title(self, label):
         self.ln(8); self.set_fill_color(240, 248, 255); self.set_text_color(0, 78, 146)
         self.set_font('Arial', 'B', 11); self.cell(0, 8, f"  {label}", 0, 1, 'L', fill=True); self.ln(4)
-
-class PDF_Game_Board(FPDF):
-    def header(self):
-        self.set_fill_color(255, 223, 0) # Dourado
-        self.rect(0, 0, 297, 25, 'F')
-        self.set_xy(10, 8)
-        self.set_font('Arial', 'B', 24)
-        self.set_text_color(50, 50, 50)
-        self.cell(0, 15, "MEU MAPA DE PODERES E MISSOES", 0, 1, 'C')
-
-    def draw_card(self, x, y, title, content, color_r, color_g, color_b, icon=""):
-        # Desenha um "Card" no PDF
-        self.set_fill_color(color_r, color_g, color_b)
-        self.set_draw_color(200, 200, 200)
-        self.rect(x, y, 80, 50, 'DF')
-        self.set_xy(x+2, y+2)
-        self.set_font('Arial', 'B', 12)
-        self.set_text_color(0)
-        self.cell(76, 8, f"{icon} {limpar_texto_pdf(title)}", 0, 1, 'C')
-        self.set_xy(x+2, y+12)
-        self.set_font('Arial', '', 10)
-        self.multi_cell(76, 5, limpar_texto_pdf(content), 0, 'L')
 
 def gerar_pdf_final(dados, tem_anexo):
     pdf = PDF_Classic(); pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
@@ -491,30 +454,6 @@ def gerar_pdf_final(dados, tem_anexo):
                 pdf.ln(2); pdf.set_font("Arial", 'B', 10); pdf.multi_cell(0, 6, l); pdf.set_font("Arial", size=10)
             else: pdf.multi_cell(0, 6, l)
     return pdf.output(dest='S').encode('latin-1', 'replace')
-
-def gerar_pdf_tabuleiro(texto_aluno, imagem_path=None):
-    pdf = PDF_Game_Board(orientation='L', format='A4')
-    pdf.add_page()
-    
-    # Extração de Tópicos
-    poder = extrair_secao_do_mapa(texto_aluno, "poder")
-    ansiedade = extrair_secao_do_mapa(texto_aluno, "ansiedade")
-    escola = extrair_secao_do_mapa(texto_aluno, "escola")
-    organizacao = extrair_secao_do_mapa(texto_aluno, "organizacao")
-    aliados = extrair_secao_do_mapa(texto_aluno, "aliados")
-    
-    y_start = 40
-    
-    # Cards
-    pdf.draw_card(20, y_start, "MEU SUPERPODER", poder, 254, 215, 170, "[!]")
-    pdf.draw_card(110, y_start, "CALMA INTERIOR", ansiedade, 198, 246, 213, "[~]")
-    pdf.draw_card(200, y_start, "NA ESCOLA", escola, 190, 227, 248, "[+]")
-    
-    y_row2 = y_start + 60
-    pdf.draw_card(65, y_row2, "MEU INVENTARIO", organizacao, 233, 216, 253, "[#]")
-    pdf.draw_card(155, y_row2, "MEUS ALIADOS", aliados, 255, 250, 205, "[&]")
-    
-    return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 def gerar_docx_final(dados):
     doc = Document(); doc.add_heading('PEI - ' + dados['nome'], 0)
@@ -846,7 +785,7 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
     """, unsafe_allow_html=True)
     
     if st.session_state.dados['ia_sugestao']:
-        # Botão para Gerar o Mapa
+        # Botão para Gerar o Mapa (Chama a IA Gamificada)
         if st.button("🎮 Gerar Roteiro Gamificado", type="primary"):
             with st.spinner("O Game Master está criando o roteiro..."):
                 texto_game, err = gerar_roteiro_gamificado(api_key, st.session_state.dados, st.session_state.dados['ia_sugestao'])
@@ -859,15 +798,13 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
                 else:
                     st.error(f"Erro ao gerar: {err}")
         
-        # Exibição do Conteúdo
-        texto_mapa = st.session_state.dados.get('ia_mapa_texto', '')
-        
-        if texto_mapa:
+        # Exibição do Mapa (Cards)
+        if st.session_state.dados['ia_mapa_texto']:
             st.markdown("#### 📜 Roteiro de Poderes")
             
-            # TENTATIVA 1: Tentar criar cards bonitos
+            # TENTATIVA 1: Tentar criar cards bonitos (Regex)
             # Usa Regex para achar títulos entre ** ** (ex: **Meus Poderes:**)
-            padrao_blocos = re.split(r'\n(?=\*\*)', texto_mapa) # Quebra onde tiver uma nova linha seguida de **
+            padrao_blocos = re.split(r'\n(?=\*\*)', st.session_state.dados['ia_mapa_texto']) # Quebra onde tiver uma nova linha seguida de **
             
             cards_gerados = 0
             
@@ -897,32 +834,15 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
             # TENTATIVA 2: Se a IA não formatou direito e nenhum card foi gerado, mostra texto puro
             if cards_gerados == 0:
                 st.info("O formato gerado pela IA foi diferente do padrão, mostrando texto original:")
-                st.markdown(texto_mapa)
+                st.markdown(st.session_state.dados['ia_mapa_texto'])
 
-            st.divider()
-            
-            # Botão de Exportar PDF
-            st.markdown("#### 📤 Exportar Tabuleiro")
-            try:
-                pdf_tabuleiro = gerar_pdf_tabuleiro(texto_mapa, None) 
-                
-                st.download_button(
-                    "📥 Baixar Tabuleiro de Missões (PDF)", 
-                    pdf_tabuleiro, 
-                    "Mapa_Gamificado.pdf", 
-                    "application/pdf", 
-                    type="primary",
-                    use_container_width=True
-                )
-            except Exception as e:
-                st.error(f"Erro ao gerar PDF do Mapa: {str(e)}")
-            
             # Botão para limpar/refazer se precisar
+            st.divider()
             if st.button("Recomeçar Mapa"):
                 st.session_state.dados['ia_mapa_texto'] = ""
                 st.rerun()
             
     else:
-        st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro para habilitar o modo Gamificado.")
+        st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
 
 st.markdown("---")
