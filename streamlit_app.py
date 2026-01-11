@@ -125,7 +125,7 @@ def get_hiperfoco_emoji(texto):
     if "espaço" in t: return "🪐"
     return "🚀"
 
-def detectar_nivel_ensino(serie_str):
+def detecting_nivel_ensino(serie_str):
     if not serie_str: return "INDEFINIDO"
     s = serie_str.lower()
     if "infantil" in s: return "EI"
@@ -135,7 +135,7 @@ def detectar_nivel_ensino(serie_str):
     return "INDEFINIDO"
 
 def get_segmento_info_visual(serie):
-    nivel = detectar_nivel_ensino(serie)
+    nivel = detecting_nivel_ensino(serie)
     if nivel == "EI":
         return "Educação Infantil", "#4299e1", "Foco: Campos de Experiência (BNCC) e Desenvolvimento Integral."
     elif nivel == "FI":
@@ -263,7 +263,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (MONOCHROME & GOLD v114.0)
+# 5. ESTILO VISUAL (FLAT ICON & CONTENT RICH v115.0)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -272,7 +272,7 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; background-color: #F7FAFC; }
         .block-container { padding-top: 1.5rem !important; padding-bottom: 5rem !important; }
         
-        /* 1. NAVEGAÇÃO "PÍLULA" MONOCROMÁTICA (O PULO DO GATO) */
+        /* 1. NAVEGAÇÃO FLAT (GRAYSCALE ICONS) */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .stTabs [data-baseweb="tab-list"] { 
@@ -288,7 +288,7 @@ def aplicar_estilo_visual():
         .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
 
         .stTabs [data-baseweb="tab"] { 
-            height: 38px; 
+            height: 40px; 
             border-radius: 20px !important; 
             background-color: #FFFFFF; 
             border: 1px solid #E2E8F0; 
@@ -300,23 +300,24 @@ def aplicar_estilo_visual():
             box-shadow: 0 1px 2px rgba(0,0,0,0.03);
             flex-shrink: 0;
             
-            /* O PULO DO GATO: Deixa os emojis CINZAS (escala de cinza) */
-            filter: grayscale(100%); 
+            /* O PULO DO GATO: ÍCONES FLAT (Preto/Cinza Chapado) */
+            filter: grayscale(100%) brightness(0.3); 
         }
         
         .stTabs [data-baseweb="tab"]:hover {
             border-color: #CBD5E0;
-            color: #4A5568;
-            background-color: #F7FAFC;
+            background-color: #EDF2F7;
+            /* Levemente mais escuro no hover */
+            filter: grayscale(100%) brightness(0.2);
         }
 
         .stTabs [aria-selected="true"] { 
-            background-color: #EDF2F7 !important;
+            background-color: #E2E8F0 !important;
             color: #1A202C !important;
             border-color: #CBD5E0 !important;
             font-weight: 800;
-            /* Traz um pouco de cor de volta ao selecionar, ou mantém cinza mais forte */
-            filter: grayscale(0%); 
+            /* Selecionado fica preto sólido (Flat Icon puro) */
+            filter: grayscale(100%) brightness(0);
         }
 
         /* 2. CARD DE INSIGHT (AMARELO CLARO) */
@@ -328,7 +329,7 @@ def aplicar_estilo_visual():
             display: flex;
             align-items: center;
             gap: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
             border-left: 5px solid #D69E2E;
             margin-top: 30px;
         }
@@ -336,22 +337,22 @@ def aplicar_estilo_visual():
             font-size: 1.5rem;
             color: #D69E2E;
             background: rgba(214, 158, 46, 0.15);
-            width: 40px; height: 40px;
+            width: 45px; height: 45px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 3. CARDS DA HOME (CLEAN) */
+        /* 3. CARDS DA HOME (MODERNOS & COLORIDOS) */
         .home-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
         .rich-card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 25px;
             border: 1px solid #E2E8F0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             transition: all 0.2s ease;
@@ -366,14 +367,14 @@ def aplicar_estilo_visual():
             height: 100%;
         }
         .rich-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.06);
             border-color: #CBD5E0;
         }
-        .rich-card-top { width: 100%; height: 4px; position: absolute; top: 0; left: 0; }
-        .rc-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px; }
-        .rc-title { font-weight: 800; font-size: 1rem; color: #2D3748; margin-bottom: 5px; }
-        .rc-desc { font-size: 0.8rem; color: #718096; line-height: 1.3; }
+        .rich-card-top { width: 100%; height: 5px; position: absolute; top: 0; left: 0; }
+        .rc-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 15px; }
+        .rc-title { font-weight: 800; font-size: 1.1rem; color: #2D3748; margin-bottom: 8px; }
+        .rc-desc { font-size: 0.85rem; color: #4A5568; line-height: 1.4; }
 
         /* OUTROS */
         .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
@@ -484,7 +485,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
 
         # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO (CORREÇÃO LÓGICA) ---
         serie = dados['serie'] or ""
-        nivel_ensino = detectar_nivel_ensino(serie) # Usa a função de detecção robusta
+        nivel_ensino = detectar_nivel_ensino(serie) 
         
         alfabetizacao = dados.get('nivel_alfabetizacao', 'Não Avaliado')
         
@@ -631,11 +632,10 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     try:
         client = OpenAI(api_key=api_key)
         serie = dados['serie'] or ""
-        nivel_ensino = detectar_nivel_ensino(serie) # Usa a detecção correta
+        nivel_ensino = detectar_nivel_ensino(serie) 
         hiperfoco = dados['hiperfoco'] or "brincadeiras"
         
         # --- FIREWALL DE CONTEXTO ---
-        # NÃO enviamos a lista de medicamentos. Enviamos apenas o essencial.
         contexto_seguro = f"""
         ALUNO: {dados['nome'].split()[0]}
         HIPERFOCO: {hiperfoco}
@@ -839,11 +839,11 @@ st.markdown(f"""
     <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
-# ABAS (10 Abas com Emojis nas Strings)
-abas = ["🏠 Início", "👤 Estudante", "📝 Evidências", "🤝 Rede de Apoio", "🚧 Potencialidades & Barreiras", "🛠️ Plano de Ação", "🔄 Monitoramento", "🤖 Consultoria IA", "📄 Documento", "🗺️ Jornada do Aluno"]
+# ABAS (10 Abas com Ícones "Flat" Simulados - Símbolos + Filtro Grayscale)
+abas = ["🏠 Início", "👤 Estudante", "📝 Evidências", "👥 Rede de Apoio", "🚧 Barreiras", "⚙️ Plano de Ação", "📈 Monitoramento", "🧠 Consultoria IA", "📄 Documento", "🗺️ Jornada"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
-with tab0: # INÍCIO (LAYOUT ATUALIZADO)
+with tab0: # INÍCIO (DESIGN OVERHAUL)
     if api_key:
         with st.spinner("Conectando à IA..."):
             try:
@@ -866,37 +866,37 @@ with tab0: # INÍCIO (LAYOUT ATUALIZADO)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # GRID DE CARDS (AGORA VEM ANTES DO INSIGHT)
+    # GRID DE CARDS (AGORA COM CORES E TEXTOS CORRIGIDOS)
     st.markdown("""
     <div class="home-grid">
         <a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card">
             <div class="rich-card-top" style="background-color: #3182CE;"></div>
             <div class="rc-icon" style="background-color:#EBF8FF; color:#3182CE;"><i class="ri-book-open-line"></i></div>
             <div class="rc-title">O que é PEI?</div>
-            <div class="rc-desc">Conceitos fundamentais e estruturação.</div>
+            <div class="rc-desc">Guia fundamental sobre a estruturação do Plano.</div>
         </a>
         <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card">
-            <div class="rich-card-top" style="background-color: #D69E2E;"></div>
-            <div class="rc-icon" style="background-color:#FFFFF0; color:#D69E2E;"><i class="ri-scales-3-line"></i></div>
+            <div class="rich-card-top" style="background-color: #805AD5;"></div>
+            <div class="rc-icon" style="background-color:#F3E8FF; color:#805AD5;"><i class="ri-scales-3-line"></i></div>
             <div class="rc-title">Legislação</div>
-            <div class="rc-desc">LBI e Decretos sobre inclusão.</div>
+            <div class="rc-desc">Consulte a LBI e decretos de inclusão.</div>
         </a>
         <a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card">
             <div class="rich-card-top" style="background-color: #D53F8C;"></div>
             <div class="rc-icon" style="background-color:#FFF5F7; color:#D53F8C;"><i class="ri-brain-line"></i></div>
             <div class="rc-title">Neurociência</div>
-            <div class="rc-desc">Artigos sobre desenvolvimento atípico.</div>
+            <div class="rc-desc">Como o cérebro atípico aprende.</div>
         </a>
         <a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card">
             <div class="rich-card-top" style="background-color: #38A169;"></div>
             <div class="rc-icon" style="background-color:#F0FFF4; color:#38A169;"><i class="ri-compass-3-line"></i></div>
             <div class="rc-title">BNCC</div>
-            <div class="rc-desc">Currículo oficial e adaptações.</div>
+            <div class="rc-desc">Conexão com o currículo oficial.</div>
         </a>
     </div>
     """, unsafe_allow_html=True)
 
-    # INSIGHT CARD (AGORA POR ÚLTIMO)
+    # INSIGHT CARD (AGORA POR ÚLTIMO E AMARELO CLARO)
     if api_key:
         st.markdown(f"""
         <div class="insight-card">
@@ -1301,4 +1301,4 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
         st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
 
 # Footer final (Version signature)
-st.markdown("<div class='footer-signature'>PEI 360º v114.0 Minimalist Gray UI - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+st.markdown("<div class='footer-signature'>PEI 360º v115.0 Flat UI Master - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
