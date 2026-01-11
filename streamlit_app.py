@@ -98,13 +98,13 @@ def get_segmento_info(serie):
     """Retorna informações sobre o segmento escolar para UX"""
     if not serie: return "Geral", "Adaptação curricular padrão."
     if "Educação Infantil" in serie:
-        return "Educação Infantil", "Foco em **Direitos de Aprendizagem** e **Campos de Experiência** (BNCC). Não usamos Bloom aqui."
+        return "Educação Infantil", "Foco Central: **Campos de Experiência** e **Direitos de Aprendizagem** (BNCC). Desenvolvimento integral (o brincar, o corpo, o outro)."
     if "Fund. I" in serie:
-        return "Anos Iniciais", "Foco na alfabetização, letramento e consolidação de operações básicas. (Usa Bloom)."
+        return "Anos Iniciais", "Foco: Alfabetização, Habilidades Basais (anteriores) vs. Habilidades do Ano. Uso de Taxonomia de Bloom."
     if "Fund. II" in serie:
-        return "Anos Finais", "Foco na organização (múltiplos professores), autonomia e identidade. (Usa Bloom)."
+        return "Anos Finais", "Foco: Organização, Identidade, Habilidades de Abstração e consolidação de pré-requisitos."
     if "EM" in serie or "Médio" in serie:
-        return "Ensino Médio", "Foco no Projeto de Vida, autonomia intelectual e preparação para o futuro. (Usa Bloom)."
+        return "Ensino Médio", "Foco: Projeto de Vida, Habilidades complexas e preparação para autonomia futura."
     return "Geral", "Adaptação curricular padrão."
 
 def calcular_complexidade_pei(dados):
@@ -129,9 +129,9 @@ def extrair_metas_estruturadas(texto):
     bloco = extrair_tag_ia(texto, "METAS_SMART") # Tenta SMART padrão
     if not bloco:
         # Se não achar SMART, tenta Objetivos da EI
-        bloco = extrair_tag_ia(texto, "OBJETIVOS_APRENDIZAGEM")
+        bloco = extrair_tag_ia(texto, "OBJETIVOS_DESENVOLVIMENTO")
         if not bloco: return None
-        return {"Curto": "Ver Objetivos de Aprendizagem abaixo", "Medio": "...", "Longo": "..."}
+        return {"Curto": "Ver Objetivos de Desenvolvimento abaixo", "Medio": "...", "Longo": "..."}
     
     metas = {"Curto": "Definir...", "Medio": "Definir...", "Longo": "Definir..."}
     linhas = bloco.split('\n')
@@ -147,10 +147,12 @@ def extrair_bloom(texto):
     if not bloco: return ["Identificar", "Compreender", "Aplicar"]
     return [v.strip() for v in bloco.split(',')]
 
-def extrair_bncc_direitos(texto):
-    bloco = extrair_tag_ia(texto, "DIREITOS_APRENDIZAGEM")
-    if not bloco: return ["Conviver", "Brincar"]
-    return [v.strip() for v in bloco.split(',')]
+def extrair_campos_experiencia(texto):
+    bloco = extrair_tag_ia(texto, "CAMPOS_EXPERIENCIA_PRIORITARIOS")
+    if not bloco: return ["O eu, o outro e o nós", "Corpo, gestos e movimentos"]
+    # Limpa e pega os primeiros
+    linhas = [l.strip().replace('- ','') for l in bloco.split('\n') if l.strip()]
+    return linhas[:3]
 
 def get_pro_icon(nome_profissional):
     p = nome_profissional.lower()
@@ -365,34 +367,43 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
 
         # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO ---
         serie = dados['serie'] or ""
-        
         is_educacao_infantil = "Educação Infantil" in serie
         
-        # 1. Definição do Perfil e Estrutura (PROMPT DINÂMICO)
-        
+        # PROMPT DE IDENTIDADE (UNIVERSAL)
+        prompt_identidade = """
+        [PERFIL_NARRATIVO]
+        Inicie OBRIGATORIAMENTE com uma seção "👤 QUEM É O ESTUDANTE?".
+        Escreva um parágrafo humanizado sintetizando o histórico familiar, escolar e as potencialidades (pontos fortes).
+        Mostre quem é a criança por trás do diagnóstico.
+        [/PERFIL_NARRATIVO]
+        """
+
         if is_educacao_infantil:
             # === EDUCAÇÃO INFANTIL (BNCC: CAMPOS E DIREITOS) ===
             perfil_ia = """
             Você é um Especialista em EDUCAÇÃO INFANTIL e Inclusão.
             FOCO: BNCC (Campos de Experiência e Direitos de Aprendizagem).
-            NÃO use Taxonomia de Bloom. NÃO foque em alfabetização formal.
-            Foque em: Brincar, cuidar, interações, corpo e movimento.
+            NÃO use Taxonomia de Bloom. NÃO foque em alfabetização formal ou notas.
+            Foque em: Brincar heurístico, interações, corpo, gestos e movimentos.
             """
-            estrutura_req = """
+            estrutura_req = f"""
             ESTRUTURA OBRIGATÓRIA (EI):
+            
+            {prompt_identidade}
+            
             1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
-            [ANALISE_FARMA] Analise os fármacos. [/ANALISE_FARMA]
+            [ANALISE_FARMA] Analise os fármacos (se houver) e impacto no comportamento. [/ANALISE_FARMA]
+            
+            [CAMPOS_EXPERIENCIA_PRIORITARIOS]
+            Destaque 2 ou 3 Campos de Experiência da BNCC essenciais para este caso.
+            Use emojis para ilustrar cada campo.
+            [/CAMPOS_EXPERIENCIA_PRIORITARIOS]
             
             [DIREITOS_APRENDIZAGEM]
-            Liste 3 direitos prioritários (Conviver, Brincar, Participar, Explorar, Expressar, Conhecer-se) e como garanti-los.
-            Use o formato: Direito: Ação prática.
+            Liste como garantir: Conviver, Brincar, Participar, Explorar, Expressar, Conhecer-se.
             [/DIREITOS_APRENDIZAGEM]
             
-            [CAMPOS_EXPERIENCIA]
-            Liste 2 Campos de Experiência da BNCC prioritários para este caso.
-            [/CAMPOS_EXPERIENCIA]
-            
-            [OBJETIVOS_APRENDIZAGEM]
+            [OBJETIVOS_DESENVOLVIMENTO]
             - OBJETIVO 1: ...
             - OBJETIVO 2: ...
             [FIM_OBJETIVOS]
@@ -402,21 +413,30 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
             """
             
         else:
-            # === FUNDAMENTAL E MÉDIO (BLOOM E SMART) ===
+            # === FUNDAMENTAL E MÉDIO (BLOOM, SMART E HABILIDADES) ===
             if "Fund. I" in serie:
-                perfil_ia = "Você é um Especialista em ANOS INICIAIS. Foco: Alfabetização e Letramento."
+                perfil_ia = "Você é um Especialista em ANOS INICIAIS. Foco: Alfabetização, Letramento e BNCC."
             elif "Fund. II" in serie:
-                perfil_ia = "Você é um Especialista em ANOS FINAIS. Foco: Autonomia e Organização."
+                perfil_ia = "Você é um Especialista em ANOS FINAIS. Foco: Autonomia, Identidade e Habilidades BNCC."
             elif "EM" in serie or "Médio" in serie:
-                perfil_ia = "Você é um Especialista em ENSINO MÉDIO. Foco: Projeto de Vida e Abstração."
+                perfil_ia = "Você é um Especialista em ENSINO MÉDIO. Foco: Projeto de Vida e Habilidades BNCC."
             else:
                 perfil_ia = "Você é um Especialista em Inclusão Escolar."
 
-            estrutura_req = """
+            estrutura_req = f"""
             ESTRUTURA OBRIGATÓRIA (Padrão):
+            
+            {prompt_identidade}
+            
             1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
             [ANALISE_FARMA] Analise os fármacos. [/ANALISE_FARMA]
-            [TAXONOMIA_BLOOM] Liste APENAS 3 verbos de comando adequados ao nível. [/TAXONOMIA_BLOOM]
+            
+            [MAPEAMENTO_BNCC]
+            - **Habilidades Basais (Defasagem/Anos Anteriores):** Quais pré-requisitos precisam ser resgatados?
+            - **Habilidades Focais (Ano Atual):** Quais habilidades essenciais do ano devem ser priorizadas/adaptadas?
+            [/MAPEAMENTO_BNCC]
+            
+            [TAXONOMIA_BLOOM] Liste 3 verbos de comando. [/TAXONOMIA_BLOOM]
             
             [METAS_SMART]
             - CURTO PRAZO (2 meses): ...
@@ -436,7 +456,9 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
             
             ESTRUTURA DE RESPOSTA OBRIGATÓRIA (Texto corrido e tópicos, sem blocos técnicos):
             
-            # ESTRATÉGIAS PRÁTICAS PARA {serie.upper()}
+            # GUIA PRÁTICO PARA {serie.upper()}
+            
+            {prompt_identidade}
             
             1. 🎯 O QUE FAZER AMANHÃ:
             (3 ações simples e imediatas para adaptação de atividade e comportamento).
@@ -456,6 +478,9 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         
         prompt_user = f"""
         ALUNO: {dados['nome']} | SÉRIE: {serie}
+        HISTÓRICO ESCOLAR: {dados['historico']}
+        DINÂMICA FAMILIAR: {dados['familia']}
+        POTENCIALIDADES: {', '.join(dados['potencias'])}
         DIAGNÓSTICO: {dados['diagnostico']}
         MEDICAÇÃO: {meds_info}
         HIPERFOCO: {dados['hiperfoco']}
@@ -659,7 +684,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v107.0 BNCC Specialized</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v108.0 Narrative & BNCC Deep Dive</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -965,10 +990,10 @@ with tab8: # DOCUMENTO (PDF TÉCNICO & DASHBOARD)
             is_ei = "Educação Infantil" in (st.session_state.dados['serie'] or "")
             
             if is_ei:
-                direitos = extrair_bncc_direitos(st.session_state.dados['ia_sugestao'])
+                direitos = extrair_campos_experiencia(st.session_state.dados['ia_sugestao'])
                 html_tags = "".join([f'<span class="bloom-tag">{d}</span>' for d in direitos])
-                card_title = "Direitos de Aprendizagem (BNCC)"
-                card_desc = "Foco pedagógico para a Educação Infantil:"
+                card_title = "Campos de Experiência (BNCC)"
+                card_desc = "Foco pedagógico prioritário:"
                 card_icon = "🧸"
             else:
                 verbos = extrair_bloom(st.session_state.dados['ia_sugestao'])
