@@ -2,7 +2,6 @@ import streamlit as st
 from datetime import date
 from io import BytesIO
 from docx import Document
-from docx.shared import Pt
 from openai import OpenAI
 from pypdf import PdfReader
 from fpdf import FPDF
@@ -11,8 +10,6 @@ import json
 import os
 import re
 import glob
-import random
-import requests
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -219,9 +216,11 @@ def ler_pdf(arquivo):
     except: return ""
 
 def limpar_texto_pdf(texto):
+    # Função crítica para evitar erro de encoding no PDF
     if not texto: return ""
+    # Remove emojis comuns e caracteres problemáticos
     t = texto.replace('**', '').replace('__', '').replace('#', '')
-    t = t.replace('⚡', '').replace('🧠', '').replace('🌬️', '').replace('🕒', '').replace('📁', '').replace('🚶‍♂️', '').replace('🎨', '').replace('🤝', '').replace('🧙‍♂️', '').replace('⚔️', '').replace('🛡️', '').replace('🎒', '').replace('🧪', '').replace('🧸', '').replace('🍎', '').replace('💤', '')
+    # Tenta codificar para latin-1 e ignora o que não cabe (emojis)
     return t.encode('latin-1', 'ignore').decode('latin-1')
 
 def salvar_aluno(dados):
@@ -263,7 +262,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (MONOCHROME & GOLD v114.0)
+# 5. ESTILO VISUAL (CLEAN & FLAT - GRAYSCALE UI)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -272,7 +271,7 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; background-color: #F7FAFC; }
         .block-container { padding-top: 1.5rem !important; padding-bottom: 5rem !important; }
         
-        /* 1. NAVEGAÇÃO "PÍLULA" MONOCROMÁTICA (O PULO DO GATO) */
+        /* 1. NAVEGAÇÃO "PÍLULA" FLAT GRAY */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .stTabs [data-baseweb="tab-list"] { 
@@ -289,53 +288,50 @@ def aplicar_estilo_visual():
 
         .stTabs [data-baseweb="tab"] { 
             height: 38px; 
-            border-radius: 20px !important; 
+            border-radius: 6px !important; 
             background-color: #FFFFFF; 
             border: 1px solid #E2E8F0; 
             color: #718096; 
-            font-weight: 600; 
-            font-size: 0.85rem; 
-            padding: 0 20px; 
+            font-weight: 700; 
+            font-size: 0.8rem; 
+            padding: 0 15px; 
             transition: all 0.2s ease;
             box-shadow: 0 1px 2px rgba(0,0,0,0.03);
             flex-shrink: 0;
-            
-            /* O PULO DO GATO: Deixa os emojis CINZAS (escala de cinza) */
-            filter: grayscale(100%); 
+            text-transform: uppercase; /* DESIGN FLAT */
+            letter-spacing: 0.5px;
         }
         
         .stTabs [data-baseweb="tab"]:hover {
             border-color: #CBD5E0;
             color: #4A5568;
-            background-color: #F7FAFC;
+            background-color: #EDF2F7;
         }
 
         .stTabs [aria-selected="true"] { 
-            background-color: #EDF2F7 !important;
-            color: #1A202C !important;
-            border-color: #CBD5E0 !important;
+            background-color: #4A5568 !important; /* Cinza Escuro */
+            color: #FFFFFF !important; 
+            border-color: #4A5568 !important; 
             font-weight: 800;
-            /* Traz um pouco de cor de volta ao selecionar, ou mantém cinza mais forte */
-            filter: grayscale(0%); 
         }
 
-        /* 2. CARD DE INSIGHT (AMARELO CLARO) */
+        /* 2. CARD DE INSIGHT */
         .insight-card {
-            background-color: #FFFFF0;
-            border-radius: 12px;
+            background-color: #FFFFFF;
+            border-radius: 8px;
             padding: 20px;
             color: #2D3748;
             display: flex;
             align-items: center;
             gap: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-left: 5px solid #D69E2E;
+            border-left: 4px solid #718096;
             margin-top: 30px;
         }
         .insight-icon {
             font-size: 1.5rem;
-            color: #D69E2E;
-            background: rgba(214, 158, 46, 0.15);
+            color: #718096;
+            background: #EDF2F7;
             width: 40px; height: 40px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
@@ -350,7 +346,7 @@ def aplicar_estilo_visual():
         }
         .rich-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 20px;
             border: 1px solid #E2E8F0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
@@ -366,25 +362,24 @@ def aplicar_estilo_visual():
             height: 100%;
         }
         .rich-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             border-color: #CBD5E0;
         }
-        .rich-card-top { width: 100%; height: 4px; position: absolute; top: 0; left: 0; }
-        .rc-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px; }
-        .rc-title { font-weight: 800; font-size: 1rem; color: #2D3748; margin-bottom: 5px; }
+        .rc-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 12px; }
+        .rc-title { font-weight: 700; font-size: 0.95rem; color: #2D3748; margin-bottom: 5px; }
         .rc-desc { font-size: 0.8rem; color: #718096; line-height: 1.3; }
 
         /* OUTROS */
-        .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
+        .header-unified { background-color: white; padding: 20px 40px; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 2px 6px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
         .prog-container { width: 100%; position: relative; margin: 0 0 30px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
         .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
         
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 8px !important; border-color: #E2E8F0 !important; }
-        div[data-testid="column"] .stButton button { border-radius: 8px !important; font-weight: 700 !important; height: 45px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
-        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 6px !important; border-color: #E2E8F0 !important; }
+        div[data-testid="column"] .stButton button { border-radius: 6px !important; font-weight: 700 !important; height: 45px !important; background-color: #4A5568 !important; color: white !important; border: none !important; }
+        div[data-testid="column"] .stButton button:hover { background-color: #2D3748 !important; }
         .segmento-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 0.75rem; color: white; margin-top: 5px; }
         
         /* FOOTER ASSINATURA */
@@ -398,10 +393,10 @@ def aplicar_estilo_visual():
         }
         
         /* DASHBOARD */
-        .dash-hero { background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(15, 82, 186, 0.15); }
+        .dash-hero { background: linear-gradient(135deg, #4A5568 0%, #2D3748 100%); border-radius: 12px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .apple-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); color: white; font-weight: 800; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
-        .metric-card { background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .soft-card { border-radius: 12px; padding: 20px; min-height: 220px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 5px solid; position: relative; overflow: hidden; }
+        .metric-card { background: white; border-radius: 12px; padding: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .soft-card { border-radius: 12px; padding: 20px; min-height: 220px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 4px solid; position: relative; overflow: hidden; }
         .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
         .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
         .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
@@ -482,13 +477,13 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO (CORREÇÃO LÓGICA) ---
+        # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO ---
         serie = dados['serie'] or ""
-        nivel_ensino = detectar_nivel_ensino(serie) # Usa a função de detecção robusta
+        nivel_ensino = detectar_nivel_ensino(serie)
         
         alfabetizacao = dados.get('nivel_alfabetizacao', 'Não Avaliado')
         
-        # PROMPT DE IDENTIDADE (UNIVERSAL)
+        # PROMPT DE IDENTIDADE
         prompt_identidade = """
         [PERFIL_NARRATIVO]
         Inicie OBRIGATORIAMENTE com uma seção "👤 QUEM É O ESTUDANTE?".
@@ -497,7 +492,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         [/PERFIL_NARRATIVO]
         """
 
-        # LÓGICA DE ALFABETIZAÇÃO (IMPACTO NA IA)
+        # LÓGICA DE ALFABETIZAÇÃO
         prompt_literacia = ""
         if "Alfabético" not in alfabetizacao and alfabetizacao != "Não se aplica (Educação Infantil)":
              prompt_literacia = f"""
@@ -508,7 +503,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
              """
 
         if nivel_ensino == "EI":
-            # === EDUCAÇÃO INFANTIL (BNCC: CAMPOS E DIREITOS) ===
+            # === EDUCAÇÃO INFANTIL (BNCC) ===
             perfil_ia = """
             Você é um Especialista em EDUCAÇÃO INFANTIL e Inclusão.
             FOCO: BNCC (Campos de Experiência e Direitos de Aprendizagem).
@@ -542,7 +537,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
             """
             
         else:
-            # === FUNDAMENTAL E MÉDIO (BLOOM, SMART E HABILIDADES) ===
+            # === FUNDAMENTAL E MÉDIO (BLOOM, SMART) ===
             if nivel_ensino == "FI":
                 perfil_ia = "Você é um Especialista em ANOS INICIAIS (Fund I). Foco: Alfabetização, Letramento e BNCC."
             elif nivel_ensino == "FII":
@@ -631,11 +626,10 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     try:
         client = OpenAI(api_key=api_key)
         serie = dados['serie'] or ""
-        nivel_ensino = detectar_nivel_ensino(serie) # Usa a detecção correta
+        nivel_ensino = detectar_nivel_ensino(serie) 
         hiperfoco = dados['hiperfoco'] or "brincadeiras"
         
         # --- FIREWALL DE CONTEXTO ---
-        # NÃO enviamos a lista de medicamentos. Enviamos apenas o essencial.
         contexto_seguro = f"""
         ALUNO: {dados['nome'].split()[0]}
         HIPERFOCO: {hiperfoco}
@@ -704,94 +698,180 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF (TÉCNICO & TEXTO SIMPLES)
+# 7. GERADOR PDF (DESIGN FLAT & CLEAN - COMPATÍVEL ZAPFDINGBATS)
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
-        self.set_draw_color(0, 78, 146); self.set_line_width(0.4)
-        self.rect(5, 5, 200, 287)
+        # Fundo do cabeçalho em cinza muito suave
+        self.set_fill_color(248, 248, 248)
+        self.rect(0, 0, 210, 40, 'F')
+        
+        # Logo ou Ícone Flat
         logo = finding_logo()
-        if logo: self.image(logo, 10, 10, 30); x_offset = 45 
-        else: x_offset = 12
-        self.set_xy(x_offset, 16); self.set_font('Arial', 'B', 16); self.set_text_color(0, 78, 146)
-        self.cell(0, 8, 'PLANO DE ENSINO INDIVIDUALIZADO', 0, 1, 'L')
-        self.set_xy(x_offset, 23); self.set_font('Arial', 'I', 10); self.set_text_color(100)
-        self.cell(0, 5, 'Documento Oficial de Planejamento Pedagógico', 0, 1, 'L'); self.ln(20)
+        if logo: 
+            self.image(logo, 10, 8, 25)
+            x_offset = 40
+        else:
+            x_offset = 12
+            
+        # Título Principal
+        self.set_xy(x_offset, 12)
+        self.set_font('Arial', 'B', 14)
+        self.set_text_color(50, 50, 50) # Cinza Chumbo
+        self.cell(0, 8, 'PEI - PLANO DE ENSINO INDIVIDUALIZADO', 0, 1, 'L')
+        
+        # Subtítulo
+        self.set_xy(x_offset, 19)
+        self.set_font('Arial', '', 9)
+        self.set_text_color(100, 100, 100) # Cinza Médio
+        self.cell(0, 5, 'Documento Oficial de Planejamento e Flexibilização Curricular', 0, 1, 'L')
+        self.ln(15)
+
     def footer(self):
-        self.set_y(-15); self.set_font('Arial', 'I', 8); self.set_text_color(128)
-        self.cell(0, 10, f'Gerado via PEI 360º | Página {self.page_no()}', 0, 0, 'C')
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.set_text_color(150, 150, 150)
+        self.cell(0, 10, f'Página {self.page_no()} | Gerado via Sistema PEI 360', 0, 0, 'C')
+
     def section_title(self, label):
-        self.ln(8); self.set_fill_color(240, 248, 255); self.set_text_color(0, 78, 146)
-        self.set_font('Arial', 'B', 11); self.cell(0, 8, f"  {label}", 0, 1, 'L', fill=True); self.ln(4)
+        self.ln(6)
+        # Faixa cinza lateral para dar destaque "Flat"
+        self.set_fill_color(230, 230, 230)
+        self.rect(10, self.get_y(), 190, 8, 'F')
+        
+        # Ícone Flat (Dingbats) - Um quadrado sólido
+        self.set_font('ZapfDingbats', '', 10)
+        self.set_text_color(80, 80, 80)
+        self.set_xy(12, self.get_y() + 1)
+        self.cell(5, 6, 'o', 0, 0) # 'o' em ZapfDingbats é um bullet quadrado pequeno
+        
+        # Texto do Título
+        self.set_font('Arial', 'B', 11)
+        self.set_text_color(50, 50, 50)
+        self.cell(0, 6, label.upper(), 0, 1, 'L')
+        self.ln(4)
+
+    def add_flat_icon_item(self, texto, bullet_type='check'):
+        """Adiciona um item com ícone flat nativo do PDF"""
+        self.set_font('ZapfDingbats', '', 10)
+        self.set_text_color(80, 80, 80)
+        
+        # Seleção de ícone flat
+        char = '3' # Checkmark padrão
+        if bullet_type == 'arrow': char = 'PARAGRAPH' # Seta
+        elif bullet_type == 'dot': char = 'l' # Bolinha
+        
+        self.cell(6, 5, char, 0, 0)
+        
+        self.set_font('Arial', '', 10)
+        self.set_text_color(0)
+        self.multi_cell(0, 5, texto)
+        self.ln(1)
 
 class PDF_Simple_Text(FPDF):
+    """Versão Gamificada Clean - Estilo Cartão de RPG Minimalista"""
     def header(self):
-        self.set_font('Arial', 'B', 14)
-        self.cell(0, 10, 'ROTEIRO DE MISSÃO GAMIFICADO', 0, 1, 'C')
-        self.ln(5)
+        self.set_font('Arial', 'B', 16)
+        self.set_text_color(50)
+        self.cell(0, 10, 'ROTEIRO DE MISSÃO', 0, 1, 'C')
+        self.set_draw_color(150)
+        self.line(10, 25, 200, 25)
+        self.ln(10)
 
 def gerar_pdf_final(dados, tem_anexo):
-    pdf = PDF_Classic(); pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
-    pdf.section_title("1. IDENTIFICAÇÃO E CONTEXTO")
-    pdf.set_font("Arial", size=10); pdf.set_text_color(0)
+    pdf = PDF_Classic()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=20)
+
+    # 1. IDENTIFICAÇÃO
+    pdf.section_title("Identificação e Contexto")
     
-    med_list = []
+    # Bloco de dados tabulados
+    pdf.set_font("Arial", 'B', 10); pdf.cell(35, 6, "Estudante:", 0, 0); 
+    pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nome'], 0, 1)
+    
+    pdf.set_font("Arial", 'B', 10); pdf.cell(35, 6, "Série/Turma:", 0, 0); 
+    pdf.set_font("Arial", '', 10); pdf.cell(0, 6, f"{dados['serie']} - {dados['turma']}", 0, 1)
+    
+    pdf.set_font("Arial", 'B', 10); pdf.cell(35, 6, "Diagnóstico:", 0, 0); 
+    pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, dados['diagnostico'])
+    
+    pdf.ln(2)
+
+    # 2. MEDICAMENTOS E EVIDÊNCIAS
     if dados['lista_medicamentos']:
+        pdf.section_title("Atenção Farmacológica")
         for m in dados['lista_medicamentos']:
-            obs = m.get('obs', '')
-            esc = " (Na Escola)" if m.get('escola') else ""
-            txt = f"{m['nome']} ({m['posologia']}){esc}"
-            med_list.append(txt)
-    med_str = "; ".join(med_list) if med_list else "Não informado."
-    fam_str = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado."
-    
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nome:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nome'], 0, 1)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nascimento:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, str(dados['nasc']), 0, 1)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Série/Turma:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, f"{dados['serie']} - {dados['turma']}", 0, 1)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Diagnóstico:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, dados['diagnostico']); pdf.ln(2)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Alfabetização:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nivel_alfabetizacao'], 0, 1)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Medicação:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, med_str); pdf.ln(2)
-    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Família:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, fam_str)
-    evid = [k.replace('?', '') for k, v in dados['checklist_evidencias'].items() if v]
-    if evid:
-        pdf.section_title("2. PONTOS DE ATENÇÃO")
-        pdf.set_font("Arial", size=10); pdf.multi_cell(0, 6, limpar_texto_pdf('; '.join(evid) + '.'))
+            txt = f"{m['nome']} ({m['posologia']})" + (" [NA ESCOLA]" if m['escola'] else "")
+            pdf.add_flat_icon_item(txt, 'dot')
+
+    evidencias = [k.replace('?', '') for k, v in dados['checklist_evidencias'].items() if v]
+    if evidencias:
+        pdf.section_title("Evidências Observadas")
+        for ev in evidencias:
+            pdf.add_flat_icon_item(ev, 'arrow')
+
+    # 3. SUPORTES
     if any(dados['barreiras_selecionadas'].values()):
-        pdf.section_title("3. MAPEAMENTO DE SUPORTE")
-        for c, i in dados['barreiras_selecionadas'].items():
-            if i:
-                pdf.set_font("Arial", 'B', 10); pdf.cell(0, 6, f"{c}:", 0, 1)
-                pdf.set_font("Arial", size=10)
-                for x in i:
-                    niv = dados['niveis_suporte'].get(f"{c}_{x}", "Monitorado")
-                    pdf.cell(5); pdf.cell(0, 6, f"- {x}: Suporte {niv}", 0, 1)
-                pdf.ln(2)
+        pdf.section_title("Plano de Suporte (Barreiras x Nível)")
+        for area, itens in dados['barreiras_selecionadas'].items():
+            if itens:
+                pdf.set_font("Arial", 'B', 10)
+                pdf.cell(0, 8, area, 0, 1)
+                for item in itens:
+                    nivel = dados['niveis_suporte'].get(f"{area}_{item}", "Monitorado")
+                    pdf.add_flat_icon_item(f"{item} (Nível: {nivel})", 'check')
+
+    # 4. ESTRATÉGIA IA (Texto Limpo)
     if dados['ia_sugestao']:
-        pdf.ln(5); pdf.set_text_color(0); pdf.set_font("Arial", '', 10)
-        t_limpo = re.sub(r'\[.*?\]', '', dados['ia_sugestao'])
-        for linha in t_limpo.split('\n'):
-            l = limpar_texto_pdf(linha)
-            if re.match(r'^[1-6]\.', l.strip()) and l.strip().isupper():
-                pdf.ln(4); pdf.set_fill_color(240, 248, 255); pdf.set_text_color(0, 78, 146); pdf.set_font('Arial', 'B', 11)
-                pdf.cell(0, 8, f"  {l}", 0, 1, 'L', fill=True); pdf.set_text_color(0); pdf.set_font("Arial", size=10)
-            elif l.strip().endswith(':') and len(l) < 70:
-                pdf.ln(2); pdf.set_font("Arial", 'B', 10); pdf.multi_cell(0, 6, l); pdf.set_font("Arial", size=10)
-            else: pdf.multi_cell(0, 6, l)
+        pdf.add_page()
+        pdf.section_title("Estratégias Pedagógicas")
+        
+        texto_limpo = limpar_texto_pdf(dados['ia_sugestao'])
+        # Remove tags técnicas do texto final
+        texto_limpo = re.sub(r'\[.*?\]', '', texto_limpo) 
+        
+        linhas = texto_limpo.split('\n')
+        for linha in linhas:
+            l = linha.strip()
+            if not l: continue
+            
+            # Detecção de títulos/tópicos para formatar
+            if re.match(r'^[1-9]\.', l) or l.isupper():
+                pdf.ln(3)
+                pdf.set_font('Arial', 'B', 10)
+                pdf.multi_cell(0, 6, l)
+                pdf.set_font('Arial', '', 10)
+            elif l.startswith('-') or l.startswith('*'):
+                pdf.add_flat_icon_item(l.replace('-','').replace('*','').strip(), 'dot')
+            else:
+                pdf.multi_cell(0, 6, l)
+                
     return pdf.output(dest='S').encode('latin-1', 'replace')
 
 def gerar_pdf_tabuleiro_simples(texto):
     pdf = PDF_Simple_Text()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    linhas = texto.split('\n')
+    pdf.set_font("Arial", size=11)
+    
+    # Limpa emojis do texto gamificado para o PDF ficar clean
+    texto_sem_emoji = limpar_texto_pdf(texto)
+    
+    linhas = texto_sem_emoji.split('\n')
     for linha in linhas:
-        l_limpa = limpar_texto_pdf(linha)
-        if "**" in linha or (len(linha) < 40 and linha.isupper()):
-            pdf.set_font("Arial", 'B', 12)
-            pdf.multi_cell(0, 8, l_limpa.replace('**', ''))
-            pdf.set_font("Arial", '', 12)
+        l = linha.strip()
+        if not l: continue
+        
+        if l.isupper() or "**" in linha:
+            pdf.ln(4)
+            pdf.set_font("Arial", 'B', 11)
+            # Desenha uma caixa cinza suave ao redor dos títulos das missões
+            pdf.set_fill_color(240, 240, 240)
+            pdf.cell(0, 8, l.replace('**',''), 0, 1, 'L', fill=True)
+            pdf.set_font("Arial", '', 11)
         else:
-            pdf.multi_cell(0, 6, l_limpa)
+            pdf.multi_cell(0, 6, l)
+            
     return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 def gerar_docx_final(dados):
@@ -802,7 +882,7 @@ def gerar_docx_final(dados):
     b = BytesIO(); doc.save(b); b.seek(0); return b
 
 # ==============================================================================
-# 8. INTERFACE UI (PRINCIPAL)
+# 8. INTERFACE UI (PRINCIPAL) - NAVEGAÇÃO CLEAN
 # ==============================================================================
 # SIDEBAR
 with st.sidebar:
@@ -839,8 +919,19 @@ st.markdown(f"""
     <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
-# ABAS (10 Abas com Emojis nas Strings)
-abas = ["🏠 Início", "👤 Estudante", "📝 Evidências", "🤝 Rede de Apoio", "🚧 Potencialidades & Barreiras", "🛠️ Plano de Ação", "🔄 Monitoramento", "🤖 Consultoria IA", "📄 Documento", "🗺️ Jornada do Aluno"]
+# NAVEGAÇÃO CLEAN - SEM EMOJIS, APENAS TEXTO
+abas = [
+    "INÍCIO", 
+    "ESTUDANTE", 
+    "EVIDÊNCIAS", 
+    "REDE DE APOIO", 
+    "BARREIRAS", 
+    "PLANO DE AÇÃO", 
+    "MONITORAMENTO", 
+    "CONSULTORIA IA", 
+    "DOCUMENTO PDF", 
+    "JORNADA GAMIFICADA"
+]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
 with tab0: # INÍCIO (LAYOUT ATUALIZADO)
@@ -866,29 +957,25 @@ with tab0: # INÍCIO (LAYOUT ATUALIZADO)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # GRID DE CARDS (AGORA VEM ANTES DO INSIGHT)
+    # GRID DE CARDS
     st.markdown("""
     <div class="home-grid">
         <a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card">
-            <div class="rich-card-top" style="background-color: #3182CE;"></div>
             <div class="rc-icon" style="background-color:#EBF8FF; color:#3182CE;"><i class="ri-book-open-line"></i></div>
             <div class="rc-title">O que é PEI?</div>
             <div class="rc-desc">Conceitos fundamentais e estruturação.</div>
         </a>
         <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card">
-            <div class="rich-card-top" style="background-color: #D69E2E;"></div>
             <div class="rc-icon" style="background-color:#FFFFF0; color:#D69E2E;"><i class="ri-scales-3-line"></i></div>
             <div class="rc-title">Legislação</div>
             <div class="rc-desc">LBI e Decretos sobre inclusão.</div>
         </a>
         <a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card">
-            <div class="rich-card-top" style="background-color: #D53F8C;"></div>
             <div class="rc-icon" style="background-color:#FFF5F7; color:#D53F8C;"><i class="ri-brain-line"></i></div>
             <div class="rc-title">Neurociência</div>
             <div class="rc-desc">Artigos sobre desenvolvimento atípico.</div>
         </a>
         <a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card">
-            <div class="rich-card-top" style="background-color: #38A169;"></div>
             <div class="rc-icon" style="background-color:#F0FFF4; color:#38A169;"><i class="ri-compass-3-line"></i></div>
             <div class="rc-title">BNCC</div>
             <div class="rc-desc">Currículo oficial e adaptações.</div>
@@ -896,7 +983,7 @@ with tab0: # INÍCIO (LAYOUT ATUALIZADO)
     </div>
     """, unsafe_allow_html=True)
 
-    # INSIGHT CARD (AGORA POR ÚLTIMO)
+    # INSIGHT CARD
     if api_key:
         st.markdown(f"""
         <div class="insight-card">
@@ -1023,7 +1110,7 @@ with tab3: # REDE
     st.session_state.dados['rede_apoio'] = st.multiselect("Profissionais que atendem o aluno:", LISTA_PROFISSIONAIS, default=st.session_state.dados['rede_apoio'])
     st.session_state.dados['orientacoes_especialistas'] = st.text_area("Orientações Clínicas Importantes (o que os terapeutas pediram?)", st.session_state.dados['orientacoes_especialistas'])
 
-with tab4: # MAPEAMENTO (CORRIGIDO)
+with tab4: # MAPEAMENTO
     render_progresso()
     with st.container(border=True):
         st.markdown("#### <i class='ri-lightbulb-flash-line' style='color:#0F52BA'></i> Potencialidades e Hiperfoco", unsafe_allow_html=True)
@@ -1300,5 +1387,5 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
     else:
         st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
 
-# Footer final (Version signature)
+# Footer final
 st.markdown("<div class='footer-signature'>PEI 360º v114.0 Minimalist Gray UI - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
