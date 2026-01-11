@@ -492,7 +492,7 @@ def gerar_pdf_final(dados, tem_anexo):
             else: pdf.multi_cell(0, 6, l)
     return pdf.output(dest='S').encode('latin-1', 'replace')
 
-def gerar_pdf_tabuleiro(texto_aluno):
+def gerar_pdf_tabuleiro(texto_aluno, imagem_path=None):
     pdf = PDF_Game_Board(orientation='L', format='A4')
     pdf.add_page()
     
@@ -514,7 +514,7 @@ def gerar_pdf_tabuleiro(texto_aluno):
     pdf.draw_card(65, y_row2, "MEU INVENTARIO", organizacao, 233, 216, 253, "[#]")
     pdf.draw_card(155, y_row2, "MEUS ALIADOS", aliados, 255, 250, 205, "[&]")
     
-    return pdf.output(dest='S').encode('latin-1', 'replace')
+    return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 def gerar_docx_final(dados):
     doc = Document(); doc.add_heading('PEI - ' + dados['nome'], 0)
@@ -859,33 +859,37 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
         if st.session_state.dados['ia_mapa_texto']:
             st.markdown("#### 📜 Roteiro de Poderes")
             
-            # Cards HTML Simples
-            # Dividindo o texto em blocos para exibir bonitinho
             blocks = st.session_state.dados['ia_mapa_texto'].split('\n\n')
             for b in blocks:
                 if "**" in b:
-                    title = b.split('\n')[0].replace('**', '')
-                    content = '\n'.join(b.split('\n')[1:])
-                    st.markdown(f"""
-                    <div class="game-card gc-power">
-                        <div class="gc-title">{title}</div>
-                        <div class="gc-body">{content}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    parts = b.split('\n')
+                    if len(parts) > 1:
+                        title = parts[0].replace('**', '').strip()
+                        content = '\n'.join(parts[1:]).strip()
+                        st.markdown(f"""
+                        <div class="game-card gc-power">
+                            <div class="gc-title">{title}</div>
+                            <div class="gc-body">{content}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
             st.divider()
             
-            # Botão de Exportar PDF do Tabuleiro
+            # Botão de Exportar PDF do Tabuleiro (CORRIGIDO)
             st.markdown("#### 📤 Exportar Tabuleiro")
-            pdf_tabuleiro = gerar_pdf_tabuleiro(st.session_state.dados['ia_mapa_texto'], None) # Sem imagem por enquanto
-            st.download_button(
-                "📥 Baixar Tabuleiro de Missões (PDF)", 
-                pdf_tabuleiro, 
-                "Mapa_Gamificado.pdf", 
-                "application/pdf", 
-                type="primary",
-                use_container_width=True
-            )
+            try:
+                pdf_tabuleiro = gerar_pdf_tabuleiro(st.session_state.dados['ia_mapa_texto'], None) 
+                
+                st.download_button(
+                    "📥 Baixar Tabuleiro de Missões (PDF)", 
+                    pdf_tabuleiro, 
+                    "Mapa_Gamificado.pdf", 
+                    "application/pdf", 
+                    type="primary",
+                    use_container_width=True
+                )
+            except Exception as e:
+                st.error(f"Erro ao gerar PDF do Mapa: {str(e)}")
             
     else:
         st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
