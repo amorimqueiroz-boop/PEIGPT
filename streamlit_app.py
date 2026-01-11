@@ -9,7 +9,6 @@ import base64
 import json
 import os
 import re
-import glob
 
 # ==============================================================================
 # 1. CONFIGURAÇÃO INICIAL
@@ -216,11 +215,8 @@ def ler_pdf(arquivo):
     except: return ""
 
 def limpar_texto_pdf(texto):
-    # Função crítica para evitar erro de encoding no PDF
     if not texto: return ""
-    # Remove emojis comuns e caracteres problemáticos
     t = texto.replace('**', '').replace('__', '').replace('#', '')
-    # Tenta codificar para latin-1 e ignora o que não cabe (emojis)
     return t.encode('latin-1', 'ignore').decode('latin-1')
 
 def salvar_aluno(dados):
@@ -262,7 +258,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (CLEAN & FLAT - GRAYSCALE UI)
+# 5. ESTILO VISUAL (VIBRANT CARDS + CLEAN TABS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -271,7 +267,7 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; background-color: #F7FAFC; }
         .block-container { padding-top: 1.5rem !important; padding-bottom: 5rem !important; }
         
-        /* 1. NAVEGAÇÃO "PÍLULA" FLAT GRAY */
+        /* 1. NAVEGAÇÃO "PÍLULA" CLEAN (TEXTO CAIXA ALTA) */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .stTabs [data-baseweb="tab-list"] { 
@@ -288,17 +284,17 @@ def aplicar_estilo_visual():
 
         .stTabs [data-baseweb="tab"] { 
             height: 38px; 
-            border-radius: 6px !important; 
+            border-radius: 20px !important; 
             background-color: #FFFFFF; 
             border: 1px solid #E2E8F0; 
             color: #718096; 
             font-weight: 700; 
             font-size: 0.8rem; 
-            padding: 0 15px; 
+            padding: 0 20px; 
             transition: all 0.2s ease;
             box-shadow: 0 1px 2px rgba(0,0,0,0.03);
             flex-shrink: 0;
-            text-transform: uppercase; /* DESIGN FLAT */
+            text-transform: uppercase; /* CAIXA ALTA */
             letter-spacing: 0.5px;
         }
         
@@ -309,35 +305,36 @@ def aplicar_estilo_visual():
         }
 
         .stTabs [aria-selected="true"] { 
-            background-color: #4A5568 !important; /* Cinza Escuro */
+            background-color: #3182CE !important; 
             color: #FFFFFF !important; 
-            border-color: #4A5568 !important; 
+            border-color: #3182CE !important; 
             font-weight: 800;
+            box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2);
         }
 
-        /* 2. CARD DE INSIGHT */
+        /* 2. CARD DE INSIGHT (AMARELO VIBRANTE) */
         .insight-card {
-            background-color: #FFFFFF;
-            border-radius: 8px;
+            background-color: #FFFFF0;
+            border-radius: 12px;
             padding: 20px;
             color: #2D3748;
             display: flex;
             align-items: center;
             gap: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-left: 4px solid #718096;
+            border-left: 5px solid #D69E2E;
             margin-top: 30px;
         }
         .insight-icon {
             font-size: 1.5rem;
-            color: #718096;
-            background: #EDF2F7;
+            color: #D69E2E;
+            background: rgba(214, 158, 46, 0.15);
             width: 40px; height: 40px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 3. CARDS DA HOME (CLEAN) */
+        /* 3. CARDS DA HOME (COLORIDOS) */
         .home-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -346,7 +343,7 @@ def aplicar_estilo_visual():
         }
         .rich-card {
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
             border: 1px solid #E2E8F0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
@@ -362,49 +359,38 @@ def aplicar_estilo_visual():
             height: 100%;
         }
         .rich-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.06);
             border-color: #CBD5E0;
         }
-        .rc-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 12px; }
-        .rc-title { font-weight: 700; font-size: 0.95rem; color: #2D3748; margin-bottom: 5px; }
+        .rich-card-top { width: 100%; height: 4px; position: absolute; top: 0; left: 0; }
+        .rc-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px; }
+        .rc-title { font-weight: 800; font-size: 1rem; color: #2D3748; margin-bottom: 5px; }
         .rc-desc { font-size: 0.8rem; color: #718096; line-height: 1.3; }
 
         /* OUTROS */
-        .header-unified { background-color: white; padding: 20px 40px; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 2px 6px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
+        .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
         .prog-container { width: 100%; position: relative; margin: 0 0 30px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
         .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
         
-        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 6px !important; border-color: #E2E8F0 !important; }
-        div[data-testid="column"] .stButton button { border-radius: 6px !important; font-weight: 700 !important; height: 45px !important; background-color: #4A5568 !important; color: white !important; border: none !important; }
-        div[data-testid="column"] .stButton button:hover { background-color: #2D3748 !important; }
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 8px !important; border-color: #E2E8F0 !important; }
+        div[data-testid="column"] .stButton button { border-radius: 8px !important; font-weight: 700 !important; height: 45px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
+        div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         .segmento-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 0.75rem; color: white; margin-top: 5px; }
         
-        /* FOOTER ASSINATURA */
-        .footer-signature {
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 1px solid #E2E8F0;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #A0AEC0;
-        }
-        
         /* DASHBOARD */
-        .dash-hero { background: linear-gradient(135deg, #4A5568 0%, #2D3748 100%); border-radius: 12px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .dash-hero { background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(15, 82, 186, 0.15); }
         .apple-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); color: white; font-weight: 800; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
-        .metric-card { background: white; border-radius: 12px; padding: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .soft-card { border-radius: 12px; padding: 20px; min-height: 220px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 4px solid; position: relative; overflow: hidden; }
+        .metric-card { background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .soft-card { border-radius: 12px; padding: 20px; min-height: 220px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 5px solid; position: relative; overflow: hidden; }
         .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
         .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
         .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
         .sc-cyan { background-color: #E6FFFA; border-left-color: #0BC5EA; }
         .sc-green { background-color: #F0FFF4; border-left-color: #38A169; }
-        .game-card { background-color: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 6px solid; }
-        .gc-title { font-weight: 800; font-size: 1.1rem; color: #2D3748; }
-        .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; }
+        .footer-signature { margin-top: 50px; padding-top: 20px; border-top: 1px solid #E2E8F0; text-align: center; font-size: 0.8rem; color: #A0AEC0; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
     """
@@ -934,7 +920,7 @@ abas = [
 ]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
-with tab0: # INÍCIO (LAYOUT ATUALIZADO)
+with tab0: # INÍCIO (LAYOUT VIBRANTE + ABAS CLEAN)
     if api_key:
         with st.spinner("Conectando à IA..."):
             try:
@@ -957,25 +943,29 @@ with tab0: # INÍCIO (LAYOUT ATUALIZADO)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # GRID DE CARDS
+    # GRID DE CARDS COLORIDOS (DE VOLTA!)
     st.markdown("""
     <div class="home-grid">
         <a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card">
+            <div class="rich-card-top" style="background-color: #3182CE;"></div>
             <div class="rc-icon" style="background-color:#EBF8FF; color:#3182CE;"><i class="ri-book-open-line"></i></div>
             <div class="rc-title">O que é PEI?</div>
             <div class="rc-desc">Conceitos fundamentais e estruturação.</div>
         </a>
         <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13146.htm" target="_blank" class="rich-card">
+            <div class="rich-card-top" style="background-color: #D69E2E;"></div>
             <div class="rc-icon" style="background-color:#FFFFF0; color:#D69E2E;"><i class="ri-scales-3-line"></i></div>
             <div class="rc-title">Legislação</div>
             <div class="rc-desc">LBI e Decretos sobre inclusão.</div>
         </a>
         <a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card">
+            <div class="rich-card-top" style="background-color: #D53F8C;"></div>
             <div class="rc-icon" style="background-color:#FFF5F7; color:#D53F8C;"><i class="ri-brain-line"></i></div>
             <div class="rc-title">Neurociência</div>
             <div class="rc-desc">Artigos sobre desenvolvimento atípico.</div>
         </a>
         <a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card">
+            <div class="rich-card-top" style="background-color: #38A169;"></div>
             <div class="rc-icon" style="background-color:#F0FFF4; color:#38A169;"><i class="ri-compass-3-line"></i></div>
             <div class="rc-title">BNCC</div>
             <div class="rc-desc">Currículo oficial e adaptações.</div>
@@ -983,7 +973,7 @@ with tab0: # INÍCIO (LAYOUT ATUALIZADO)
     </div>
     """, unsafe_allow_html=True)
 
-    # INSIGHT CARD
+    # INSIGHT CARD (AGORA AMARELO NOVAMENTE)
     if api_key:
         st.markdown(f"""
         <div class="insight-card">
