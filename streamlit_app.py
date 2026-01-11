@@ -160,7 +160,7 @@ def limpar_texto_pdf(texto):
     if not texto: return ""
     # Remove emojis e formatação markdown para PDF
     t = texto.replace('**', '').replace('__', '').replace('#', '')
-    t = t.replace('⚡', '').replace('🧠', '').replace('🌬️', '').replace('🕒', '').replace('📁', '').replace('🚶‍♂️', '').replace('🎨', '').replace('🤝', '')
+    t = t.replace('⚡', '').replace('🧠', '').replace('🌬️', '').replace('🕒', '').replace('📁', '').replace('🚶‍♂️', '').replace('🎨', '').replace('🤝', '').replace('🧙‍♂️', '').replace('⚔️', '').replace('🛡️', '').replace('🎒', '').replace('🧪', '')
     return t.encode('latin-1', 'ignore').decode('latin-1')
 
 def salvar_aluno(dados):
@@ -299,7 +299,7 @@ def gerar_noticia_ia(api_key):
         return res.choices[0].message.content
     except: return "O cérebro aprende durante toda a vida."
 
-def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
+def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False):
     if not api_key: return None, "⚠️ Configure a Chave API."
     try:
         client = OpenAI(api_key=api_key)
@@ -310,23 +310,37 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        prompt_sys = """
-        Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
-        SUA MISSÃO: Cruzar dados para criar um PEI com Taxonomia de Bloom e Metas SMART.
-        
-        --- ESTRUTURA OBRIGATÓRIA ---
-        1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
-        [ANALISE_FARMA] Analise os fármacos. [/ANALISE_FARMA]
-        [TAXONOMIA_BLOOM] Liste APENAS 3 verbos de comando. [/TAXONOMIA_BLOOM]
-        
-        [METAS_SMART]
-        - CURTO PRAZO (2 meses): ...
-        - MÉDIO PRAZO (Semestre): ...
-        - LONGO PRAZO (Ano): ...
-        [FIM_METAS_SMART]
-        
-        2. 🧩 DIRETRIZES DE ADAPTAÇÃO:
-        """
+        # Se o modo prático estiver ativado, muda o System Prompt
+        if modo_pratico:
+            prompt_sys = """
+            Você é um Mentor de Professores focado em PRÁTICA DE SALA DE AULA (Chão de escola).
+            SUA MISSÃO: Criar estratégias SIMPLES, DIRETAS e APLICÁVEIS para o professor usar AMANHÃ.
+            
+            Foque em:
+            1. Manejo de comportamento.
+            2. Adaptação de atividades simples.
+            3. Rotina visual.
+            
+            Evite "pedagogês" complexo. Seja direto e instrucional.
+            """
+        else:
+            prompt_sys = """
+            Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
+            SUA MISSÃO: Cruzar dados para criar um PEI com Taxonomia de Bloom e Metas SMART.
+            
+            --- ESTRUTURA OBRIGATÓRIA ---
+            1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
+            [ANALISE_FARMA] Analise os fármacos. [/ANALISE_FARMA]
+            [TAXONOMIA_BLOOM] Liste APENAS 3 verbos de comando. [/TAXONOMIA_BLOOM]
+            
+            [METAS_SMART]
+            - CURTO PRAZO (2 meses): ...
+            - MÉDIO PRAZO (Semestre): ...
+            - LONGO PRAZO (Ano): ...
+            [FIM_METAS_SMART]
+            
+            2. 🧩 DIRETRIZES DE ADAPTAÇÃO:
+            """
         
         prompt_user = f"""
         ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
@@ -349,45 +363,29 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
         client = OpenAI(api_key=api_key)
         
         prompt_sys = f"""
-        Você é um Game Master que cria guias de aventura para estudantes.
+        Você é um NARRADOR DE RPG (Game Master) escrevendo para um jovem herói estudante.
         
-        CONTEXTO: Aluno gosta de {dados['hiperfoco']}.
-        BASE TÉCNICA (Para referência): {pei_tecnico[:1500]}
+        CONTEXTO: O Herói gosta de {dados['hiperfoco']}.
+        BASE TÉCNICA (Para referência): {pei_tecnico[:1000]}
         
-        SUA MISSÃO: Criar um Roteiro Gamificado EM PRIMEIRA PESSOA ("Eu").
+        SUA MISSÃO: Escrever uma "Carta de Missão" curta, inspiradora e lúdica.
         
-        REGRAS ABSOLUTAS:
-        1. PROIBIDO mencionar: CID, Diagnóstico, Remédio, Transtorno, "Barreira".
-        2. Use Emojis e linguagem motivadora.
-        3. Siga EXATAMENTE este template:
+        ESTRUTURA DA NARRATIVA:
+        1. Saudação Épica (Usando o tema do hiperfoco).
+        2. 🧙‍♂️ Meus Poderes (Explicar os pontos fortes do aluno como habilidades mágicas).
+        3. ⚔️ O Desafio (Explicar o que é difícil na escola como um monstro ou obstáculo a vencer).
+        4. 🎒 Inventário Lendário (As estratégias de organização como itens).
+        5. 🛡️ A Guilda (Os professores e família como aliados).
         
-        [MAPA_TEXTO_GAMIFICADO]
-        **Meus Superpoderes:**
-        (Como uso meu {dados['hiperfoco']} para aprender melhor).
-        
-        **Escudo de Calma:**
-        (Técnica de respiração ou pausa para quando estou nervoso).
-        
-        **Missão na Sala:**
-        (O que faço na aula: sentar na frente, pedir silêncio, usar fone).
-        
-        **Meu Inventário:**
-        (Como organizo minha mochila ou caderno).
-        
-        **Poção de Energia:**
-        (O que faço no intervalo para descansar).
-        
-        **Minha Guilda:**
-        (Quem são meus aliados: Mãe, Pai, Professores).
-        [FIM_MAPA_TEXTO_GAMIFICADO]
+        Use emojis. Seja positivo. Fale diretamente com o aluno ("Você").
         """
         
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": "Gere o mapa do aluno."}])
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": "Escreva a carta de missão."}])
         return res.choices[0].message.content, None
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF (TÉCNICO APENAS)
+# 7. GERADOR PDF (TÉCNICO & TEXTO SIMPLES)
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -406,6 +404,12 @@ class PDF_Classic(FPDF):
     def section_title(self, label):
         self.ln(8); self.set_fill_color(240, 248, 255); self.set_text_color(0, 78, 146)
         self.set_font('Arial', 'B', 11); self.cell(0, 8, f"  {label}", 0, 1, 'L', fill=True); self.ln(4)
+
+class PDF_Simple_Text(FPDF):
+    def header(self):
+        self.set_font('Arial', 'B', 14)
+        self.cell(0, 10, 'ROTEIRO DE MISSÃO GAMIFICADO', 0, 1, 'C')
+        self.ln(5)
 
 def gerar_pdf_final(dados, tem_anexo):
     pdf = PDF_Classic(); pdf.add_page(); pdf.set_auto_page_break(auto=True, margin=20)
@@ -454,6 +458,27 @@ def gerar_pdf_final(dados, tem_anexo):
                 pdf.ln(2); pdf.set_font("Arial", 'B', 10); pdf.multi_cell(0, 6, l); pdf.set_font("Arial", size=10)
             else: pdf.multi_cell(0, 6, l)
     return pdf.output(dest='S').encode('latin-1', 'replace')
+
+def gerar_pdf_tabuleiro_simples(texto):
+    pdf = PDF_Simple_Text()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    
+    # Processa o texto linha por linha
+    linhas = texto.split('\n')
+    for linha in linhas:
+        # Limpa emojis para não quebrar o FPDF padrão
+        l_limpa = limpar_texto_pdf(linha)
+        
+        # Se for título (negrito ou maiúsculo)
+        if "**" in linha or (len(linha) < 40 and linha.isupper()):
+            pdf.set_font("Arial", 'B', 12)
+            pdf.multi_cell(0, 8, l_limpa.replace('**', ''))
+            pdf.set_font("Arial", '', 12)
+        else:
+            pdf.multi_cell(0, 6, l_limpa)
+            
+    return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 def gerar_docx_final(dados):
     doc = Document(); doc.add_heading('PEI - ' + dados['nome'], 0)
@@ -656,15 +681,24 @@ with tab7: # IA (CONSULTORIA PEDAGÓGICA)
     col_left, col_right = st.columns([1, 2])
     with col_left:
         nome_aluno = st.session_state.dados['nome'].split()[0] if st.session_state.dados['nome'] else "o estudante"
+        
+        # Botão 1: PEI Técnico Padrão
         if st.button(f"✨ GERAR PEI TÉCNICO", type="primary", use_container_width=True):
-            res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text)
+            res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text, modo_pratico=False)
             if res: 
                 st.session_state.dados['ia_sugestao'] = res
-                effect = random.choice(['balloons', 'snow'])
-                if effect == 'balloons': st.balloons()
-                else: st.snow()
+                st.balloons()
             else: st.error(err)
-        
+            
+        # Botão 2: PEI Prático (Novo)
+        st.write("")
+        if st.button("🔄 Regenerar (Foco Prático)", use_container_width=True):
+             res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text, modo_pratico=True)
+             if res:
+                 st.session_state.dados['ia_sugestao'] = res
+                 st.toast("Estratégia Prática Gerada com Sucesso!")
+             else: st.error(err)
+
         with st.expander("📚 Base Técnica & Legal"):
             st.markdown("""
             **1. Documentos Norteadores**
@@ -791,7 +825,6 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
                 texto_game, err = gerar_roteiro_gamificado(api_key, st.session_state.dados, st.session_state.dados['ia_sugestao'])
                 
                 if texto_game:
-                    # Limpeza robusta
                     clean = texto_game.replace("[MAPA_TEXTO_GAMIFICADO]", "").replace("[FIM_MAPA_TEXTO_GAMIFICADO]", "").strip()
                     st.session_state.dados['ia_mapa_texto'] = clean
                     st.rerun()
@@ -804,6 +837,11 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
             st.markdown(st.session_state.dados['ia_mapa_texto']) # Renderiza Markdown nativo
             
             st.divider()
+            
+            # Botão de Exportar PDF SIMPLES
+            pdf_mapa_simples = gerar_pdf_tabuleiro_simples(st.session_state.dados['ia_mapa_texto'])
+            st.download_button("📥 Baixar PDF da Missão", pdf_mapa_simples, f"Missao_{st.session_state.dados['nome']}.pdf", "application/pdf", type="primary")
+
             if st.button("Recomeçar Mapa"):
                 st.session_state.dados['ia_mapa_texto'] = ""
                 st.rerun()
