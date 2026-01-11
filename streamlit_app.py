@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (CRÍTICO: TOPO ABSOLUTO PARA EVITAR ERROS)
+# 2. LISTAS DE DADOS (GLOBAL)
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -67,13 +67,12 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 4. FUNÇÕES LÓGICAS E DE EXTRAÇÃO (BLINDADAS)
+# 4. FUNÇÕES LÓGICAS & UTILITÁRIOS
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
 
 def calcular_complexidade_pei(dados):
-    # Retorna: Texto, CorBG, CorTexto
     n_bar = sum(len(v) for v in dados['barreiras_selecionadas'].values())
     n_suporte_alto = sum(1 for v in dados['niveis_suporte'].values() if v in ["Substancial", "Muito Substancial"])
     recursos = 0
@@ -86,40 +85,20 @@ def calcular_complexidade_pei(dados):
     if saldo <= 7: return "ATENÇÃO", "#FFFFF0", "#D69E2E" # Amarelo/Ouro
     return "CRÍTICA", "#FFF5F5", "#C53030"               # Vermelho
 
+# EXTRAÇÃO INTELIGENTE VIA TAGS DA IA
+def extrair_tag_ia(texto, tag):
+    # Procura pelo conteúdo entre [TAG] e [FIM_TAG] ou quebras de linha duplas
+    padrao = fr'\[{tag}\](.*?)(\[|$)'
+    match = re.search(padrao, texto, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return ""
+
 def extrair_linhas_bncc(texto):
     padrao = r'([A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}.*?)(?=\n|$)'
     if not texto: return []
     linhas = re.findall(padrao, texto)
     return list(set([l.strip().replace('**', '') for l in linhas if len(l) > 10]))
-
-def extrair_resumo_estrategia(texto):
-    if not texto: return "Plano ainda não gerado."
-    
-    # 1. Tentar localizar o bloco de Estratégias
-    if "ESTRATÉGIAS" in texto:
-        partes = texto.split("ESTRATÉGIAS")
-        bloco_estrategia = partes[1]
-        
-        # 2. Cortar antes do próximo tópico (Adaptações, Avaliação, etc.)
-        if "ADAPTAÇÕES" in bloco_estrategia:
-            bloco_estrategia = bloco_estrategia.split("ADAPTAÇÕES")[0]
-        elif "5." in bloco_estrategia: # Tenta pegar pelo número do próximo item
-            bloco_estrategia = bloco_estrategia.split("5.")[0]
-            
-        # 3. Limpar linhas vazias e cabeçalhos numéricos residuais (ex: "4. 🧩")
-        linhas = [l.strip() for l in bloco_estrategia.split('\n') if l.strip()]
-        
-        # Pega a primeira linha longa (evita títulos curtos)
-        for linha in linhas:
-            # Remove marcadores de início como "4.", "-", "*"
-            linha_limpa = re.sub(r'^[\d\.\-\*\s]+', '', linha) 
-            # Remove emojis se estiverem no início
-            linha_limpa = re.sub(r'^[^\w\s]+', '', linha_limpa).strip()
-            
-            if len(linha_limpa) > 30: # É uma frase real
-                return linha_limpa
-                
-    return "Consulte o relatório completo para detalhes."
 
 def get_pro_icon(nome_profissional):
     p = nome_profissional.lower()
@@ -191,7 +170,7 @@ def calcular_progresso():
 def render_progresso():
     p = calcular_progresso()
     icon = "🌱"
-    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)"
+    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja
     
     if p >= 20: icon = "🚀"
     if p >= 50: icon = "🛸"
@@ -199,7 +178,7 @@ def render_progresso():
     
     if p >= 100: 
         icon = "🏆"
-        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)"
+        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)" # Verde
     
     st.markdown(f"""
     <div class="prog-container">
@@ -209,7 +188,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (CSS REFINADO - SIMETRIA)
+# 5. ESTILO VISUAL (CSS FINAL)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -239,7 +218,7 @@ def aplicar_estilo_visual():
             border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO */
+        /* BARRA DE PROGRESSO (3px) */
         .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
@@ -265,7 +244,6 @@ def aplicar_estilo_visual():
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 160px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
-        
         .css-donut {
             width: 70px; height: 70px; border-radius: 50%;
             background: conic-gradient(var(--fill) var(--p), #EDF2F7 0);
@@ -275,6 +253,9 @@ def aplicar_estilo_visual():
         .css-donut::after { content: ""; position: absolute; width: 54px; height: 54px; border-radius: 50%; background: white; }
         .d-val { position: absolute; z-index: 2; font-size: 1.3rem; font-weight: 800; color: #2D3748; }
         .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
+
+        /* COMPLEXITY CARD */
+        .comp-icon-box { margin-bottom: 5px; }
 
         /* DETAIL CARDS (ALINHAMENTO FORÇADO) */
         .soft-card {
@@ -295,7 +276,7 @@ def aplicar_estilo_visual():
             font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; 
             display: flex; align-items: center; gap: 8px; color: #4A5568; letter-spacing: 0.5px; z-index: 2;
         }
-        .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 600; z-index: 2; flex-grow: 1; }
+        .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 500; z-index: 2; flex-grow: 1; }
         
         /* Bg Icons */
         .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
@@ -305,6 +286,9 @@ def aplicar_estilo_visual():
 
         /* Rede Icons */
         .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
+        
+        /* Med Escola Tag */
+        .school-tag { background: #3182CE; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: 700; text-transform: uppercase;}
 
         /* DNA BARS */
         .dna-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; font-style: italic; display: flex; align-items: center; gap: 6px;}
@@ -355,7 +339,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL
+# 6. INTELIGÊNCIA ARTIFICIAL (PROMPT REFINADO)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -384,23 +368,29 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
-            meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
+            meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
+        # --- PROMPT ENGENHADO PARA EXTRAÇÃO PRECISA ---
         prompt_sys = """
         Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
         
-        DIRETRIZ MANDATÓRIA (NÃO IGNORE):
-        1. CITE CÓDIGOS ALFANUMÉRICOS DA BNCC (ex: EF03LP01 - Descrição).
-        2. ESTRATÉGIAS: Seja detalhado e prático.
+        USE ESTAS TAGS OBRIGATÓRIAS NO TEXTO PARA EU PODER EXTRAIR AS INFORMAÇÕES:
         
-        ESTRUTURA:
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo.
-        2. 💊 FATOR MEDICAMENTOSO: Análise.
-        3. 🎯 MATRIZ CURRICULAR (BNCC):
-           - RECOMPOSIÇÃO: [CÓDIGO] Descrição.
-           - ANO ATUAL ({serie}): [CÓDIGO] Descrição.
-        4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso de "{hiperfoco}".
-        5. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
+        [ANALISE_FARMA]
+        Analise brevemente os efeitos colaterais dos medicamentos listados e impacto em sala.
+        [FIM_ANALISE_FARMA]
+        
+        [ESTRATEGIA_MASTER]
+        Escreva UMA estratégia principal assertiva e prática, conectando o Hiperfoco à superação da barreira principal.
+        [FIM_ESTRATEGIA_MASTER]
+        
+        [MATRIZ_BNCC]
+        Liste 3 habilidades fundamentais com CÓDIGO e DESCRIÇÃO (Ex: EF03LP01 - Descrição).
+        [FIM_MATRIZ_BNCC]
+        
+        ESTRUTURA COMPLETA:
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
+        2. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
@@ -445,7 +435,8 @@ def gerar_pdf_final(dados, tem_anexo):
     if dados['lista_medicamentos']:
         for m in dados['lista_medicamentos']:
             obs = m.get('obs', '')
-            txt = f"{m['nome']} ({m['posologia']})"
+            escola = " (Na Escola)" if m.get('escola') else ""
+            txt = f"{m['nome']} ({m['posologia']}){escola}"
             if obs: txt += f" [Obs: {obs}]"
             med_list.append(txt)
     med_str = "; ".join(med_list) if med_list else "Não informado."
@@ -472,7 +463,9 @@ def gerar_pdf_final(dados, tem_anexo):
                 pdf.ln(2)
     if dados['ia_sugestao']:
         pdf.ln(5); pdf.set_text_color(0); pdf.set_font("Arial", '', 10)
-        for linha in dados['ia_sugestao'].split('\n'):
+        # Remove as tags internas do PDF
+        texto_limpo = re.sub(r'\[.*?\]', '', dados['ia_sugestao']) 
+        for linha in texto_limpo.split('\n'):
             l = limpar_texto_pdf(linha)
             if re.match(r'^[1-6]\.', l.strip()) and l.strip().isupper():
                 pdf.ln(4); pdf.set_fill_color(240, 248, 255); pdf.set_text_color(0, 78, 146); pdf.set_font('Arial', 'B', 11)
@@ -484,7 +477,10 @@ def gerar_pdf_final(dados, tem_anexo):
 
 def gerar_docx_final(dados):
     doc = Document(); doc.add_heading('PEI - ' + dados['nome'], 0)
-    if dados['ia_sugestao']: doc.add_paragraph(dados['ia_sugestao'])
+    if dados['ia_sugestao']: 
+        # Remove tags para o DOCX também
+        texto_limpo = re.sub(r'\[.*?\]', '', dados['ia_sugestao'])
+        doc.add_paragraph(texto_limpo)
     b = BytesIO(); doc.save(b); b.seek(0); return b
 
 # ==============================================================================
@@ -512,7 +508,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v63.0 Surgical</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v64.0 Stable</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -572,14 +568,17 @@ with tab1: # ESTUDANTE
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         if usa_med:
-            c1, c2, c3 = st.columns([2, 2, 3])
+            # --- ATUALIZAÇÃO: CHECKBOX "ADMINISTRADO NA ESCOLA" ---
+            c1, c2, c3, c4 = st.columns([2, 2, 2, 2])
             nm = c1.text_input("Nome", key="nm_med")
             pos = c2.text_input("Posologia", key="pos_med")
             obs_med = c3.text_input("Efeitos", key="obs_med")
+            admin_escola = c4.checkbox("Administrado na escola?", key="adm_esc")
             if st.button("Adicionar"):
-                st.session_state.dados['lista_medicamentos'].append({"nome": nm, "posologia": pos, "obs": obs_med, "escola": False}); st.rerun()
+                st.session_state.dados['lista_medicamentos'].append({"nome": nm, "posologia": pos, "obs": obs_med, "escola": admin_escola}); st.rerun()
             for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
-                display_txt = f"💊 **{m['nome']}** ({m['posologia']})"
+                tag_escola = " [NA ESCOLA]" if m.get('escola') else ""
+                display_txt = f"💊 **{m['nome']}** ({m['posologia']}){tag_escola}"
                 if m.get('obs'): display_txt += f" - *Obs: {m['obs']}*"
                 st.info(display_txt)
                 if st.button("Remover", key=f"del_{i}"): st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
@@ -694,7 +693,7 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD FINAL (CORRIGIDO)
+with tab8: # DASHBOARD FINAL (ESTÁVEL)
     render_progresso()
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
@@ -726,44 +725,54 @@ with tab8: # DASHBOARD FINAL (CORRIGIDO)
              hf = st.session_state.dados['hiperfoco'] or "-"
              st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">🚀</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="d-lbl">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
-             # NÍVEL DE ATENÇÃO (LÓGICA CORRIGIDA E ÍCONE NEUTRO)
+             # NÍVEL DE ATENÇÃO (LÓGICA BLINDADA)
              txt_comp, bg_c, txt_c = calcular_complexidade_pei(st.session_state.dados)
-             # O ÍCONE AGORA É COLORIDO PELO CONTEXTO, MAS O ÍCONE EM SI É NEUTRO (ALERT LINE)
-             st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div style="font-size:2.2rem; color:{txt_c}; margin-bottom:5px;"><i class="ri-error-warning-line"></i></div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
+             st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div class="comp-icon-box"><i class="ri-error-warning-line" style="color:{txt_c}; font-size: 2rem;"></i></div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         
         # GRID DOS CARDS DE DETALHE
         c_r1, c_r2 = st.columns(2)
         with c_r1:
-            # CARD 1: MEDICAÇÃO (NOMES)
-            lista_meds = [m['nome'] for m in st.session_state.dados['lista_medicamentos']]
-            txt_meds = ", ".join(lista_meds) if lista_meds else "Nenhuma medicação informada."
+            # CARD 1: MEDICAÇÃO (ANALISE IA + LISTA)
+            analise_farma = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "ANALISE_FARMA") or "Aguardando análise da IA..."
+            lista_meds = []
+            for m in st.session_state.dados['lista_medicamentos']:
+                tag = " (Escola)" if m.get('escola') else ""
+                lista_meds.append(f"{m['nome']}{tag}")
+            
+            txt_meds = ", ".join(lista_meds) if lista_meds else "Sem medicação."
             
             if st.session_state.dados['lista_medicamentos']:
-                st.markdown(f"""<div class="soft-card sc-orange"><div class="sc-head"><i class="ri-medicine-bottle-fill" style="color:#DD6B20;"></i> Atenção Farmacológica</div><div class="sc-body">{txt_meds}<br><span style='font-size:0.8rem; font-weight:400; opacity:0.8;'>Verifique a aba Estudante para detalhes.</span></div><div class="bg-icon">💊</div></div>""", unsafe_allow_html=True)
+                st.markdown(f"""<div class="soft-card sc-orange"><div class="sc-head"><i class="ri-medicine-bottle-fill" style="color:#DD6B20;"></i> Atenção Farmacológica</div><div class="sc-body"><b>Em uso:</b> {txt_meds}<br><br><b>Análise:</b> {analise_farma}</div><div class="bg-icon">💊</div></div>""", unsafe_allow_html=True)
             else:
                 st.markdown(f"""<div class="soft-card sc-green"><div class="sc-head"><i class="ri-checkbox-circle-fill" style="color:#38A169;"></i> Medicação</div><div class="sc-body">Nenhuma medicação informada.</div><div class="bg-icon">✅</div></div>""", unsafe_allow_html=True)
             
             st.write("")
             
-            # CARD 3: ESTRATÉGIA (SEM CORTES)
-            resumo = extrair_resumo_estrategia(st.session_state.dados['ia_sugestao'])
-            st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#D69E2E;"></i> Estratégia Principal</div><div class="sc-body" style="font-style:italic;">"{resumo}"</div><div class="bg-icon">💡</div></div>""", unsafe_allow_html=True)
+            # CARD 3: ESTRATÉGIA (ASSERTIVA)
+            estrategia = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "ESTRATEGIA_MASTER")
+            if not estrategia: estrategia = "Gere o plano na aba IA."
+            st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#D69E2E;"></i> Estratégia Principal</div><div class="sc-body" style="font-style:italic;">"{estrategia}"</div><div class="bg-icon">💡</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
-            # CARD 2: BNCC (LISTA)
-            linhas_bncc = extrair_linhas_bncc(st.session_state.dados['ia_sugestao'])
-            html_lista = ""
-            if linhas_bncc:
-                for l in linhas_bncc: html_lista += f'<div class="bncc-li">{l}</div>'
+            # CARD 2: BNCC (LISTA LIMPA)
+            # Tenta pegar pela tag, se falhar, usa regex genérico
+            raw_bncc = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MATRIZ_BNCC")
+            if raw_bncc:
+                # Limpa linhas vazias
+                linhas = [l.strip() for l in raw_bncc.split('\n') if l.strip()]
+                html_lista = "".join([f'<div class="bncc-li">{l}</div>' for l in linhas])
             else:
-                html_lista = "Gere o plano na aba IA para ver os códigos."
+                # Fallback
+                linhas_bncc = extrair_linhas_bncc(st.session_state.dados['ia_sugestao'])
+                html_lista = "".join([f'<div class="bncc-li">{l}</div>' for l in linhas_bncc]) if linhas_bncc else "Gere o plano na aba IA."
+
             st.markdown(f"""<div class="soft-card sc-blue"><div class="sc-head"><i class="ri-compass-3-fill" style="color:#3182CE;"></i> Matriz BNCC</div><div class="sc-body">{html_lista}</div><div class="bg-icon">🎯</div></div>""", unsafe_allow_html=True)
             
             st.write("")
 
-            # CARD 4: REDE (ÍCONES AUTOMÁTICOS)
+            # CARD 4: REDE (ÍCONES)
             rede_html = ""
             if st.session_state.dados['rede_apoio']:
                 for prof in st.session_state.dados['rede_apoio']:
