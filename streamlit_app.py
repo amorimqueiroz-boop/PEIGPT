@@ -791,52 +791,18 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
                 texto_game, err = gerar_roteiro_gamificado(api_key, st.session_state.dados, st.session_state.dados['ia_sugestao'])
                 
                 if texto_game:
-                    # Limpeza mais robusta
+                    # Limpeza robusta
                     clean = texto_game.replace("[MAPA_TEXTO_GAMIFICADO]", "").replace("[FIM_MAPA_TEXTO_GAMIFICADO]", "").strip()
                     st.session_state.dados['ia_mapa_texto'] = clean
                     st.rerun()
                 else:
                     st.error(f"Erro ao gerar: {err}")
         
-        # Exibição do Mapa (Cards)
+        # Exibição do Mapa (TEXTO PURO)
         if st.session_state.dados['ia_mapa_texto']:
-            st.markdown("#### 📜 Roteiro de Poderes")
+            st.markdown("### 📜 Roteiro de Poderes")
+            st.markdown(st.session_state.dados['ia_mapa_texto']) # Renderiza Markdown nativo
             
-            # TENTATIVA 1: Tentar criar cards bonitos (Regex)
-            # Usa Regex para achar títulos entre ** ** (ex: **Meus Poderes:**)
-            padrao_blocos = re.split(r'\n(?=\*\*)', st.session_state.dados['ia_mapa_texto']) # Quebra onde tiver uma nova linha seguida de **
-            
-            cards_gerados = 0
-            
-            for bloco in padrao_blocos:
-                bloco = bloco.strip()
-                if not bloco: continue
-                
-                # Verifica se o bloco começa com ** (Título)
-                if bloco.startswith("**"):
-                    try:
-                        # Separa o título do resto do conteúdo
-                        partes = bloco.split("\n", 1)
-                        if len(partes) == 2:
-                            titulo = partes[0].replace("**", "").replace(":", "").strip()
-                            conteudo = partes[1].strip()
-                            
-                            st.markdown(f"""
-                            <div class="game-card gc-power">
-                                <div class="gc-title">{titulo}</div>
-                                <div class="gc-body">{conteudo}</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                            cards_gerados += 1
-                    except:
-                        pass # Se der erro num bloco específico, ignora e tenta o próximo
-
-            # TENTATIVA 2: Se a IA não formatou direito e nenhum card foi gerado, mostra texto puro
-            if cards_gerados == 0:
-                st.info("O formato gerado pela IA foi diferente do padrão, mostrando texto original:")
-                st.markdown(st.session_state.dados['ia_mapa_texto'])
-
-            # Botão para limpar/refazer se precisar
             st.divider()
             if st.button("Recomeçar Mapa"):
                 st.session_state.dados['ia_mapa_texto'] = ""
