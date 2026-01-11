@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CORREÇÃO FINAL DE DESIGN)
+# 2. ESTILO VISUAL (BARRA DINÂMICA + CARD BNCC)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -64,14 +64,14 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO */
+        /* BARRA DE PROGRESSO (CSS BASE) */
         .minimal-track {
             width: 100%; height: 4px; background-color: #E2E8F0; border-radius: 2px;
             position: relative; margin: 0 0 40px 0;
         }
         .minimal-fill {
             height: 100%; border-radius: 2px; 
-            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 1.5s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .minimal-cursor-icon {
@@ -94,21 +94,28 @@ def aplicar_estilo_visual():
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* NOVOS CARDS DE ESTRATÉGIA (BNCC) */
+        /* BNCC CARD (VERDE & LISTA) */
+        .bncc-card-container {
+            background: #F0FFF4; border: 1px solid #9AE6B4; border-radius: 12px; padding: 20px;
+            margin-top: 0; height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .bncc-header {
+            color: #22543D; font-weight: 800; font-size: 0.95rem; text-transform: uppercase;
+            margin-bottom: 15px; border-bottom: 1px solid #9AE6B4; padding-bottom: 10px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .bncc-item {
+            font-size: 0.9rem; color: #276749; margin-bottom: 8px; line-height: 1.4;
+            padding-left: 10px; border-left: 3px solid #48BB78;
+        }
+
+        /* STRATEGY CARD (AMARELO SUAVE) */
         .strat-card {
-            background: white; border-radius: 12px; padding: 20px; border: 1px solid #E2E8F0;
-            height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; flex-direction: column;
+            background: #FFFAF0; border: 1px solid #FBD38D; border-radius: 12px; padding: 20px;
+            height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         }
-        .strat-title {
-            font-size: 0.85rem; text-transform: uppercase; color: #718096; font-weight: 700; 
-            margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-        }
-        .bncc-badge {
-            background: #EBF8FF; color: #2C5282; padding: 5px 12px; border-radius: 8px;
-            font-family: 'Courier New', monospace; font-weight: 700; font-size: 0.9rem;
-            margin: 0 5px 5px 0; display: inline-block; border: 1px solid #BEE3F8;
-        }
-        .strategy-text { font-size: 0.95rem; color: #2D3748; line-height: 1.5; font-style: italic; }
+        .strat-title { color: #9C4221; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid #FBD38D; padding-bottom: 10px; }
+        .strat-text { font-style: italic; color: #744210; font-size: 0.95rem; }
 
         /* DONUT CHART */
         .donut-card {
@@ -126,7 +133,7 @@ def aplicar_estilo_visual():
         .donut-value { position: absolute; z-index: 2; font-size: 1.6rem; font-weight: 800; color: #2D3748; }
         .donut-label { text-transform: uppercase; font-size: 0.75rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; }
 
-        /* INFO CARDS (Medicação/Rede) */
+        /* INFO CARDS */
         .info-card {
             background: #F8FAFC; border-radius: 12px; padding: 15px; border-left: 5px solid #CBD5E0;
             margin-bottom: 10px; display: flex; align-items: center; gap: 15px;
@@ -162,12 +169,10 @@ def aplicar_estilo_visual():
             background-color: var(--brand-blue) !important; color: white !important; border: none !important;
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
-        
         div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
         div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
         .stToggle { margin-top: 10px; }
-        
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
     </style>
@@ -247,22 +252,23 @@ def limpar_texto_pdf(texto):
     texto = texto.replace('**', '').replace('__', '').replace('### ', '').replace('## ', '').replace('# ', '')
     return re.sub(r'[^\x00-\xff]', '', texto)
 
-# Função para extrair códigos BNCC
-def extrair_codigos_bncc(texto):
-    padrao = r'\b[A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}\b'
+# EXTRAÇÃO INTELIGENTE BNCC (Código + Texto)
+def extrair_linhas_bncc(texto):
+    # Regex para capturar linhas que começam com código BNCC (Ex: EF01LP01 - Descrição...)
+    # Pega o padrão XX00XX00 até o fim da linha
+    padrao = r'([A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}.*?)(?=\n|$)'
     if not texto: return []
-    codigos = re.findall(padrao, texto)
-    return list(set(codigos))
+    linhas = re.findall(padrao, texto)
+    return list(set(linhas))
 
-# Função para extrair resumo da estratégia
 def extrair_resumo_estrategia(texto):
     if not texto: return "Plano ainda não gerado."
-    # Tenta pegar o primeiro parágrafo após "ESTRATÉGIAS"
-    partes = texto.split("ESTRATÉGIAS")
-    if len(partes) > 1:
-        resumo = partes[1].split('\n')[0:2] # Pega as primeiras linhas
-        return " ".join(resumo).replace('*', '').replace('#', '').strip()[:150] + "..."
-    return "Consulte o relatório completo para detalhes."
+    # Tenta pegar algo relevante após "ESTRATÉGIAS"
+    if "ESTRATÉGIAS" in texto:
+        partes = texto.split("ESTRATÉGIAS")
+        resumo = partes[1].split('\n')[1:3] # Pega linhas logo após
+        return " ".join(resumo).replace('*', '').strip()[:180] + "..."
+    return "Gere o plano na aba IA para ver o resumo estratégico."
 
 def salvar_aluno(dados):
     if not dados['nome']: return False, "Nome obrigatório."
@@ -286,31 +292,33 @@ def excluir_aluno(nome_arq):
     except: return False
 
 def calcular_progresso():
-    pontos = 0
-    total = 8 
+    # Lógica baseada em "Jornada": Avanço das abas
+    progresso = 5 # Início
     d = st.session_state.dados
-    if d['nome']: pontos += 1
-    if d['serie']: pontos += 1
-    if d['diagnostico']: pontos += 1
-    if any(d['checklist_evidencias'].values()): pontos += 1
-    if d['hiperfoco']: pontos += 1
-    if any(d['barreiras_selecionadas'].values()): pontos += 1
-    if d['estrategias_ensino'] or d['estrategias_acesso']: pontos += 1
-    if d['ia_sugestao']: pontos += 1
-    return int((pontos / total) * 100)
+    
+    # Marcos da Jornada (Input do usuário)
+    if d['nome']: progresso = 20
+    if any(d['checklist_evidencias'].values()): progresso = 40
+    if d['potencias'] or d['hiperfoco']: progresso = 60
+    if any(d['barreiras_selecionadas'].values()): progresso = 80
+    
+    # O Grande Final: IA Gerada = 100%
+    if d['ia_sugestao']: progresso = 100
+    
+    return progresso
 
 def render_progresso():
     p = calcular_progresso()
-    # Lógica de Chegada e Cor
+    # Lógica de Ícone e Cor (Jornada)
     icon = "🌱"
-    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja Padrão
+    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja (Padrão)
     
     if p >= 20: icon = "🚶"
     if p >= 50: icon = "🏃"
     if p >= 80: icon = "🚀"
-    if p >= 100: 
+    if p == 100: 
         icon = "🏆"
-        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)" # Verde Vitória
+        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)" # Verde Vitória (Sucesso)
     
     st.markdown(f"""
     <div class="minimal-track">
@@ -355,15 +363,15 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
         
         DIRETRIZ MANDATÓRIA (NÃO IGNORE):
-        1. Você DEVE citar os CÓDIGOS ALFANUMÉRICOS da BNCC (ex: EF03LP01) para cada objetivo.
+        1. CITE O CÓDIGO ALFANUMÉRICO E A DESCRIÇÃO da habilidade (ex: EF03LP01 - Ler e escrever...).
         2. Analise a medicação ({meds}) e seu impacto pedagógico.
         
         ESTRUTURA DO RELATÓRIO:
         1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
         2. 💊 ANÁLISE MEDICAMENTOSA: Se houver, explique.
         3. 🎯 MATRIZ CURRICULAR (BNCC):
-           - RECOMPOSIÇÃO (Anos Anteriores): [CÓDIGO] Descrição.
-           - ANO CORRENTE ({serie}): [CÓDIGO] Descrição.
+           - RECOMPOSIÇÃO (Anos Anteriores): [CÓDIGO] Descrição Completa.
+           - ANO CORRENTE ({serie}): [CÓDIGO] Descrição Completa.
         4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso de "{hiperfoco}".
         5. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
@@ -375,7 +383,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
-        EVIDÊNCIAS: {evid}
+        EVIDÊNCIAS DE SALA: {evid}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -478,7 +486,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v51.0 Diamond</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v52.0 Mastery</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -511,7 +519,6 @@ with tab0: # INÍCIO
                 <div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div>
             </div>
         </div>""", unsafe_allow_html=True)
-    
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
@@ -519,6 +526,9 @@ with tab0: # INÍCIO
     with c3: st.markdown("""<a href="https://institutoneurosaber.com.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-pink"><i class="ri-brain-line"></i></div><h3>Neurociência</h3><p>Artigos sobre desenvolvimento atípico.</p></div></a>""", unsafe_allow_html=True)
     with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
     if api_key: st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
+
+# ... (Conteúdo das abas Estudante a Monitoramento igual ao anterior, omitido para brevidade, mas está no código final)
+# Vou pular direto para as partes cruciais:
 
 with tab1: # ESTUDANTE
     render_progresso()
@@ -661,8 +671,8 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD
-    render_progresso() # BARRA DE PROGRESSO VERDE AQUI
+with tab8: # DASHBOARD (CARD VERDE)
+    render_progresso() # Barra verde aparecerá aqui se 100%
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
         init_avatar = st.session_state.dados['nome'][0].upper() if st.session_state.dados['nome'] else "?"
@@ -679,6 +689,7 @@ with tab8: # DASHBOARD
         </div>
         """, unsafe_allow_html=True)
         
+        # ROW 1: CÍRCULOS
         c_kpi1, c_kpi2, c_kpi3 = st.columns(3)
         with c_kpi1:
             n_pot = len(st.session_state.dados['potencias'])
@@ -694,53 +705,31 @@ with tab8: # DASHBOARD
 
         st.write("")
         
-        # ROW 2: ALINHAMENTO ESTRATÉGICO
-        c_strat1, c_strat2 = st.columns(2)
-        
-        with c_strat1:
-            codigos_bncc = extrair_codigos_bncc(st.session_state.dados['ia_sugestao'])
-            st.markdown('<div class="strat-card"><div class="strat-title"><i class="ri-compass-3-fill" style="color:#0F52BA;"></i> Matriz BNCC (Códigos)</div>', unsafe_allow_html=True)
-            if codigos_bncc:
-                for code in codigos_bncc:
-                    st.markdown(f'<span class="bncc-badge">{code}</span>', unsafe_allow_html=True)
-            else:
-                st.caption("Gere o plano na aba IA para ver os códigos.")
-            st.markdown('</div>', unsafe_allow_html=True)
+        c_col1, c_col2 = st.columns([1, 1])
+        with c_col1:
+            # CARD VERDE BNCC
+            linhas_bncc = extrair_linhas_bncc(st.session_state.dados['ia_sugestao'])
+            st.markdown(f"""
+            <div class="bncc-card-container">
+                <div class="bncc-header"><i class="ri-compass-3-fill"></i> Matriz de Habilidades BNCC</div>
+            """, unsafe_allow_html=True)
             
-        with c_strat2:
-            resumo_estrategia = extrair_resumo_estrategia(st.session_state.dados['ia_sugestao'])
-            st.markdown('<div class="strat-card"><div class="strat-title"><i class="ri-flashlight-fill" style="color:#D69E2E;"></i> Síntese da Estratégia</div>', unsafe_allow_html=True)
-            if st.session_state.dados['ia_sugestao']:
-                st.markdown(f'<div class="strategy-text">"{resumo_estrategia}"</div>', unsafe_allow_html=True)
+            if linhas_bncc:
+                for linha in linhas_bncc:
+                    st.markdown(f'<div class="bncc-item">{linha}</div>', unsafe_allow_html=True)
             else:
                 st.caption("Aguardando geração da IA...")
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        st.write("")
-        
-        c_info1, c_info2 = st.columns(2)
-        with c_info1:
-            if st.session_state.dados['lista_medicamentos']:
-                st.markdown("""<div class="info-card ic-warn"><i class="ri-medicine-bottle-fill" style="color:#DD6B20; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#C05621;">Requer Atenção Farmacológica</div><div style="font-size:0.85rem; color:#744210;">Aluno faz uso de medicação contínua. Verifique a aba Estudante.</div></div></div>""", unsafe_allow_html=True)
-            else:
-                st.markdown("""<div class="info-card ic-success"><i class="ri-checkbox-circle-fill" style="color:#38A169; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#276749;">Sem Medicação Informada</div></div></div>""", unsafe_allow_html=True)
-        with c_info2:
-            if st.session_state.dados['rede_apoio']:
-                rede_txt = ", ".join(st.session_state.dados['rede_apoio'])
-                st.markdown(f"""<div class="info-card ic-blue" style="border-left-color:#3182CE; background:#EBF8FF;"><i class="ri-team-fill" style="color:#3182CE; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#2C5282;">Rede de Apoio Ativa</div><div style="font-size:0.85rem; color:#2A4365;">{rede_txt}</div></div></div>""", unsafe_allow_html=True)
-            else:
-                st.markdown("""<div class="info-card" style="border-left-color:#CBD5E0; background:#F7FAFC;"><i class="ri-user-unfollow-line" style="color:#A0AEC0; font-size:1.5rem;"></i><div><div style="font-weight:700; color:#718096;">Rede de Apoio não informada</div></div></div>""", unsafe_allow_html=True)
-
-        st.write("")
-        st.markdown("##### 🧬 DNA de Suporte")
-        dna_c1, dna_c2 = st.columns(2)
-        areas = list(LISTAS_BARREIRAS.keys())
-        for i, area in enumerate(areas):
-            qtd = len(st.session_state.dados['barreiras_selecionadas'].get(area, []))
-            val = min(qtd * 20, 100)
-            target = dna_c1 if i < 3 else dna_c2
-            target.caption(f"{area} ({qtd})")
-            target.progress(val)
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+        with c_col2:
+            # CARD ESTRATÉGIA
+            resumo = extrair_resumo_estrategia(st.session_state.dados['ia_sugestao'])
+            st.markdown(f"""
+            <div class="strat-card">
+                <div class="strat-title"><i class="ri-flashlight-fill"></i> Estratégia Principal</div>
+                <div class="strat-text">"{resumo}"</div>
+            </div>
+            """, unsafe_allow_html=True)
 
     st.divider()
     if st.session_state.dados['ia_sugestao']:
