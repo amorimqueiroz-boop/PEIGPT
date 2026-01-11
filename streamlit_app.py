@@ -55,7 +55,7 @@ default_state = {
     'barreiras_selecionadas': {k: [] for k in LISTAS_BARREIRAS.keys()},
     'niveis_suporte': {}, 
     'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
-    'ia_sugestao': '',         # PEI TÉCNICO
+    'ia_sugestao': '',         # PEI TÉCNICO OU PRÁTICO
     'ia_mapa_texto': '',       # ROTEIRO GAMIFICADO
     'outros_acesso': '', 'outros_ensino': '', 
     'monitoramento_data': date.today(), 
@@ -93,6 +93,19 @@ def get_hiperfoco_emoji(texto):
     if "carro" in t: return "🏎️"
     if "espaço" in t: return "🪐"
     return "🚀"
+
+def get_segmento_info(serie):
+    """Retorna informações sobre o segmento escolar para UX"""
+    if not serie: return "Geral", "Adaptação curricular padrão."
+    if "Educação Infantil" in serie:
+        return "Educação Infantil", "Foco em marcos do desenvolvimento, sensorial e socialização (BNCC: Campos de Experiência)."
+    if "Fund. I" in serie:
+        return "Anos Iniciais", "Foco na alfabetização, letramento e consolidação de operações básicas."
+    if "Fund. II" in serie:
+        return "Anos Finais", "Foco na organização (múltiplos professores), autonomia e identidade."
+    if "EM" in serie or "Médio" in serie:
+        return "Ensino Médio", "Foco no Projeto de Vida, autonomia intelectual e preparação para o futuro."
+    return "Geral", "Adaptação curricular padrão."
 
 def calcular_complexidade_pei(dados):
     n_bar = sum(len(v) for v in dados['barreiras_selecionadas'].values())
@@ -160,7 +173,7 @@ def limpar_texto_pdf(texto):
     if not texto: return ""
     # Remove emojis e formatação markdown para PDF
     t = texto.replace('**', '').replace('__', '').replace('#', '')
-    t = t.replace('⚡', '').replace('🧠', '').replace('🌬️', '').replace('🕒', '').replace('📁', '').replace('🚶‍♂️', '').replace('🎨', '').replace('🤝', '').replace('🧙‍♂️', '').replace('⚔️', '').replace('🛡️', '').replace('🎒', '').replace('🧪', '')
+    t = t.replace('⚡', '').replace('🧠', '').replace('🌬️', '').replace('🕒', '').replace('📁', '').replace('🚶‍♂️', '').replace('🎨', '').replace('🤝', '').replace('🧙‍♂️', '').replace('⚔️', '').replace('🛡️', '').replace('🎒', '').replace('🧪', '').replace('🧸', '').replace('🍎', '').replace('💤', '')
     return t.encode('latin-1', 'ignore').decode('latin-1')
 
 def salvar_aluno(dados):
@@ -173,7 +186,6 @@ def salvar_aluno(dados):
     except Exception as e: return False, str(e)
 
 def carregar_aluno(nome_arq):
-    # (Mantido simplificado)
     return None
 
 def excluir_aluno(nome_arq):
@@ -344,44 +356,56 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO ---
         serie = dados['serie'] or ""
         
-        # 1. Definição do Perfil do Especialista (System Prompt)
         if "Educação Infantil" in serie:
             perfil_ia = """
             Você é um Especialista em EDUCAÇÃO INFANTIL e Inclusão.
             FOCO: BNCC (Campos de Experiência), marcos do desenvolvimento, brincar heurístico, socialização e autonomia básica.
-            Evite termos acadêmicos rígidos. Foque no lúdico e sensorial.
             """
         elif "Fund. I" in serie:
             perfil_ia = """
             Você é um Especialista em ANOS INICIAIS (Fundamental I) e Alfabetização.
-            FOCO: Processo de alfabetização/letramento, consolidação da matemática básica, funções executivas e adaptação à rotina escolar.
+            FOCO: Processo de alfabetização/letramento, consolidação da matemática básica e rotina escolar.
             """
         elif "Fund. II" in serie:
             perfil_ia = """
             Você é um Especialista em ANOS FINAIS (Fundamental II).
-            FOCO: Organização para múltiplos professores, habilidades sociais na pré-adolescência, pensamento lógico-abstrato e identidade.
+            FOCO: Organização para múltiplos professores, habilidades sociais na pré-adolescência, identidade e abstração.
             """
         elif "EM" in serie or "Médio" in serie:
             perfil_ia = """
             Você é um Especialista em ENSINO MÉDIO e Projetos de Vida.
-            FOCO: Autonomia intelectual, abstração profunda, preparação para vida adulta/trabalho e soft skills.
+            FOCO: Autonomia intelectual, abstração profunda, preparação para vida adulta/vestibular.
             """
         else:
             perfil_ia = "Você é um Especialista Sênior em Neuroeducação e Inclusão."
 
-        # 2. Construção do Prompt Completo
+        # --- SELEÇÃO DE FORMATO (TÉCNICO VS PRÁTICO) ---
         if modo_pratico:
             prompt_sys = f"""
             {perfil_ia}
-            SUA MISSÃO: Criar estratégias PRÁTICAS ("Chão de sala") para o professor usar AMANHÃ.
-            Seja direto, instrucional e evite teoria excessiva.
+            SUA MISSÃO: Criar um GUIA PRÁTICO E DIRETO para o professor usar em sala de aula AMANHÃ.
+            
+            ESTRUTURA DE RESPOSTA OBRIGATÓRIA (Não use blocos técnicos aqui, use texto corrido e tópicos):
+            
+            # ESTRATÉGIAS PRÁTICAS PARA {serie.upper()}
+            
+            1. 🎯 O QUE FAZER AMANHÃ:
+            (3 ações simples e imediatas para adaptação de atividade e comportamento).
+            
+            2. 🗣️ COMO FALAR:
+            (Exemplos de comandos ou feedbacks que funcionam para este perfil).
+            
+            3. 🏠 ROTINA E AMBIENTE:
+            (Dicas de onde sentar, como organizar a mesa, pausas).
+            
+            NOTA: Não inclua "Avaliação de Repertório" ou termos clínicos complexos. Fale a língua do professor.
             """
         else:
             prompt_sys = f"""
             {perfil_ia}
             SUA MISSÃO: Cruzar dados para criar um PEI Técnico Oficial com Taxonomia de Bloom e Metas SMART.
             
-            --- ESTRUTURA OBRIGATÓRIA ---
+            ESTRUTURA OBRIGATÓRIA:
             1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
             [ANALISE_FARMA] Analise os fármacos. [/ANALISE_FARMA]
             [TAXONOMIA_BLOOM] Liste APENAS 3 verbos de comando adequados ao nível. [/TAXONOMIA_BLOOM]
@@ -393,10 +417,11 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
             [FIM_METAS_SMART]
             
             2. 🧩 DIRETRIZES DE ADAPTAÇÃO:
+            (Descreva as adaptações curriculares e de acesso necessárias).
             """
         
         prompt_user = f"""
-        ALUNO: {dados['nome']} | SÉRIE: {dados['serie']}
+        ALUNO: {dados['nome']} | SÉRIE: {serie}
         DIAGNÓSTICO: {dados['diagnostico']}
         MEDICAÇÃO: {meds_info}
         HIPERFOCO: {dados['hiperfoco']}
@@ -409,31 +434,72 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         return res.choices[0].message.content, None
     except Exception as e: return None, str(e)
 
-# CÉREBRO 2: GAME MASTER (Traduz para o Aluno)
+# CÉREBRO 2: GAME MASTER (SEGMENTADO POR IDADE)
 def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
     if not api_key: return None, "Configure a API."
     try:
         client = OpenAI(api_key=api_key)
+        serie = dados['serie'] or ""
+        hiperfoco = dados['hiperfoco'] or "brincadeiras"
         
-        prompt_sys = f"""
-        Você é um NARRADOR DE RPG (Game Master) escrevendo para um jovem herói estudante.
+        # --- LÓGICA DE SEGMENTAÇÃO DO MAPA ---
+        if "Educação Infantil" in serie:
+            # INFANTIL: Visual, emojis, rotina simples
+            prompt_sys = f"""
+            Você é um Criador de Histórias Visuais para crianças pequenas (4-5 anos).
+            O aluno gosta de: {hiperfoco}.
+            
+            SUA MISSÃO: Criar um Roteiro Visual usando MUITOS EMOJIS e pouquíssimo texto.
+            Estrutura obrigatória:
+            
+            # ☀️ MINHA AVENTURA DO DIA
+            
+            🧸 **Chegada:** (Emoji e frase curta sobre chegar na escola feliz)
+            🎨 **Atividades:** (Emoji e frase sobre pintar/brincar)
+            🍎 **Lanche:** (Emoji sobre comer e lavar as mãos)
+            🧘 **Descanso:** (Emoji sobre ficar calmo/soneca)
+            👋 **Saída:** (Emoji sobre abraçar a família)
+            
+            Use linguagem carinhosa e direta.
+            """
+            
+        elif "Fund. I" in serie:
+            # ANOS INICIAIS: Gamificação concreta, missões
+            prompt_sys = f"""
+            Você é um Game Master para crianças de 6 a 10 anos.
+            O aluno gosta de: {hiperfoco}.
+            
+            SUA MISSÃO: Criar um "Quadro de Missões" empolgante.
+            Estrutura obrigatória:
+            
+            # 🗺️ MAPA DE EXPLORAÇÃO
+            
+            🎒 **Equipamento:** (Materiais escolares como itens de aventura)
+            ⚡ **Super Poder:** (O ponto forte do aluno)
+            🚧 **O Desafio:** (O que é difícil na escola, transformado em obstáculo a pular)
+            🏆 **Recompensa:** (O que ganha ao terminar: tempo livre, estrelinha)
+            🤝 **Aliados:** (Professora e amigos)
+            """
+            
+        else:
+            # FUND II / MÉDIO: RPG, Jornada do Herói, identidade
+            prompt_sys = f"""
+            Você é um Narrador de RPG para adolescentes.
+            O aluno gosta de: {hiperfoco}.
+            
+            SUA MISSÃO: Criar uma "Ficha de Personagem" ou "Jornada do Herói".
+            Estrutura obrigatória:
+            
+            # ⚔️ FICHA DE PERSONAGEM
+            
+            📜 **A Quest (Missão):** (Terminar o ano, passar no vestibular, ou foco)
+            🔮 **Skills (Habilidades):** (Pontos fortes cognitivos e sociais)
+            🛡️ **Buffs (Apoios):** (O que ajuda: fone de ouvido, sentar na frente)
+            👹 **Boss (Desafio):** (A dificuldade principal: ansiedade, barulho)
+            🧪 **Mana (Energia):** (Como recarregar no intervalo)
+            """
         
-        CONTEXTO: O Herói gosta de {dados['hiperfoco']}.
-        BASE TÉCNICA (Para referência): {pei_tecnico[:1000]}
-        
-        SUA MISSÃO: Escrever uma "Carta de Missão" curta, inspiradora e lúdica.
-        
-        ESTRUTURA DA NARRATIVA:
-        1. Saudação Épica (Usando o tema do hiperfoco).
-        2. 🧙‍♂️ Meus Poderes (Explicar os pontos fortes do aluno como habilidades mágicas).
-        3. ⚔️ O Desafio (Explicar o que é difícil na escola como um monstro ou obstáculo a vencer).
-        4. 🎒 Inventário Lendário (As estratégias de organização como itens).
-        5. 🛡️ A Guilda (Os professores e família como aliados).
-        
-        Use emojis. Seja positivo. Fale diretamente com o aluno ("Você").
-        """
-        
-        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": "Escreva a carta de missão."}])
+        res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": "Gere o roteiro."}])
         return res.choices[0].message.content, None
     except Exception as e: return None, str(e)
 
@@ -516,21 +582,15 @@ def gerar_pdf_tabuleiro_simples(texto):
     pdf = PDF_Simple_Text()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    
-    # Processa o texto linha por linha
     linhas = texto.split('\n')
     for linha in linhas:
-        # Limpa emojis para não quebrar o FPDF padrão
         l_limpa = limpar_texto_pdf(linha)
-        
-        # Se for título (negrito ou maiúsculo)
         if "**" in linha or (len(linha) < 40 and linha.isupper()):
             pdf.set_font("Arial", 'B', 12)
             pdf.multi_cell(0, 8, l_limpa.replace('**', ''))
             pdf.set_font("Arial", '', 12)
         else:
             pdf.multi_cell(0, 6, l_limpa)
-            
     return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 def gerar_docx_final(dados):
@@ -565,7 +625,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v105.0 Segmented AI</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v106.0 Segmented & Educational UX</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -768,6 +828,11 @@ with tab6: # MONITORAMENTO
 with tab7: # IA (CONSULTORIA PEDAGÓGICA)
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria Pedagógica com IA", unsafe_allow_html=True)
+    
+    # Exibir qual segmento a IA detectou
+    seg_nome, seg_desc = get_segmento_info(st.session_state.dados['serie'])
+    st.info(f"ℹ️ **Modo Especialista Ativo:** {seg_nome}\n\n{seg_desc}")
+    
     col_left, col_right = st.columns([1, 2])
     with col_left:
         nome_aluno = st.session_state.dados['nome'].split()[0] if st.session_state.dados['nome'] else "o estudante"
@@ -782,7 +847,8 @@ with tab7: # IA (CONSULTORIA PEDAGÓGICA)
             
         # Botão 2: PEI Prático (Novo)
         st.write("")
-        if st.button("🔄 Regenerar (Foco Prático)", use_container_width=True):
+        st.markdown("**Opções Avançadas:**")
+        if st.button("🔄 Gerar Versão Prática (Chão de Sala)", use_container_width=True, help="Gera um guia direto de manejo e adaptação, sem termos técnicos complexos."):
              res, err = consultar_gpt_pedagogico(api_key, st.session_state.dados, st.session_state.pdf_text, modo_pratico=True)
              if res:
                  st.session_state.dados['ia_sugestao'] = res
@@ -908,6 +974,9 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
     </div>
     """, unsafe_allow_html=True)
     
+    seg_nome, seg_desc = get_segmento_info(st.session_state.dados['serie'])
+    st.info(f"🎮 **Gamificação Adaptada:** O sistema detectou **{seg_nome}**. O roteiro abaixo será gerado com linguagem e metáforas adequadas para essa faixa etária.")
+
     if st.session_state.dados['ia_sugestao']:
         # Botão para Gerar o Mapa (Chama a IA Gamificada)
         if st.button("🎮 Gerar Roteiro Gamificado", type="primary"):
