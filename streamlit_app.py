@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (CORREÇÃO DE CACHE E LAYOUT)
+# 2. ESTILO VISUAL (CORREÇÃO DE LAYOUT E ERROS)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -57,7 +57,7 @@ def aplicar_estilo_visual():
             border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO (CSS FORÇADO) */
+        /* BARRA DE PROGRESSO (CSS FORÇADO 3px) */
         .prog-container {
             width: 100%; position: relative; margin: 0 0 40px 0;
         }
@@ -93,9 +93,10 @@ def aplicar_estilo_visual():
         .metric-card {
             background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 150px; /* Altura Fixa */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            height: 160px; /* Altura Fixa para todos */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: transform 0.2s;
         }
+        .metric-card:hover { transform: translateY(-3px); }
         
         /* Donut CSS */
         .css-donut {
@@ -108,57 +109,48 @@ def aplicar_estilo_visual():
         .d-val { position: absolute; z-index: 2; font-size: 1.3rem; font-weight: 800; color: #2D3748; }
         .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
 
-        /* COMPLEXITY ICON */
+        /* COMPLEXITY ICON (NEUTRO) */
         .comp-icon-box {
-            width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem; margin-bottom: 8px; background: #F7FAFC;
+            font-size: 2.2rem; margin-bottom: 5px; color: #A0AEC0; /* Cor Neutra do Ícone */
         }
+        .comp-text { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; }
 
         /* DETAIL CARDS (SOFT COLORS & SIMETRIA) */
         .soft-card {
-            border-radius: 12px; padding: 20px; 
-            min-height: 200px; /* Altura Mínima */
+            border-radius: 12px; padding: 25px; 
+            min-height: 250px; /* ALTURA MÍNIMA IGUAL PARA TODOS */
             height: 100%; display: flex; flex-direction: column;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);
-            border-left: 5px solid; /* Borda Colorida */
+            border-left: 5px solid; position: relative; overflow: hidden;
         }
         
         .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
         .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
         .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
         .sc-cyan { background-color: #E6FFFA; border-left-color: #0BC5EA; }
+        .sc-green { background-color: #F0FFF4; border-left-color: #38A169; }
 
         .sc-head { 
-            font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; 
+            font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; 
             display: flex; align-items: center; gap: 8px; color: #4A5568; letter-spacing: 0.5px;
+            z-index: 2; position: relative;
         }
-        .sc-body { font-size: 0.9rem; line-height: 1.5; color: #2D3748; font-weight: 500; }
+        .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 600; z-index: 2; position: relative; }
         
+        /* Ícones de Fundo (Enriquecimento) */
+        .bg-icon {
+            position: absolute; bottom: -10px; right: -10px; 
+            font-size: 5rem; opacity: 0.08; z-index: 1; pointer-events: none;
+        }
+
         /* LISTA BNCC */
-        .bncc-li { margin-bottom: 6px; padding-left: 8px; border-left: 3px solid #63B3ED; font-size: 0.85rem; }
+        .bncc-li { margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #63B3ED; font-size: 0.85rem; }
 
         /* BARRAS DE SUPORTE */
-        .sup-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 8px; border-radius: 6px; display: flex; align-items: center; gap: 6px; }
+        .sup-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; font-style: italic; }
         .sup-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
         .sup-track { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
         .sup-fill { height: 100%; border-radius: 3px; }
-
-        /* CARDS HOME */
-        a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-        .rich-card {
-            background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; 
-            height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-            position: relative; overflow: hidden;
-        }
-        .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
-        .rich-card h3 { margin: 15px 0 10px 0; font-size: 1.1rem; color: var(--brand-blue); font-weight: 800; }
-        .rich-card p { font-size: 0.85rem; color: #718096; line-height: 1.4; margin: 0; }
-        .icon-box { width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 10px; }
-        .ic-blue { background-color: #EBF8FF; color: #3182CE; }
-        .ic-gold { background-color: #FFFFF0; color: #D69E2E; }
-        .ic-pink { background-color: #FFF5F7; color: #D53F8C; }
-        .ic-green { background-color: #F0FFF4; color: #38A169; }
 
         /* INPUTS & BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { 
@@ -166,12 +158,12 @@ def aplicar_estilo_visual():
         }
         div[data-testid="column"] .stButton button { 
             border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; 
-            background-color: var(--brand-blue) !important; color: white !important; border: none !important;
+            background-color: #0F52BA !important; color: white !important; border: none !important;
         }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
         
-        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: var(--brand-blue) !important; border-color: var(--brand-blue) !important; }
-        div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: var(--brand-blue) !important; }
+        div[data-baseweb="checkbox"] div[class*="checked"] { background-color: #0F52BA !important; border-color: #0F52BA !important; }
+        div[data-baseweb="checkbox"][role="switch"] div[class*="checked"] { background-color: #0F52BA !important; }
         .stToggle p { font-weight: 600; color: #2D3748; }
         .stToggle { margin-top: 10px; }
         
@@ -225,7 +217,7 @@ else:
 if 'pdf_text' not in st.session_state: st.session_state.pdf_text = ""
 
 # ==============================================================================
-# 5. UTILITÁRIOS & LÓGICA
+# 5. UTILITÁRIOS & LÓGICA DE CÁLCULO
 # ==============================================================================
 PASTA_BANCO = "banco_alunos"
 if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
@@ -265,24 +257,23 @@ def extrair_resumo_estrategia(texto):
     if "ESTRATÉGIAS" in texto:
         partes = texto.split("ESTRATÉGIAS")
         resumo = partes[1].split('\n')[1:4]
-        return " ".join(resumo).replace('*', '').strip()[:200]
+        return " ".join(resumo).replace('*', '').strip()[:220]
     return "Gere o plano na aba IA para ver o resumo estratégico."
 
-# ALGORITMO COMPLEXIDADE (DETERMINA O 4º CARD)
+# --- CORREÇÃO DO ERRO VALUEERROR: RETORNA 3 VALORES AGORA ---
 def calcular_complexidade_pei(dados):
     n_bar = sum(len(v) for v in dados['barreiras_selecionadas'].values())
     n_suporte_alto = sum(1 for v in dados['niveis_suporte'].values() if v in ["Substancial", "Muito Substancial"])
-    
     recursos = 0
     if dados['rede_apoio']: recursos += 3
     if dados['lista_medicamentos']: recursos += 2
     
-    score = (n_bar + n_suporte_alto) - recursos
+    saldo = (n_bar + n_suporte_alto) - recursos
     
-    # Retorna: Label, Cor do Ícone/Texto
-    if score <= 2: return "FLUIDA", "#38A169" # Verde
-    if score <= 7: return "ATENÇÃO", "#D69E2E" # Laranja
-    return "CRÍTICA", "#E53E3E" # Vermelho
+    # Retorna: Texto, Cor de Fundo, Cor do Texto
+    if saldo <= 2: return "FLUIDA", "#F0FFF4", "#276749" # Verde
+    if saldo <= 7: return "ATENÇÃO", "#FFFFF0", "#975A16" # Amarelo/Ouro
+    return "CRÍTICA", "#FFF5F5", "#C53030" # Vermelho
 
 def salvar_aluno(dados):
     if not dados['nome']: return False, "Nome obrigatório."
@@ -306,7 +297,7 @@ def excluir_aluno(nome_arq):
     except: return False
 
 def calcular_progresso():
-    # REGRA: SE IA GERADA = 100%
+    # SE A IA JÁ FOI GERADA, 100%
     if st.session_state.dados['ia_sugestao']: return 100
     
     pontos = 0
@@ -334,7 +325,7 @@ def render_progresso():
         icon = "🏆"
         bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)" # Verde
     
-    # CSS Inline no HTML para garantir prioridade
+    # CSS Inline para forçar visual
     st.markdown(f"""
     <div class="prog-container">
         <div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div>
@@ -369,16 +360,14 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         client = OpenAI(api_key=api_key)
         familia = ", ".join(dados['composicao_familiar_tags']) if dados['composicao_familiar_tags'] else "Não informado"
         evid = "\n".join([f"- {k.replace('?', '')}" for k, v in dados['checklist_evidencias'].items() if v])
+        
         meds_info = "Nenhuma medicação informada."
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
         prompt_sys = """
         Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
-        
-        DIRETRIZ MANDATÓRIA (NÃO IGNORE):
-        1. CITE CÓDIGOS ALFANUMÉRICOS DA BNCC (ex: EF03LP01 - Descrição).
-        2. Analise medicação ({meds}).
+        DIRETRIZ MANDATÓRIA: CITE CÓDIGOS ALFANUMÉRICOS DA BNCC (ex: EF03LP01 - Descrição).
         
         ESTRUTURA:
         1. 🌟 VISÃO DO ESTUDANTE: Resumo.
@@ -499,7 +488,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v61.0 Polish</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v61.0 Bug Free</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -699,7 +688,7 @@ with tab8: # DASHBOARD (THE FORTRESS - FINAL)
         </div>
         """, unsafe_allow_html=True)
         
-        # 4 COLUNAS NO TOPO (COM NOVO ALGORITMO)
+        # 4 COLUNAS NO TOPO
         c_kpi1, c_kpi2, c_kpi3, c_kpi4 = st.columns(4)
         with c_kpi1:
             n_pot = len(st.session_state.dados['potencias'])
@@ -713,26 +702,26 @@ with tab8: # DASHBOARD (THE FORTRESS - FINAL)
              hf = st.session_state.dados['hiperfoco'] or "-"
              st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">🚀</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="d-lbl">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
-             # NÍVEL DE ATENÇÃO (ALGORITMO V2)
+             # NÍVEL DE ATENÇÃO (ALGORITMO V3 - CORRIGIDO)
              txt_comp, cor_bg, cor_txt = calcular_complexidade_pei(st.session_state.dados)
              st.markdown(f"""<div class="metric-card"><div class="comp-icon-box"><i class="ri-alert-line" style="color:{cor_txt};"></i></div><div style="font-weight:800; font-size:1.1rem; color:{cor_txt};">{txt_comp}</div><div class="d-lbl">Nível de Atenção</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         
-        # GRID DOS CARDS DE DETALHE (SOFT COLORS)
+        # GRID DOS CARDS DE DETALHE (SOFT COLORS + ÍCONES BG)
         c_r1, c_r2 = st.columns(2)
         with c_r1:
             # CARD 1: MEDICAÇÃO (SOFT ORANGE)
             if st.session_state.dados['lista_medicamentos']:
-                st.markdown(f"""<div class="soft-card sc-orange"><div class="sc-head"><i class="ri-medicine-bottle-fill" style="color:#DD6B20;"></i> Atenção Farmacológica</div><div class="sc-body">Aluno em uso de medicação contínua. Verifique a aba Estudante para detalhes.</div></div>""", unsafe_allow_html=True)
+                st.markdown(f"""<div class="soft-card sc-orange"><div class="sc-head"><i class="ri-medicine-bottle-fill" style="color:#DD6B20;"></i> Atenção Farmacológica</div><div class="sc-body">Aluno em uso de medicação contínua. Verifique a aba Estudante para detalhes.</div><div class="bg-icon">💊</div></div>""", unsafe_allow_html=True)
             else:
-                st.markdown(f"""<div class="soft-card sc-green"><div class="sc-head"><i class="ri-checkbox-circle-fill" style="color:#38A169;"></i> Medicação</div><div class="sc-body">Nenhuma medicação informada.</div></div>""", unsafe_allow_html=True)
+                st.markdown(f"""<div class="soft-card sc-green"><div class="sc-head"><i class="ri-checkbox-circle-fill" style="color:#38A169;"></i> Medicação</div><div class="sc-body">Nenhuma medicação informada.</div><div class="bg-icon">✅</div></div>""", unsafe_allow_html=True)
             
             st.write("")
             
             # CARD 3: ESTRATÉGIA (SOFT YELLOW/GOLD)
             resumo = extrair_resumo_estrategia(st.session_state.dados['ia_sugestao'])
-            st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#D69E2E;"></i> Estratégia Principal</div><div class="sc-body">"{resumo}"</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#D69E2E;"></i> Estratégia Principal</div><div class="sc-body">"{resumo}"</div><div class="bg-icon">💡</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
             # CARD 2: BNCC (SOFT BLUE + LISTA)
@@ -743,13 +732,13 @@ with tab8: # DASHBOARD (THE FORTRESS - FINAL)
             else:
                 html_lista = "Gere o plano na aba IA para ver os códigos."
             
-            st.markdown(f"""<div class="soft-card sc-blue"><div class="sc-head"><i class="ri-compass-3-fill" style="color:#3182CE;"></i> Matriz BNCC</div><div class="sc-body">{html_lista}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="soft-card sc-blue"><div class="sc-head"><i class="ri-compass-3-fill" style="color:#3182CE;"></i> Matriz BNCC</div><div class="sc-body">{html_lista}</div><div class="bg-icon">🎯</div></div>""", unsafe_allow_html=True)
             
             st.write("")
 
             # CARD 4: REDE (SOFT PURPLE)
             rede = ", ".join(st.session_state.dados['rede_apoio']) if st.session_state.dados['rede_apoio'] else "Não informada"
-            st.markdown(f"""<div class="soft-card sc-cyan"><div class="sc-head"><i class="ri-team-fill" style="color:#0BC5EA;"></i> Rede de Apoio</div><div class="sc-body">{rede}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="soft-card sc-cyan"><div class="sc-head"><i class="ri-team-fill" style="color:#0BC5EA;"></i> Rede de Apoio</div><div class="sc-body">{rede}</div><div class="bg-icon">🤝</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         st.markdown("##### 🧬 DNA de Suporte (Detalhamento)")
@@ -766,7 +755,7 @@ with tab8: # DASHBOARD (THE FORTRESS - FINAL)
             if val > 70: color = "#E53E3E"
             
             target.markdown(f"""
-            <div class="sup-track">
+            <div class="sup-track-container">
                 <div class="sup-row"><span>{area}</span><span>{qtd} barreiras</span></div>
                 <div class="sup-track"><div class="sup-fill" style="width:{val}%; background:{color};"></div></div>
             </div>
