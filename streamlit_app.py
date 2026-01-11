@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. ESTILO VISUAL (FINAL & POLISHED)
+# 2. ESTILO VISUAL (BARRA VERDE + CARDS TIPO PRINT)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -64,20 +64,20 @@ def aplicar_estilo_visual():
             border-color: var(--brand-coral) !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
         }
 
-        /* BARRA DE PROGRESSO */
+        /* BARRA DE PROGRESSO DINÂMICA */
         .minimal-track {
-            width: 100%; height: 4px; background-color: #E2E8F0; border-radius: 2px;
+            width: 100%; height: 6px; background-color: #E2E8F0; border-radius: 3px;
             position: relative; margin: 0 0 40px 0;
         }
         .minimal-fill {
-            height: 100%; border-radius: 2px; 
+            height: 100%; border-radius: 3px; 
             transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .minimal-cursor-icon {
-            position: absolute; top: -24px; font-size: 2rem; 
+            position: absolute; top: -25px; font-size: 2.2rem; 
             transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
         }
 
         /* DASHBOARD HERO */
@@ -94,30 +94,32 @@ def aplicar_estilo_visual():
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* OS 4 CARDS MÁGICOS */
+        /* CARDS DO DASHBOARD (ESTILO PRINT) */
         .magic-card {
             background: white; border-radius: 12px; padding: 20px; border: 1px solid #E2E8F0;
             height: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column;
-            border-left: 5px solid #CBD5E0;
+            border-left: 5px solid #CBD5E0; transition: transform 0.2s;
         }
+        .magic-card:hover { transform: translateY(-2px); }
+        
         .mc-header { 
-            font-size: 0.85rem; font-weight: 800; text-transform: uppercase; color: #718096; margin-bottom: 12px; 
-            display: flex; align-items: center; gap: 8px;
+            font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #718096; margin-bottom: 12px; 
+            display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px;
         }
-        .mc-content { flex-grow: 1; font-size: 0.95rem; color: #2D3748; }
+        .mc-content { flex-grow: 1; font-size: 0.95rem; color: #2D3748; line-height: 1.5; }
 
         /* Cores dos Cards */
-        .mc-orange { border-left-color: #DD6B20; }
-        .mc-blue { border-left-color: #3182CE; }
-        .mc-gold { border-left-color: #D69E2E; }
-        .mc-cyan { border-left-color: #0BC5EA; }
-        .mc-green { border-left-color: #38A169; }
+        .mc-orange { border-left-color: #DD6B20; } /* Medicação */
+        .mc-blue { border-left-color: #3182CE; }   /* BNCC */
+        .mc-gold { border-left-color: #D69E2E; }   /* Estratégia */
+        .mc-cyan { border-left-color: #0BC5EA; }   /* Rede */
+        .mc-green { border-left-color: #38A169; }  /* Sucesso */
 
-        /* Tags BNCC */
+        /* Tags BNCC (Azuis como no print) */
         .bncc-chip {
             display: inline-block; background: #EBF8FF; color: #2B6CB0; 
-            padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;
-            margin: 0 4px 4px 0; border: 1px solid #BEE3F8;
+            padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 700;
+            margin: 0 6px 6px 0; border: 1px solid #BEE3F8; font-family: monospace;
         }
 
         /* DONUT CHART */
@@ -139,8 +141,8 @@ def aplicar_estilo_visual():
         /* BARRAS DE SUPORTE (DNA) */
         .dna-bar-container { margin-bottom: 15px; }
         .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; color: #4A5568; font-weight: 600; }
-        .dna-bar-bg { width: 100%; height: 6px; background: #EDF2F7; border-radius: 3px; overflow: hidden; }
-        .dna-bar-fill { height: 100%; border-radius: 3px; }
+        .dna-bar-bg { width: 100%; height: 8px; background: #EDF2F7; border-radius: 4px; overflow: hidden; }
+        .dna-bar-fill { height: 100%; border-radius: 4px; }
 
         /* CARDS HOME */
         a.rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
@@ -253,6 +255,7 @@ def limpar_texto_pdf(texto):
     return re.sub(r'[^\x00-\xff]', '', texto)
 
 def extrair_codigos_bncc(texto):
+    # Regex flexível para códigos BNCC
     padrao = r'\b[A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}\b'
     if not texto: return []
     codigos = re.findall(padrao, texto)
@@ -262,8 +265,9 @@ def extrair_resumo_estrategia(texto):
     if not texto: return "Plano ainda não gerado."
     if "ESTRATÉGIAS" in texto:
         partes = texto.split("ESTRATÉGIAS")
-        resumo = partes[1].split('\n')[1:3]
-        return " ".join(resumo).replace('*', '').strip()[:180] + "..."
+        # Pega as primeiras linhas do bloco de estratégias
+        resumo = partes[1].split('\n')[1:4] 
+        return " ".join(resumo).replace('*', '').strip()[:150] + "..."
     return "Gere o plano na aba IA para ver o resumo estratégico."
 
 def salvar_aluno(dados):
@@ -288,28 +292,34 @@ def excluir_aluno(nome_arq):
     except: return False
 
 def calcular_progresso():
+    # SE A IA JÁ FOI GERADA, O TRABALHO TÁ PRONTO (100%)
+    if st.session_state.dados['ia_sugestao']: return 100
+
     pontos = 0
-    total = 8 
+    total = 6 # Total sem a IA
     d = st.session_state.dados
     if d['nome']: pontos += 1
     if d['serie']: pontos += 1
-    if d['diagnostico']: pontos += 1
     if any(d['checklist_evidencias'].values()): pontos += 1
     if d['hiperfoco']: pontos += 1
     if any(d['barreiras_selecionadas'].values()): pontos += 1
-    if d['estrategias_ensino'] or d['estrategias_acesso']: pontos += 1
-    if d['ia_sugestao']: pontos += 1
-    return int((pontos / total) * 100)
+    if d['estrategias_ensino']: pontos += 1
+    
+    # Progresso proporcional até 90%
+    return int((pontos / total) * 90)
 
 def render_progresso():
     p = calcular_progresso()
-    # Lógica de Chegada e Cor
+    
+    # Lógica Visual
     icon = "🌱"
-    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja
+    bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)" # Laranja padrão
     
     if p >= 20: icon = "🚶"
     if p >= 50: icon = "🏃"
     if p >= 80: icon = "🚀"
+    
+    # CHEGADA (VERDE)
     if p >= 100: 
         icon = "🏆"
         bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)" # Verde Vitória
@@ -322,7 +332,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL
+# 6. INTELIGÊNCIA ARTIFICIAL (BNCC RIGOROSA)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -354,16 +364,18 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Obs: {m.get('obs', '')}" for m in dados['lista_medicamentos']])
 
         prompt_sys = """
-        Você é um Consultor Pedagógico Especialista em Educação Inclusiva e BNCC.
-        DIRETRIZ MANDATÓRIA:
-        1. CITE CÓDIGOS BNCC (ex: EF03LP01).
+        Você é um Especialista em Currículo Brasileiro (BNCC) e Educação Inclusiva.
+        
+        DIRETRIZ MANDATÓRIA (NÃO IGNORE):
+        1. CITE CÓDIGOS BNCC (ex: EF03LP01). É VITAL TER OS CÓDIGOS PARA O DASHBOARD.
         2. Analise medicação ({meds}) e impacto.
+        
         ESTRUTURA:
-        1. 🌟 VISÃO DO ESTUDANTE: Resumo.
+        1. 🌟 VISÃO DO ESTUDANTE: Resumo biopsicossocial.
         2. 💊 FATOR MEDICAMENTOSO: Análise.
         3. 🎯 MATRIZ CURRICULAR (BNCC):
            - RECOMPOSIÇÃO: [CÓDIGO] Descrição.
-           - ANO CORRENTE: [CÓDIGO] Descrição.
+           - ANO ATUAL ({serie}): [CÓDIGO] Descrição.
         4. 💡 ESTRATÉGIAS COM HIPERFOCO: Uso de "{hiperfoco}".
         5. 🧩 ADAPTAÇÕES: Acesso e Avaliação.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
@@ -477,7 +489,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v53.0 Finale</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v54.0 Final Arrival</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -659,8 +671,8 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD (THE FINALE)
-    render_progresso() # Barra verde se tudo ok
+with tab8: # DASHBOARD FINAL
+    render_progresso() # Barra verde aparecerá aqui se IA gerada
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
         init_avatar = st.session_state.dados['nome'][0].upper() if st.session_state.dados['nome'] else "?"
@@ -692,30 +704,29 @@ with tab8: # DASHBOARD (THE FINALE)
 
         st.write("")
         
-        # GRID DOS 4 CARDS MÁGICOS
+        # GRID 2x2
         c_r1, c_r2 = st.columns(2)
         with c_r1:
-            # CARD 1: MEDICAÇÃO
             if st.session_state.dados['lista_medicamentos']:
                 st.markdown(f"""<div class="magic-card mc-orange"><div class="mc-header"><i class="ri-medicine-bottle-fill" style="font-size:1.2rem; color:#DD6B20;"></i> Atenção Farmacológica</div><div class="mc-content">Aluno em uso de medicação contínua. Verifique a aba Estudante para detalhes de posologia e efeitos.</div></div>""", unsafe_allow_html=True)
             else:
                 st.markdown(f"""<div class="magic-card mc-green"><div class="mc-header"><i class="ri-checkbox-circle-fill" style="font-size:1.2rem; color:#38A169;"></i> Medicação</div><div class="mc-content">Nenhuma medicação informada.</div></div>""", unsafe_allow_html=True)
             
-            st.write("") # Espaço vertical
+            st.write("")
             
-            # CARD 3: ESTRATÉGIA
+            # CARD ESTRATÉGIA
             resumo = extrair_resumo_estrategia(st.session_state.dados['ia_sugestao'])
             st.markdown(f"""<div class="magic-card mc-gold"><div class="mc-header"><i class="ri-lightbulb-flash-fill" style="font-size:1.2rem; color:#D69E2E;"></i> Estratégia Principal</div><div class="mc-content">"{resumo}"</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
-            # CARD 2: BNCC (TAGS)
+            # CARD BNCC (TAGS AZUIS)
             codigos = extrair_codigos_bncc(st.session_state.dados['ia_sugestao'])
             html_tags = "".join([f'<span class="bncc-chip">{c}</span>' for c in codigos]) if codigos else "Gere o plano na aba IA."
             st.markdown(f"""<div class="magic-card mc-blue"><div class="mc-header"><i class="ri-compass-3-fill" style="font-size:1.2rem; color:#3182CE;"></i> Matriz BNCC</div><div class="mc-content">{html_tags}</div></div>""", unsafe_allow_html=True)
             
-            st.write("") # Espaço vertical
+            st.write("")
 
-            # CARD 4: REDE
+            # CARD REDE
             rede = ", ".join(st.session_state.dados['rede_apoio']) if st.session_state.dados['rede_apoio'] else "Não informada"
             st.markdown(f"""<div class="magic-card mc-cyan"><div class="mc-header"><i class="ri-team-fill" style="font-size:1.2rem; color:#0BC5EA;"></i> Rede de Apoio</div><div class="mc-content">{rede}</div></div>""", unsafe_allow_html=True)
 
