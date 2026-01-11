@@ -32,6 +32,17 @@ st.set_page_config(
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
+LISTA_ALFABETIZACAO = [
+    "Não Avaliado",
+    "Pré-Silábico (Garatuja/Desenho)",
+    "Pré-Silábico (Letras Aleatórias)",
+    "Silábico (Sem valor sonoro)",
+    "Silábico (Com valor sonoro)",
+    "Silábico-Alfabético",
+    "Alfabético (Em consolidação/Com erros ortográficos)",
+    "Alfabético (Fluente/Ortográfico)"
+]
+
 LISTAS_BARREIRAS = {
     "Cognitivo": ["Atenção Sustentada", "Memória de Trabalho", "Flexibilidade Cognitiva", "Raciocínio Lógico"],
     "Comunicacional": ["Linguagem Expressiva", "Compreensão", "Pragmática (Uso Social)", "Vocabulário"],
@@ -52,6 +63,7 @@ default_state = {
     'lista_medicamentos': [], 'composicao_familiar_tags': [], 'historico': '', 'familia': '', 
     'hiperfoco': '', 'potencias': [], 'rede_apoio': [], 'orientacoes_especialistas': '',
     'checklist_evidencias': {}, 
+    'nivel_alfabetizacao': 'Não Avaliado', # NOVO CAMPO
     'barreiras_selecionadas': {k: [] for k in LISTAS_BARREIRAS.keys()},
     'niveis_suporte': {}, 
     'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
@@ -206,10 +218,11 @@ def excluir_aluno(nome_arq):
 
 def calcular_progresso():
     if st.session_state.dados['ia_sugestao']: return 100
-    pontos = 0; total = 6 
+    pontos = 0; total = 7 # Aumentado para 7 com a Alfabetização
     d = st.session_state.dados
     if d['nome']: pontos += 1
     if d['serie']: pontos += 1
+    if d['nivel_alfabetizacao'] != 'Não Avaliado': pontos += 1
     if any(d['checklist_evidencias'].values()): pontos += 1
     if d['hiperfoco']: pontos += 1
     if any(d['barreiras_selecionadas'].values()): pontos += 1
@@ -367,6 +380,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
 
         # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO ---
         serie = dados['serie'] or ""
+        alfabetizacao = dados.get('nivel_alfabetizacao', 'Não Avaliado')
         is_educacao_infantil = "Educação Infantil" in serie
         
         # PROMPT DE IDENTIDADE (UNIVERSAL)
@@ -377,6 +391,16 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         Mostre quem é a criança por trás do diagnóstico.
         [/PERFIL_NARRATIVO]
         """
+
+        # LÓGICA DE ALFABETIZAÇÃO (IMPACTO NA IA)
+        prompt_literacia = ""
+        if alfabetizacao not in ["Alfabético (Fluente/Ortográfico)", "Não Avaliado", ""]:
+             prompt_literacia = f"""
+             [ATENÇÃO CRÍTICA: ALFABETIZAÇÃO]
+             O aluno está na fase: {alfabetizacao}.
+             OBRIGATÓRIO: Dentro das estratégias de adaptação, inclua 2 ações específicas de consciência fonológica ou conversão grafema-fonema para avançar para a próxima hipótese de escrita.
+             [/ATENÇÃO CRÍTICA]
+             """
 
         if is_educacao_infantil:
             # === EDUCAÇÃO INFANTIL (BNCC: CAMPOS E DIREITOS) ===
@@ -446,6 +470,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
             
             2. 🧩 DIRETRIZES DE ADAPTAÇÃO:
             (Adaptações curriculares e de acesso).
+            {prompt_literacia}
             """
 
         # --- SELEÇÃO DE FORMATO (TÉCNICO VS PRÁTICO) ---
@@ -462,6 +487,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
             
             1. 🎯 O QUE FAZER AMANHÃ:
             (3 ações simples e imediatas para adaptação de atividade e comportamento).
+            {prompt_literacia}
             
             2. 🗣️ COMO FALAR:
             (Exemplos de comandos ou feedbacks que funcionam para este perfil).
@@ -482,6 +508,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         DINÂMICA FAMILIAR: {dados['familia']}
         POTENCIALIDADES: {', '.join(dados['potencias'])}
         DIAGNÓSTICO: {dados['diagnostico']}
+        NÍVEL ALFABETIZAÇÃO: {alfabetizacao}
         MEDICAÇÃO: {meds_info}
         HIPERFOCO: {dados['hiperfoco']}
         BARREIRAS: {json.dumps(dados['barreiras_selecionadas'], ensure_ascii=False)}
@@ -608,6 +635,7 @@ def gerar_pdf_final(dados, tem_anexo):
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Nascimento:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, str(dados['nasc']), 0, 1)
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Série/Turma:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, f"{dados['serie']} - {dados['turma']}", 0, 1)
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Diagnóstico:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, dados['diagnostico']); pdf.ln(2)
+    pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Alfabetização:", 0, 0); pdf.set_font("Arial", '', 10); pdf.cell(0, 6, dados['nivel_alfabetizacao'], 0, 1)
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Medicação:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, med_str); pdf.ln(2)
     pdf.set_font("Arial", 'B', 10); pdf.cell(40, 6, "Família:", 0, 0); pdf.set_font("Arial", '', 10); pdf.multi_cell(0, 6, fam_str)
     evid = [k.replace('?', '') for k, v in dados['checklist_evidencias'].items() if v]
@@ -684,7 +712,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v108.0 Narrative & BNCC Deep Dive</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v109.0 Literacy Intelligence</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -805,6 +833,15 @@ with tab1: # ESTUDANTE
 
 with tab2: # EVIDÊNCIAS
     render_progresso()
+    st.markdown("<div class='form-section-title'><i class='ri-abc-line'></i> Nível de Alfabetização</div>", unsafe_allow_html=True)
+    st.session_state.dados['nivel_alfabetizacao'] = st.selectbox(
+        "Em qual hipótese de escrita o estudante se encontra?",
+        LISTA_ALFABETIZACAO,
+        index=LISTA_ALFABETIZACAO.index(st.session_state.dados['nivel_alfabetizacao']) if st.session_state.dados['nivel_alfabetizacao'] in LISTA_ALFABETIZACAO else 0,
+        help="Classificação baseada na psicogênese da língua escrita."
+    )
+    st.divider()
+    
     c1, c2, c3 = st.columns(3)
     with c1:
         st.markdown("<div class='form-section-title'><i class='ri-book-open-line'></i> Pedagógico</div>", unsafe_allow_html=True)
