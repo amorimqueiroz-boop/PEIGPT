@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (TOP LEVEL - CRÍTICO PARA NÃO DAR ERRO)
+# 2. LISTAS DE DADOS (TOP LEVEL)
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -151,6 +151,7 @@ def ler_pdf(arquivo):
 
 def limpar_texto_pdf(texto):
     if not texto: return ""
+    # Remove tags como [ANALISE_FARMA] e substitui por quebra de linha ou nada
     t = re.sub(r'\[.*?\]', '', texto) 
     t = t.replace('**', '').replace('__', '').replace('### ', '').replace('## ', '').replace('# ', '')
     return re.sub(r'[^\x00-\xff]', '', t)
@@ -192,40 +193,61 @@ def calcular_progresso():
 def render_progresso():
     p = calcular_progresso()
     icon = "🌱"
+    # BARRA LARANJA DURANTE O PROCESSO
     bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)"
+    
     if p >= 20: icon = "🚀"
     if p >= 50: icon = "🛸"
     if p >= 80: icon = "🌌"
+    
+    # CHEGADA: BARRA AZUL (PARA NÃO BRIGAR COM VERMELHO)
     if p >= 100: 
         icon = "🏆"
-        bar_color = "linear-gradient(90deg, #48BB78 0%, #38A169 100%)"
-    st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
+        bar_color = "linear-gradient(90deg, #0F52BA 0%, #004E92 100%)" # Azul Royal
+    
+    st.markdown(f"""
+    <div class="prog-container">
+        <div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div>
+        <div class="prog-icon" style="left: {p}%;">{icon}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (CSS)
+# 5. ESTILO VISUAL (CSS GLOBAL)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; }
-        .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
+        .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
-        
+        /* HEADER COM SUBTÍTULO ESTILIZADO */
+        .header-unified {
+            background-color: white; padding: 20px 40px; border-radius: 16px;
+            border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px;
+            display: flex; align-items: center; gap: 20px;
+        }
+        .header-title { color: #0F52BA; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; margin: 0; line-height:1.1; }
+        .header-subtitle { color: #718096; font-size: 0.9rem; font-weight: 600; margin: 0; }
+
+        /* ABAS CLEAN */
         .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
         .stTabs [data-baseweb="tab"] { height: 36px; border-radius: 18px !important; background-color: white; border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px; transition: all 0.2s ease; }
         .stTabs [aria-selected="true"] { background-color: #FF6B6B !important; color: white !important; border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3); }
         
+        /* BARRA DE PROGRESSO */
         .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
         .prog-icon { position: absolute; top: -23px; font-size: 1.8rem; transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
 
+        /* DASHBOARD HERO */
         .dash-hero { background: linear-gradient(135deg, #0F52BA 0%, #062B61 100%); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 15px rgba(15, 82, 186, 0.2); }
         .apple-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); color: white; font-weight: 800; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
 
+        /* METRIC CARDS */
         .metric-card { background: white; border-radius: 16px; padding: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 160px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .css-donut { width: 70px; height: 70px; border-radius: 50%; background: conic-gradient(var(--fill) var(--p), #EDF2F7 0); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
         .css-donut::after { content: ""; position: absolute; width: 54px; height: 54px; border-radius: 50%; background: white; }
@@ -233,6 +255,7 @@ def aplicar_estilo_visual():
         .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
         .comp-icon-box { margin-bottom: 5px; }
 
+        /* DETAIL CARDS (SOFT COLORS) */
         .soft-card { border-radius: 12px; padding: 25px; min-height: 260px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 5px solid; position: relative; overflow: hidden; }
         .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
         .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
@@ -245,12 +268,14 @@ def aplicar_estilo_visual():
         .bncc-li { margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #3182CE; font-size: 0.85rem; }
         .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
 
+        /* DNA BARS */
         .dna-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; font-style: italic; display: flex; align-items: center; gap: 6px;}
         .dna-bar-container { margin-bottom: 12px; }
         .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
         .dna-bar-bg { width: 100%; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
         .dna-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
 
+        /* INPUTS & BOTÕES */
         .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] { border-radius: 10px !important; border-color: #E2E8F0 !important; }
         div[data-testid="column"] .stButton button { border-radius: 10px !important; font-weight: 800 !important; height: 50px !important; background-color: #0F52BA !important; color: white !important; border: none !important; }
         div[data-testid="column"] .stButton button:hover { background-color: #0A3D8F !important; }
@@ -258,6 +283,7 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
         
+        /* RESTAURAR CORES DA HOME (FORÇADO) */
         .rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; }
         .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
@@ -308,7 +334,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # --- PROMPT V67.0 (COM BIBLIOGRAFIA) ---
+        # --- PROMPT V68.0 (COM CITAÇÕES E ESTRUTURA CLARA) ---
         prompt_sys = """
         Você é um Especialista Sênior em Neuroeducação, Inclusão, Currículo BNCC e Legislação Educacional Brasileira.
         
@@ -320,8 +346,6 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         2. PLETSCH (2020): Crítica à "laudagem" excludente; foco no currículo comum.
         3. DALL SOTO (2024) / META 4 PNE: Direito inegociável à educação regular.
         4. MENDES: Ensino colaborativo e co-docência como estratégia.
-        5. CRISCOULLO (2025): Superação de barreiras reais (formação/infraestrutura).
-        6. UCHÔA & CHACON (2022): Democratização e convivência com a diferença.
         
         --- REGRAS DE OURO ---
         1. USE AS TAGS EXATAS (Essenciais para o sistema).
@@ -331,7 +355,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         --- ESTRUTURA DA RESPOSTA ---
         
         1. 🌟 QUEM É O ESTUDANTE (SÍNTESE BIOPSICOSSOCIAL):
-           Cruze diagnóstico + histórico + evidências. Cite brevemente um autor da base (ex: "Conforme Pletsch, o foco não deve ser o laudo, mas a potencialidade...") para justificar a visão inclusiva.
+           Cruze diagnóstico + histórico + evidências. Cite brevemente um autor da base para justificar a visão inclusiva.
         
         [ANALISE_FARMA]
         Analise os fármacos ({meds}). Indique efeitos colaterais (sono, sede, irritabilidade) e o impacto pedagógico direto.
@@ -351,10 +375,9 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
            Alertas comportamentais, sensoriais ou sinais de crise.
         
         3. 🧩 DIRETRIZES DE ADAPTAÇÃO E EMBASAMENTO:
-           - Acesso ao Currículo (DUA): Cite estratégias concretas.
+           - Acesso ao Currículo (DUA).
            - Recursos: Pistas visuais, tecnologia assistiva, material concreto.
            - Avaliação: Prova oral, ledor, tempo estendido (Cite a Lei/Decreto se couber).
-           - Citação Final: Encerre com uma frase de impacto baseada em Mantoan ou Uchôa sobre o direito de aprender.
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
@@ -430,7 +453,6 @@ def gerar_pdf_final(dados, tem_anexo):
                 pdf.ln(2)
     if dados['ia_sugestao']:
         pdf.ln(5); pdf.set_text_color(0); pdf.set_font("Arial", '', 10)
-        # Remove tags internas
         t_limpo = re.sub(r'\[.*?\]', '', dados['ia_sugestao'])
         for linha in t_limpo.split('\n'):
             l = limpar_texto_pdf(linha)
@@ -474,7 +496,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v67.0 Scholar</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v68.0 Masterpiece</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -483,7 +505,10 @@ img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 110px;">' i
 st.markdown(f"""
 <div class="header-unified">
     {img_html}
-    <span>Ecossistema de Inteligência Pedagógica e Inclusiva</span>
+    <div>
+        <div class="header-title">PEI 360º</div>
+        <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
+    </div>
 </div>""", unsafe_allow_html=True)
 
 # ABAS
@@ -507,6 +532,7 @@ with tab0: # INÍCIO
                 <div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div>
             </div>
         </div>""", unsafe_allow_html=True)
+    
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
@@ -647,6 +673,24 @@ with tab7: # IA
                 if effect == 'balloons': st.balloons()
                 else: st.snow()
             else: st.error(err)
+        
+        # --- CARD DE REFERÊNCIAS RETRÁTIL ---
+        with st.expander("📚 Referências Bibliográficas e Base Teórica"):
+            st.markdown("""
+            **1. Artigos de Revisão e Cenário Atual (2023-2025)**
+            * DALL SOTO, Carla Roberta. *A Educação Inclusiva no Brasil*. Perspectivas Sociais, 2024.
+            * CRISCOULLO, Lia Constantino, et al. *Educação Inclusiva: Desafios e Possibilidades*. SciELO Preprints, 2025.
+            * UCHÔA, M. M. R.; CHACON, J. A. V. *Educação Inclusiva e Educação Especial na perspectiva inclusiva: repensando uma Educação Outra*. Revista Educação Especial (UFSM), 2022.
+
+            **2. Controvérsias e Políticas Públicas**
+            * KASSAR, M. de C. M., et al. *A educação inclusiva e as controvérsias entre a escola regular e a escola especial*. Revista Brasileira de Educação (SciELO), 2020.
+            * PLETSCH, Márcia Denise. *O que há de especial na educação especial brasileira?* Momento - Diálogos em Educação, 2020.
+
+            **3. Autores Clássicos**
+            * Maria Teresa Eglér Mantoan (Unicamp)
+            * Enicéia Gonçalves Mendes (UFSCar)
+            """)
+
     with col_right:
         if st.session_state.dados['ia_sugestao']:
             with st.expander("🔍 Entenda a Lógica (Calibragem)"):
@@ -723,14 +767,11 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
 
         with c_r2:
             # CARD 2: BNCC (LISTA LIMPA)
-            # Tenta pegar pela tag, se falhar, usa regex genérico
             raw_bncc = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MATRIZ_BNCC")
             if raw_bncc:
-                # Limpa linhas vazias
                 linhas = [l.strip() for l in raw_bncc.split('\n') if l.strip()]
                 html_lista = "".join([f'<div class="bncc-li">{l}</div>' for l in linhas])
             else:
-                # Fallback
                 linhas_bncc = extrair_linhas_bncc(st.session_state.dados['ia_sugestao'])
                 html_lista = "".join([f'<div class="bncc-li">{l}</div>' for l in linhas_bncc]) if linhas_bncc else "Gere o plano na aba IA."
 
@@ -738,15 +779,29 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
             
             st.write("")
 
-            # CARD 4: REDE (ÍCONES)
+            # CARD 4: REDE E ACOMPANHAMENTO (MERGED)
             rede_html = ""
             if st.session_state.dados['rede_apoio']:
                 for prof in st.session_state.dados['rede_apoio']:
                     icon = get_pro_icon(prof)
                     rede_html += f'<span class="rede-chip">{icon} {prof}</span> '
             else:
-                rede_html = "Não informada"
-            st.markdown(f"""<div class="soft-card sc-cyan"><div class="sc-head"><i class="ri-team-fill" style="color:#0BC5EA;"></i> Rede de Apoio</div><div class="sc-body">{rede_html}</div><div class="bg-icon">🤝</div></div>""", unsafe_allow_html=True)
+                rede_html = "<span style='opacity:0.6;'>Sem rede de apoio.</span>"
+            
+            passos = ", ".join(st.session_state.dados['proximos_passos_select']) if st.session_state.dados['proximos_passos_select'] else "Não definidos"
+            
+            st.markdown(f"""
+            <div class="soft-card sc-cyan">
+                <div class="sc-head"><i class="ri-team-fill" style="color:#0BC5EA;"></i> Rede e Acompanhamento</div>
+                <div class="sc-body">
+                    <div style="margin-bottom:15px;">{rede_html}</div>
+                    <div style="border-top:1px solid rgba(0,0,0,0.05); padding-top:10px; font-size:0.85rem;">
+                        <b>Parecer:</b> {st.session_state.dados['parecer_geral']}<br>
+                        <b>Próximos Passos:</b> {passos}
+                    </div>
+                </div>
+                <div class="bg-icon">🤝</div>
+            </div>""", unsafe_allow_html=True)
 
         st.write("")
         st.markdown("##### 🧬 DNA de Suporte (Detalhamento)")
