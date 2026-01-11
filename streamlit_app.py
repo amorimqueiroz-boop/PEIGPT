@@ -27,7 +27,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. LISTAS DE DADOS (TOP LEVEL)
+# 2. LISTAS DE DADOS (TOP LEVEL - SEGURANÇA)
 # ==============================================================================
 LISTA_SERIES = ["Educação Infantil", "1º Ano (Fund. I)", "2º Ano (Fund. I)", "3º Ano (Fund. I)", "4º Ano (Fund. I)", "5º Ano (Fund. I)", "6º Ano (Fund. II)", "7º Ano (Fund. II)", "8º Ano (Fund. II)", "9º Ano (Fund. II)", "1ª Série (EM)", "2ª Série (EM)", "3ª Série (EM)"]
 
@@ -55,7 +55,7 @@ default_state = {
     'niveis_suporte': {}, 
     'estrategias_acesso': [], 'estrategias_ensino': [], 'estrategias_avaliacao': [], 
     'ia_sugestao': '', 'outros_acesso': '', 'outros_ensino': '', 
-    'monitoramento_data': None, 
+    'monitoramento_data': date.today(), 
     'status_meta': 'Não Iniciado', 'parecer_geral': 'Manter Estratégias', 'proximos_passos_select': []
 }
 
@@ -75,16 +75,14 @@ if not os.path.exists(PASTA_BANCO): os.makedirs(PASTA_BANCO)
 def get_hiperfoco_emoji(texto):
     if not texto: return "🚀"
     t = texto.lower()
-    if "jogo" in t or "game" in t or "minecraft" in t or "roblox" in t or "mario" in t: return "🎮"
-    if "dino" in t or "jurassic" in t: return "🦖"
-    if "fute" in t or "bola" in t or "esporte" in t: return "⚽"
-    if "desenho" in t or "arte" in t or "pintar" in t: return "🎨"
-    if "músic" in t or "piano" in t or "violão" in t: return "🎵"
+    if "jogo" in t or "game" in t or "minecraft" in t or "roblox" in t: return "🎮"
+    if "dino" in t: return "🦖"
+    if "fute" in t or "bola" in t: return "⚽"
+    if "desenho" in t or "arte" in t: return "🎨"
+    if "músic" in t: return "🎵"
     if "anim" in t or "gato" in t or "cachorro" in t: return "🐾"
-    if "carro" in t or "trem" in t or "rodas" in t: return "🏎️"
-    if "espaço" in t or "astronomia" in t: return "🪐"
-    if "leitura" in t or "livro" in t: return "📚"
-    if "pok" in t: return "⚡"
+    if "carro" in t or "trem" in t: return "🏎️"
+    if "espaço" in t: return "🪐"
     return "🚀"
 
 def calcular_complexidade_pei(dados):
@@ -104,28 +102,29 @@ def extrair_tag_ia(texto, tag):
     if match: return match.group(1).strip()
     return ""
 
-def extrair_metas_smart(texto):
-    # Extrai o bloco de Metas SMART para o dashboard
-    conteudo = extrair_tag_ia(texto, "METAS_SMART")
-    if not conteudo: return "Metas não definidas na análise."
-    # Limpeza básica
-    conteudo = re.sub(r'^[\d\.\-]+', '', conteudo.strip())
-    return conteudo
+def extrair_meta_curto_prazo(texto):
+    if not texto: return "Gere o plano na aba IA."
+    # Tenta extrair especificamente a meta de curto prazo
+    bloco = extrair_tag_ia(texto, "METAS_SMART")
+    if bloco:
+        # Procura por "Curto Prazo" ou a primeira linha
+        linhas = bloco.split('\n')
+        for l in linhas:
+            if "Curto" in l or "2 meses" in l:
+                return re.sub(r'^[\-\*]+', '', l).strip()
+        return linhas[0] if linhas else "Ver detalhamento no PDF."
+    return "Metas não definidas."
 
-def extrair_linhas_bncc(texto):
-    padrao = r'([A-Z]{2}\d{1,2}[A-Z]{2,3}\d{2,3}.*?)(?=\n|$)'
-    if not texto: return []
-    linhas = re.findall(padrao, texto)
-    return list(set([l.strip().replace('**', '') for l in linhas if len(l) > 10]))
-
-def get_pro_icon(nome_profissional):
-    p = nome_profissional.lower()
-    if "psic" in p: return "🧠"
-    if "fono" in p: return "🗣️"
-    if "terapeuta" in p or "ocupacional" in p: return "🧩"
-    if "neuro" in p or "médic" in p or "psiquiatra" in p: return "🩺"
-    if "prof" in p or "apoio" in p: return "🍎"
-    return "👨‍⚕️"
+def extrair_resumo_estrategia(texto):
+    if not texto: return "Plano ainda não gerado."
+    conteudo = extrair_tag_ia(texto, "ESTRATEGIA_MASTER")
+    if not conteudo and "ESTRATÉGIAS" in texto:
+        partes = texto.split("ESTRATÉGIAS")
+        conteudo = partes[1].split("ADAPTAÇÕES")[0] if "ADAPTAÇÕES" in partes[1] else partes[1]
+    
+    if conteudo:
+        return re.sub(r'^[\d\.\s\🧩\-\*]+', '', conteudo.strip())
+    return "Gere o plano na aba IA para ver o resumo."
 
 def finding_logo():
     possiveis = ["360.png", "360.jpg", "logo.png", "logo.jpg", "iconeaba.png"]
@@ -148,7 +147,6 @@ def ler_pdf(arquivo):
 
 def limpar_texto_pdf(texto):
     if not texto: return ""
-    # Remove tags do relatório para o PDF
     t = re.sub(r'\[.*?\]', '', texto) 
     t = t.replace('**', '').replace('__', '').replace('### ', '').replace('## ', '').replace('# ', '')
     return re.sub(r'[^\x00-\xff]', '', t)
@@ -191,14 +189,11 @@ def render_progresso():
     p = calcular_progresso()
     icon = "🌱"
     bar_color = "linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%)"
-    
     if p >= 20: icon = "🚀"
     if p >= 50: icon = "🛸"
     if p >= 80: icon = "🌌"
-    
     if p >= 100: 
         icon = "🏆"
-        # AZUL CLARO NA CHEGADA
         bar_color = "linear-gradient(90deg, #00C6FF 0%, #0072FF 100%)" 
     
     st.markdown(f"""
@@ -209,7 +204,7 @@ def render_progresso():
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (CSS CORRIGIDO)
+# 5. ESTILO VISUAL (CSS REFINADO - HOME VIBRANTE + DASH LIMPO)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -219,20 +214,14 @@ def aplicar_estilo_visual():
         .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; }
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
-        .header-unified {
-            background-color: white; padding: 20px 40px; border-radius: 16px;
-            border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px;
-            display: flex; align-items: center; gap: 20px;
-        }
-        .header-subtitle { 
-            color: #718096; font-size: 1.1rem; font-weight: 700; 
-            margin: 0; letter-spacing: 0.5px; border-left: 2px solid #E2E8F0; padding-left: 15px;
-        }
+        .header-unified { background-color: white; padding: 20px 40px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
+        .header-subtitle { color: #718096; font-size: 1.1rem; font-weight: 700; margin: 0; letter-spacing: 0.5px; border-left: 2px solid #E2E8F0; padding-left: 15px; }
 
         .stTabs [data-baseweb="tab-list"] { gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center; }
         .stTabs [data-baseweb="tab"] { height: 36px; border-radius: 18px !important; background-color: white; border: 1px solid #E2E8F0; color: #718096; font-weight: 700; font-size: 0.85rem; padding: 0 20px; transition: all 0.2s ease; }
         .stTabs [aria-selected="true"] { background-color: #FF6B6B !important; color: white !important; border-color: #FF6B6B !important; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3); }
         
+        /* PROGRESSO */
         .prog-container { width: 100%; position: relative; margin: 0 0 40px 0; }
         .prog-track { width: 100%; height: 3px; background-color: #E2E8F0; border-radius: 1.5px; }
         .prog-fill { height: 100%; border-radius: 1.5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
@@ -248,17 +237,17 @@ def aplicar_estilo_visual():
         .d-lbl { text-transform: uppercase; font-size: 0.65rem; color: #718096; font-weight: 700; letter-spacing: 0.5px; text-align: center; }
         .comp-icon-box { margin-bottom: 5px; }
 
+        /* DETAIL CARDS (SOFT COLORS) */
         .soft-card { border-radius: 12px; padding: 20px; min-height: 200px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05); border-left: 5px solid; position: relative; overflow: hidden; }
         .sc-orange { background-color: #FFF5F5; border-left-color: #DD6B20; }
         .sc-blue { background-color: #EBF8FF; border-left-color: #3182CE; }
         .sc-yellow { background-color: #FFFFF0; border-left-color: #D69E2E; }
         .sc-cyan { background-color: #E6FFFA; border-left-color: #0BC5EA; }
+        .sc-green { background-color: #F0FFF4; border-left-color: #38A169; }
         .sc-head { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #4A5568; letter-spacing: 0.5px; z-index: 2; }
         .sc-body { font-size: 0.9rem; line-height: 1.6; color: #2D3748; font-weight: 600; z-index: 2; flex-grow: 1; }
         .bg-icon { position: absolute; bottom: -10px; right: -10px; font-size: 6rem; opacity: 0.08; z-index: 1; pointer-events: none; }
-        .bncc-li { margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #3182CE; font-size: 0.85rem; }
-        .rede-chip { display: inline-flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; margin: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: 700; color: #2C5282; }
-
+        
         .dna-legend { font-size: 0.8rem; color: #718096; margin-bottom: 15px; background: #F7FAFC; padding: 10px; border-radius: 8px; font-style: italic; display: flex; align-items: center; gap: 6px;}
         .dna-bar-container { margin-bottom: 12px; }
         .dna-bar-flex { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: #4A5568; font-weight: 600; }
@@ -272,7 +261,7 @@ def aplicar_estilo_visual():
         .ia-side-box { background: #F8FAFC; border-radius: 16px; padding: 25px; border: 1px solid #E2E8F0; text-align: left; margin-bottom: 20px; }
         .form-section-title { display: flex; align-items: center; gap: 10px; color: #0F52BA; font-weight: 700; font-size: 1.1rem; margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #F7FAFC; padding-bottom: 5px; }
         
-        /* RESTAURAÇÃO DE CORES VIBRANTES NOS CARDS HOME */
+        /* RESTAURAÇÃO DE CORES VIBRANTES NOS CARDS HOME (FORÇANDO ESTILO) */
         .rich-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
         .rich-card { background-color: white; padding: 30px 20px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s ease; height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; }
         .rich-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 82, 186, 0.1); border-color: #BEE3F8;}
@@ -292,7 +281,7 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (UPDATE: METAS SMART E BIBLIOGRAFIA COMPLETA)
+# 6. INTELIGÊNCIA ARTIFICIAL (ULTIMATE PROMPT)
 # ==============================================================================
 @st.cache_data(ttl=3600)
 def gerar_saudacao_ia(api_key):
@@ -323,45 +312,46 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # --- PROMPT V70.0 (SMART, DOCUMENTOS NORTEADORES, FOCO NA POTÊNCIA) ---
+        # --- PROMPT V71.0 (REVOLUTION) ---
         prompt_sys = """
-        Você é um Especialista Sênior em Neuroeducação e Currículo Inclusivo (Base Legal Brasileira).
+        Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação (MEC/Brasil).
         
-        SUA MISSÃO: Cruzar dados clínicos e escolares para criar um PEI com embasamento técnico e foco na potência do aluno.
+        SUA MISSÃO: Cruzar dados clínicos e escolares para criar um PEI Assertivo e Legalmente Embasado.
         
-        --- REFERENCIAIS OBRIGATÓRIOS ---
-        Baseie-se em:
-        1. NOTA TÉCNICA SEESP/MEC nº 24/2010 (AEE e Plano Individualizado).
-        2. MANUAL DO PEI (UNESP/ENICÉIA MENDES): Ensino Colaborativo.
+        --- REFERENCIAIS (CITE QUANDO PERTINENTE) ---
+        1. NOTA TÉCNICA SEESP/MEC nº 24/2010.
+        2. MANUAL DO PEI (UNESP/ENICÉIA MENDES).
         3. DUA (Desenho Universal para Aprendizagem).
-        4. TANNÚS-VALADÃO & MENDES: Estrutura acadêmica do PEI.
         
         --- ESTRUTURA DE RESPOSTA ---
         
         1. 🌟 AVALIAÇÃO DE REPERTÓRIO (NÍVEL ATUAL):
-           Foque no que o aluno JÁ CONSEGUE fazer (Potencialidades). Cruze diagnóstico + histórico. Evite focar apenas no déficit.
+           Foque no que o aluno JÁ CONSEGUE fazer. Mude o foco do déficit para a competência.
         
         [ANALISE_FARMA]
-        Analise brevemente o impacto pedagógico da medicação ({meds}) (ex: atenção, sono, sede).
+        Analise os fármacos ({meds}). Indique efeitos colaterais e impacto na rotina.
         [FIM_ANALISE_FARMA]
         
         [MATRIZ_BNCC]
-        Liste habilidades essenciais:
+        Liste habilidades cirúrgicas. Formato:
         - RECOMPOSIÇÃO: [CÓDIGO] Descrição.
         - ANO VIGENTE: [CÓDIGO] Descrição.
         [FIM_MATRIZ_BNCC]
         
+        [ESTRATEGIA_MASTER]
+        Escreva UMA estratégia principal usando o Hiperfoco ("{hiperfoco}") como alavanca (Scaffolding).
+        [FIM_ESTRATEGIA_MASTER]
+        
         [METAS_SMART]
-        Metas Específicas, Mensuráveis, Atingíveis, Relevantes e Temporais:
+        Metas Específicas e Temporais:
         - CURTO PRAZO (2 meses): Meta...
         - MÉDIO PRAZO (Semestre): Meta...
         - LONGO PRAZO (Ano): Meta...
         [FIM_METAS_SMART]
         
         2. 🧩 DIRETRIZES DE ADAPTAÇÃO:
-           - Acesso (DUA): Uso de notebook, tempo estendido, provas adaptadas.
-           - Conteúdo: Priorização de objetivos essenciais.
-           - Cronograma de Revisão: Sugestão de periodicidade.
+           - Acesso (DUA): Recursos e estratégias.
+           - Avaliação: Prova oral, ledor, tempo estendido (Cite a Lei).
         """.format(hiperfoco=dados['hiperfoco'], meds=meds_info, serie=dados['serie'])
         
         prompt_user = f"""
@@ -373,7 +363,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
         EVIDÊNCIAS: {evid}
         
         DOCUMENTOS ANEXOS (LAUDO):
-        {contexto_pdf[:3000] if contexto_pdf else "Apenas checklist disponível."}
+        {contexto_pdf[:3000] if contexto_pdf else "Apenas checklist do professor disponível."}
         """
         
         res = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": prompt_sys}, {"role": "user", "content": prompt_user}])
@@ -381,7 +371,7 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf=""):
     except Exception as e: return None, str(e)
 
 # ==============================================================================
-# 7. GERADOR PDF
+# 7. GERADOR PDF (MANTIDO)
 # ==============================================================================
 class PDF_Classic(FPDF):
     def header(self):
@@ -436,7 +426,6 @@ def gerar_pdf_final(dados, tem_anexo):
                 pdf.ln(2)
     if dados['ia_sugestao']:
         pdf.ln(5); pdf.set_text_color(0); pdf.set_font("Arial", '', 10)
-        # Limpa tags
         t_limpo = re.sub(r'\[.*?\]', '', dados['ia_sugestao'])
         for linha in t_limpo.split('\n'):
             l = limpar_texto_pdf(linha)
@@ -480,9 +469,9 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v70.0 Smart</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v71.0 Dash Revolution</b><br>Criado e desenvolvido por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
-# HEADER (CLEAN)
+# HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
 img_html = f'<img src="data:{mime};base64,{b64_logo}" style="height: 110px;">' if logo_path else ""
 
@@ -496,13 +485,13 @@ st.markdown(f"""
 abas = ["Início", "Estudante", "Coleta de Evidências", "Rede de Apoio", "Potencialidades & Barreiras", "Plano de Ação", "Monitoramento", "Consultoria IA", "Documento"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(abas)
 
-with tab0: # INÍCIO
+with tab0: # INÍCIO (RESTORED)
     if api_key:
         with st.spinner("Gerando inspiração..."):
             try:
                 client = OpenAI(api_key=api_key)
-                saudacao = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta, acolhedora e inspiradora para professor sobre inclusão."}]).choices[0].message.content
-                noticia = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta técnica sobre legislação de inclusão ou neurociência."}]).choices[0].message.content
+                saudacao = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Frase curta acolhedora para professor sobre inclusão."}]).choices[0].message.content
+                noticia = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Dica curta sobre legislação de inclusão ou neurociência."}]).choices[0].message.content
             except:
                 saudacao = "A inclusão transforma vidas."
                 noticia = "O PEI é um direito garantido por lei."
@@ -513,6 +502,7 @@ with tab0: # INÍCIO
                 <div><h3 style="color:white; margin:0; font-size: 1.4rem;">Olá, Educador(a)!</h3><p style="margin:5px 0 0 0; opacity:0.95; font-size:1rem;">{saudacao}</p></div>
             </div>
         </div>""", unsafe_allow_html=True)
+    
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.markdown("""<a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-blue"><i class="ri-book-open-line"></i></div><h3>O que é PEI?</h3><p>Conceitos fundamentais da inclusão escolar.</p></div></a>""", unsafe_allow_html=True)
@@ -521,7 +511,7 @@ with tab0: # INÍCIO
     with c4: st.markdown("""<a href="http://basenacionalcomum.mec.gov.br/" target="_blank" class="rich-card-link"><div class="rich-card"><div class="icon-box ic-green"><i class="ri-compass-3-line"></i></div><h3>BNCC</h3><p>Currículo oficial e adaptações.</p></div></a>""", unsafe_allow_html=True)
     if api_key: st.markdown(f"""<div class="highlight-card"><i class="ri-lightbulb-flash-fill" style="font-size: 2rem; color: #F59E0B;"></i><div><h4 style="margin:0; color:#1E293B;">Insight de Inclusão</h4><p style="margin:5px 0 0 0; font-size:0.9rem; color:#64748B;">{noticia}</p></div></div>""", unsafe_allow_html=True)
 
-with tab1: # ESTUDANTE
+with tab1: # ESTUDANTE (LISTA CORRIGIDA)
     render_progresso()
     st.markdown("<div class='form-section-title'><i class='ri-user-smile-line'></i> Identidade & Matrícula</div>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns([3, 2, 2, 1])
@@ -539,7 +529,7 @@ with tab1: # ESTUDANTE
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'])
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
-        # --- LÓGICA DE MEDICAÇÃO CORRIGIDA ---
+        
         if usa_med:
             c1, c2, c3 = st.columns([3, 2, 2])
             nm = c1.text_input("Nome", key="nm_med")
@@ -548,7 +538,7 @@ with tab1: # ESTUDANTE
             if st.button("Adicionar"):
                 st.session_state.dados['lista_medicamentos'].append({"nome": nm, "posologia": pos, "obs": "", "escola": admin_escola}); st.rerun()
         
-        # LISTA APARECE SEMPRE SE TIVER DADOS
+        # LISTA FORA DO IF DE ADICIONAR PARA APARECER SEMPRE
         if st.session_state.dados['lista_medicamentos']:
             st.write("---")
             for i, m in enumerate(st.session_state.dados['lista_medicamentos']):
@@ -647,7 +637,7 @@ with tab7: # IA
     render_progresso()
     st.markdown("### <i class='ri-robot-2-line'></i> Consultoria Pedagógica com IA", unsafe_allow_html=True)
     
-    # Texto de introdução AMIGÁVEL e PODEROSO
+    # INTRODUÇÃO AMIGÁVEL DA IA
     st.markdown("""
     <div style="background-color: #F8FAFC; border-left: 4px solid #0F52BA; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <h4 style="color:#0F52BA; margin-top:0;">🤖 Sua Parceira de Planejamento</h4>
@@ -700,7 +690,7 @@ with tab7: # IA
         else:
             st.info(f"👈 Clique no botão ao lado para gerar o plano de {nome_aluno}.")
 
-with tab8: # DASHBOARD FINAL (ESTÁVEL)
+with tab8: # DASHBOARD FINAL (REVOLUCIONÁRIO E LIMPO)
     render_progresso()
     st.markdown("### <i class='ri-file-pdf-line'></i> Dashboard e Exportação", unsafe_allow_html=True)
     if st.session_state.dados['nome']:
@@ -738,7 +728,7 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
 
         st.write("")
         
-        # GRID DOS CARDS DE DETALHE
+        # GRID DOS CARDS DE DETALHE (SIMPLIFICADO)
         c_r1, c_r2 = st.columns(2)
         with c_r1:
             # CARD 1: MEDICAÇÃO (MINIMALISTA)
@@ -750,47 +740,31 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
             
             st.write("")
             
-            # CARD 3: METAS SMART (NOVIDADE)
-            metas = extrair_metas_smart(st.session_state.dados['ia_sugestao'])
-            st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-flag-2-fill" style="color:#D69E2E;"></i> Metas de Desenvolvimento</div><div class="sc-body" style="font-size:0.85rem;">{metas}</div><div class="bg-icon">🏁</div></div>""", unsafe_allow_html=True)
+            # CARD 3: META DE CURTO PRAZO (NOVO - REPLACING REDE)
+            meta_curta = extrair_meta_curto_prazo(st.session_state.dados['ia_sugestao'])
+            st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-flag-2-fill" style="color:#D69E2E;"></i> Meta Prioritária (2 Meses)</div><div class="sc-body" style="font-size:0.85rem;">"{meta_curta}"</div><div class="bg-icon">🏁</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
-            # CARD 2: BNCC
-            raw_bncc = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MATRIZ_BNCC")
-            if raw_bncc:
-                linhas = [l.strip() for l in raw_bncc.split('\n') if l.strip()]
-                html_lista = "".join([f'<div class="bncc-li">{l}</div>' for l in linhas])
-            else:
-                linhas_bncc = extrair_linhas_bncc(st.session_state.dados['ia_sugestao'])
-                html_lista = "".join([f'<div class="bncc-li">{l}</div>' for l in linhas_bncc]) if linhas_bncc else "Gere o plano na aba IA."
-
-            st.markdown(f"""<div class="soft-card sc-blue"><div class="sc-head"><i class="ri-compass-3-fill" style="color:#3182CE;"></i> Matriz BNCC</div><div class="sc-body">{html_lista}</div><div class="bg-icon">🎯</div></div>""", unsafe_allow_html=True)
+            # CARD 2: CICLO DE MONITORAMENTO (NOVO - REPLACING BNCC)
+            prox_rev = st.session_state.dados['monitoramento_data'].strftime("%d/%m/%Y") if st.session_state.dados['monitoramento_data'] else "Não definida"
+            status = st.session_state.dados['status_meta']
+            st.markdown(f"""
+            <div class="soft-card sc-blue">
+                <div class="sc-head"><i class="ri-calendar-check-fill" style="color:#3182CE;"></i> Ciclo de Monitoramento</div>
+                <div class="sc-body">
+                    <div style="font-size:1.2rem; font-weight:800; color:#2B6CB0; margin-bottom:5px;">{prox_rev}</div>
+                    <div style="font-size:0.8rem; text-transform:uppercase; font-weight:700; color:#718096;">Próxima Revisão</div>
+                    <div style="margin-top:15px; padding:5px 10px; background:#EBF8FF; border-radius:8px; display:inline-block; font-size:0.8rem; font-weight:700; color:#2C5282;">Status: {status}</div>
+                </div>
+                <div class="bg-icon">📅</div>
+            </div>""", unsafe_allow_html=True)
             
             st.write("")
 
-            # CARD 4: REDE E ACOMPANHAMENTO (MERGED)
-            rede_html = ""
-            if st.session_state.dados['rede_apoio']:
-                for prof in st.session_state.dados['rede_apoio']:
-                    icon = get_pro_icon(prof)
-                    rede_html += f'<span class="rede-chip">{icon} {prof}</span> '
-            else:
-                rede_html = "<span style='opacity:0.6;'>Sem rede de apoio.</span>"
-            
-            passos = ", ".join(st.session_state.dados['proximos_passos_select']) if st.session_state.dados['proximos_passos_select'] else "Não definidos"
-            
-            st.markdown(f"""
-            <div class="soft-card sc-cyan">
-                <div class="sc-head"><i class="ri-team-fill" style="color:#0BC5EA;"></i> Rede e Acompanhamento</div>
-                <div class="sc-body">
-                    <div style="margin-bottom:15px;">{rede_html}</div>
-                    <div style="border-top:1px solid rgba(0,0,0,0.05); padding-top:10px; font-size:0.85rem;">
-                        <b>Parecer:</b> {st.session_state.dados['parecer_geral']}<br>
-                        <b>Próximos Passos:</b> {passos}
-                    </div>
-                </div>
-                <div class="bg-icon">🤝</div>
-            </div>""", unsafe_allow_html=True)
+            # CARD 4: ESTRATÉGIA PRINCIPAL
+            estrategia = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "ESTRATEGIA_MASTER")
+            if not estrategia: estrategia = "Gere o plano na aba IA."
+            st.markdown(f"""<div class="soft-card sc-cyan"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#0BC5EA;"></i> Estratégia Principal</div><div class="sc-body" style="font-style:italic;">"{estrategia}"</div><div class="bg-icon">💡</div></div>""", unsafe_allow_html=True)
 
         st.write("")
         st.markdown("##### 🧬 DNA de Suporte (Detalhamento)")
