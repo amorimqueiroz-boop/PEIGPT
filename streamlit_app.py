@@ -341,28 +341,50 @@ def consultar_gpt_pedagogico(api_key, dados, contexto_pdf="", modo_pratico=False
         if dados['lista_medicamentos']:
             meds_info = "\n".join([f"- {m['nome']} ({m['posologia']}). Admin Escola: {'Sim' if m.get('escola') else 'Não'}." for m in dados['lista_medicamentos']])
 
-        # Se o modo prático estiver ativado, muda o System Prompt
-        if modo_pratico:
-            prompt_sys = """
-            Você é um Mentor de Professores focado em PRÁTICA DE SALA DE AULA (Chão de escola).
-            SUA MISSÃO: Criar estratégias SIMPLES, DIRETAS e APLICÁVEIS para o professor usar AMANHÃ.
-            
-            Foque em:
-            1. Manejo de comportamento.
-            2. Adaptação de atividades simples.
-            3. Rotina visual.
-            
-            Evite "pedagogês" complexo. Seja direto e instrucional.
+        # --- SELEÇÃO DE PERSONALIDADE POR SEGMENTO ---
+        serie = dados['serie'] or ""
+        
+        # 1. Definição do Perfil do Especialista (System Prompt)
+        if "Educação Infantil" in serie:
+            perfil_ia = """
+            Você é um Especialista em EDUCAÇÃO INFANTIL e Inclusão.
+            FOCO: BNCC (Campos de Experiência), marcos do desenvolvimento, brincar heurístico, socialização e autonomia básica.
+            Evite termos acadêmicos rígidos. Foque no lúdico e sensorial.
+            """
+        elif "Fund. I" in serie:
+            perfil_ia = """
+            Você é um Especialista em ANOS INICIAIS (Fundamental I) e Alfabetização.
+            FOCO: Processo de alfabetização/letramento, consolidação da matemática básica, funções executivas e adaptação à rotina escolar.
+            """
+        elif "Fund. II" in serie:
+            perfil_ia = """
+            Você é um Especialista em ANOS FINAIS (Fundamental II).
+            FOCO: Organização para múltiplos professores, habilidades sociais na pré-adolescência, pensamento lógico-abstrato e identidade.
+            """
+        elif "EM" in serie or "Médio" in serie:
+            perfil_ia = """
+            Você é um Especialista em ENSINO MÉDIO e Projetos de Vida.
+            FOCO: Autonomia intelectual, abstração profunda, preparação para vida adulta/trabalho e soft skills.
             """
         else:
-            prompt_sys = """
-            Você é um Especialista Sênior em Neuroeducação, Inclusão e Legislação.
-            SUA MISSÃO: Cruzar dados para criar um PEI com Taxonomia de Bloom e Metas SMART.
+            perfil_ia = "Você é um Especialista Sênior em Neuroeducação e Inclusão."
+
+        # 2. Construção do Prompt Completo
+        if modo_pratico:
+            prompt_sys = f"""
+            {perfil_ia}
+            SUA MISSÃO: Criar estratégias PRÁTICAS ("Chão de sala") para o professor usar AMANHÃ.
+            Seja direto, instrucional e evite teoria excessiva.
+            """
+        else:
+            prompt_sys = f"""
+            {perfil_ia}
+            SUA MISSÃO: Cruzar dados para criar um PEI Técnico Oficial com Taxonomia de Bloom e Metas SMART.
             
             --- ESTRUTURA OBRIGATÓRIA ---
             1. 🌟 AVALIAÇÃO DE REPERTÓRIO:
             [ANALISE_FARMA] Analise os fármacos. [/ANALISE_FARMA]
-            [TAXONOMIA_BLOOM] Liste APENAS 3 verbos de comando. [/TAXONOMIA_BLOOM]
+            [TAXONOMIA_BLOOM] Liste APENAS 3 verbos de comando adequados ao nível. [/TAXONOMIA_BLOOM]
             
             [METAS_SMART]
             - CURTO PRAZO (2 meses): ...
@@ -543,7 +565,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v104.0 Base Stable</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v105.0 Segmented AI</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
