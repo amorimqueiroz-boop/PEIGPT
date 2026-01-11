@@ -263,7 +263,7 @@ def render_progresso():
     st.markdown(f"""<div class="prog-container"><div class="prog-track"><div class="prog-fill" style="width: {p}%; background: {bar_color};"></div></div><div class="prog-icon" style="left: {p}%;">{icon}</div></div>""", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. ESTILO VISUAL (FLAT ICON & CONTENT RICH v115.0)
+# 5. ESTILO VISUAL (FAT PILLS & MULTILINE v116.0)
 # ==============================================================================
 def aplicar_estilo_visual():
     estilo = """
@@ -272,43 +272,46 @@ def aplicar_estilo_visual():
         html, body, [class*="css"] { font-family: 'Nunito', sans-serif; color: #2D3748; background-color: #F7FAFC; }
         .block-container { padding-top: 1.5rem !important; padding-bottom: 5rem !important; }
         
-        /* 1. NAVEGAÇÃO FLAT (GRAYSCALE ICONS) */
+        /* 1. NAVEGAÇÃO "PÍLULA GORDINHA" COM QUEBRA DE LINHA */
         div[data-baseweb="tab-border"], div[data-baseweb="tab-highlight"] { display: none !important; }
         
         .stTabs [data-baseweb="tab-list"] { 
-            gap: 8px; 
+            gap: 10px; 
             display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            white-space: nowrap;
+            flex-wrap: wrap; /* Permite quebrar se faltar espaço na tela */
+            justify-content: center;
             padding: 10px 5px;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
         }
-        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
 
         .stTabs [data-baseweb="tab"] { 
-            height: 40px; 
-            border-radius: 20px !important; 
+            height: auto !important; /* Altura automática para o texto caber */
+            min-height: 65px; /* Gordinha */
+            width: 105px; /* Largura fixa para forçar a quebra */
+            border-radius: 16px !important; 
             background-color: #FFFFFF; 
             border: 1px solid #E2E8F0; 
             color: #718096; 
-            font-weight: 600; 
-            font-size: 0.85rem; 
-            padding: 0 20px; 
+            font-weight: 700; 
+            font-size: 0.8rem; 
+            padding: 8px 5px; /* Padding interno */
             transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
             flex-shrink: 0;
             
-            /* O PULO DO GATO: ÍCONES FLAT (Preto/Cinza Chapado) */
-            filter: grayscale(100%) brightness(0.3); 
+            /* FORÇA QUEBRA DE LINHA */
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            text-align: center;
+            line-height: 1.2;
+            
+            /* ÍCONES FLAT CINZA */
+            filter: grayscale(100%) brightness(0.4); 
         }
         
         .stTabs [data-baseweb="tab"]:hover {
             border-color: #CBD5E0;
             background-color: #EDF2F7;
-            /* Levemente mais escuro no hover */
-            filter: grayscale(100%) brightness(0.2);
+            transform: translateY(-2px);
         }
 
         .stTabs [aria-selected="true"] { 
@@ -316,8 +319,9 @@ def aplicar_estilo_visual():
             color: #1A202C !important;
             border-color: #CBD5E0 !important;
             font-weight: 800;
-            /* Selecionado fica preto sólido (Flat Icon puro) */
-            filter: grayscale(100%) brightness(0);
+            /* Leve destaque visual */
+            filter: grayscale(100%) brightness(0); 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
         /* 2. CARD DE INSIGHT (AMARELO CLARO) */
@@ -342,7 +346,7 @@ def aplicar_estilo_visual():
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 3. CARDS DA HOME (MODERNOS & COLORIDOS) */
+        /* 3. CARDS DA HOME */
         .home-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -636,6 +640,7 @@ def gerar_roteiro_gamificado(api_key, dados, pei_tecnico):
         hiperfoco = dados['hiperfoco'] or "brincadeiras"
         
         # --- FIREWALL DE CONTEXTO ---
+        # NÃO enviamos a lista de medicamentos. Enviamos apenas o essencial.
         contexto_seguro = f"""
         ALUNO: {dados['nome'].split()[0]}
         HIPERFOCO: {hiperfoco}
@@ -828,6 +833,8 @@ with st.sidebar:
         if ok: st.success(msg)
         else: st.error(msg)
     st.markdown("---")
+    data_atual = date.today().strftime("%d/%m/%Y")
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v116.0 Fat Pills & Multiline</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -839,8 +846,8 @@ st.markdown(f"""
     <div class="header-subtitle">Ecossistema de Inteligência Pedagógica e Inclusiva</div>
 </div>""", unsafe_allow_html=True)
 
-# ABAS (10 Abas com Ícones "Flat" Simulados - Símbolos + Filtro Grayscale)
-abas = ["🏠 Início", "👤 Estudante", "📝 Evidências", "👥 Rede de Apoio", "🚧 Barreiras", "⚙️ Plano de Ação", "📈 Monitoramento", "🧠 Consultoria IA", "📄 Documento", "🗺️ Jornada"]
+# ABAS (10 Abas com Emojis nas Strings - O CSS Trata o Grayscale)
+abas = ["🏠 Início", "👤 Estudante", "📝 Evidências", "🤝 Rede de Apoio", "🚧 Barreiras", "⚙️ Plano de Ação", "📈 Monitoramento", "🧠 Consultoria IA", "📄 Documento", "🗺️ Jornada"]
 tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab_mapa = st.tabs(abas)
 
 with tab0: # INÍCIO (DESIGN OVERHAUL)
@@ -866,7 +873,7 @@ with tab0: # INÍCIO (DESIGN OVERHAUL)
     
     st.markdown("### <i class='ri-apps-2-line'></i> Fundamentos", unsafe_allow_html=True)
     
-    # GRID DE CARDS (AGORA COM CORES E TEXTOS CORRIGIDOS)
+    # GRID DE CARDS (AGORA VEM ANTES DO INSIGHT)
     st.markdown("""
     <div class="home-grid">
         <a href="https://diversa.org.br/educacao-inclusiva/" target="_blank" class="rich-card">
@@ -1301,4 +1308,4 @@ with tab_mapa: # ABA NOVA (JORNADA DO ALUNO)
         st.warning("⚠️ Gere o PEI Técnico na aba 'Consultoria IA' primeiro.")
 
 # Footer final (Version signature)
-st.markdown("<div class='footer-signature'>PEI 360º v115.0 Flat UI Master - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
+st.markdown("<div class='footer-signature'>PEI 360º v116.0 Fat Pills & Multiline - Desenvolvido por Rodrigo A. Queiroz</div>", unsafe_allow_html=True)
