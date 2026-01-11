@@ -277,8 +277,39 @@ def aplicar_estilo_visual():
 aplicar_estilo_visual()
 
 # ==============================================================================
-# 6. INTELIGÊNCIA ARTIFICIAL (TÉCNICA & GAMIFICADA)
+# 6. INTELIGÊNCIA ARTIFICIAL (TÉCNICA, GAMIFICADA & EXTRAÇÃO)
 # ==============================================================================
+
+# CÉREBRO 0: EXTRATOR DE DADOS (PDF -> FORMULÁRIO)
+def extrair_dados_pdf_ia(api_key, texto_pdf):
+    if not api_key: return None, "Configure a Chave API."
+    try:
+        client = OpenAI(api_key=api_key)
+        prompt = f"""
+        Analise o texto deste laudo médico/escolar e extraia:
+        1. A hipótese diagnóstica ou diagnóstico (CID se houver).
+        2. Medicamentos mencionados (nome e posologia).
+        
+        Retorne APENAS um JSON neste formato:
+        {{
+            "diagnostico": "Texto do diagnóstico",
+            "medicamentos": [
+                {{"nome": "Nome do remédio", "posologia": "Dosagem"}}
+            ]
+        }}
+        
+        Texto do Laudo:
+        {texto_pdf[:4000]}
+        """
+        
+        res = client.chat.completions.create(
+            model="gpt-4o-mini", 
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        return json.loads(res.choices[0].message.content), None
+    except Exception as e: return None, str(e)
+
 
 # CÉREBRO 1: O PEDAGOGO TÉCNICO (CONSULTORIA IA)
 @st.cache_data(ttl=3600)
@@ -512,7 +543,7 @@ with st.sidebar:
         else: st.error(msg)
     st.markdown("---")
     data_atual = date.today().strftime("%d/%m/%Y")
-    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v103.0 Add-On Strategy</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem; color:#A0AEC0;'><b>PEI 360º v104.0 Base Stable</b><br>Criado por<br><b>Rodrigo A. Queiroz</b><br>{data_atual}</div>", unsafe_allow_html=True)
 
 # HEADER
 logo_path = finding_logo(); b64_logo = get_base64_image(logo_path); mime = "image/png"
@@ -564,12 +595,53 @@ with tab1: # ESTUDANTE
     except: serie_idx = 0
     st.session_state.dados['serie'] = c3.selectbox("Série/Ano", LISTA_SERIES, index=serie_idx, placeholder="Selecione...")
     st.session_state.dados['turma'] = c4.text_input("Turma", st.session_state.dados['turma'])
-    st.markdown("<div class='form-section-title'><i class='ri-hospital-line'></i> Contexto Clínico & Familiar</div>", unsafe_allow_html=True)
-    st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico", st.session_state.dados['diagnostico'])
+    
+    st.markdown("<div class='form-section-title'><i class='ri-history-line'></i> Histórico & Família</div>", unsafe_allow_html=True)
     c_hist, c_fam = st.columns(2)
     st.session_state.dados['historico'] = c_hist.text_area("Histórico Escolar", st.session_state.dados['historico'])
     st.session_state.dados['familia'] = c_fam.text_area("Dinâmica Familiar", st.session_state.dados['familia'])
     st.session_state.dados['composicao_familiar_tags'] = st.multiselect("Quem mora com o aluno?", LISTA_FAMILIA, default=st.session_state.dados['composicao_familiar_tags'])
+    
+    st.divider()
+    
+    # --- NOVO BLOCO: UPLOAD DE LAUDO ---
+    col_pdf, col_btn_ia = st.columns([2, 1])
+    with col_pdf:
+        st.markdown("**📎 Upload de Laudo Médico/Escolar (PDF)**")
+        up = st.file_uploader("Arraste o arquivo aqui", type="pdf", label_visibility="collapsed")
+        if up: st.session_state.pdf_text = ler_pdf(up)
+    
+    with col_btn_ia:
+        st.write("") # Espaço para alinhar
+        st.write("") 
+        if st.button("✨ Extrair Dados do Laudo", type="primary", use_container_width=True, disabled=(not st.session_state.pdf_text)):
+            with st.spinner("Analisando laudo..."):
+                dados_extraidos, erro = extrair_dados_pdf_ia(api_key, st.session_state.pdf_text)
+                if dados_extraidos:
+                    # Preenche Diagnóstico
+                    if dados_extraidos.get("diagnostico"):
+                        st.session_state.dados['diagnostico'] = dados_extraidos["diagnostico"]
+                    
+                    # Preenche Medicamentos (adiciona à lista existente)
+                    if dados_extraidos.get("medicamentos"):
+                        for med in dados_extraidos["medicamentos"]:
+                            st.session_state.dados['lista_medicamentos'].append({
+                                "nome": med.get("nome", "Não ident."),
+                                "posologia": med.get("posologia", ""),
+                                "obs": "Extraído do Laudo",
+                                "escola": False
+                            })
+                    st.success("Dados extraídos com sucesso!")
+                    st.rerun()
+                else:
+                    st.error(f"Erro na extração: {erro}")
+    # -----------------------------------
+
+    st.divider()
+    
+    st.markdown("<div class='form-section-title'><i class='ri-hospital-line'></i> Contexto Clínico</div>", unsafe_allow_html=True)
+    st.session_state.dados['diagnostico'] = st.text_input("Diagnóstico / Hipótese Diagnóstica", st.session_state.dados['diagnostico'])
+    
     with st.container(border=True):
         usa_med = st.toggle("💊 O aluno faz uso contínuo de medicação?", value=len(st.session_state.dados['lista_medicamentos']) > 0)
         
@@ -589,10 +661,6 @@ with tab1: # ESTUDANTE
                 c_txt.info(f"💊 **{m['nome']}** ({m['posologia']}){tag}")
                 if c_btn.button("Excluir", key=f"del_{i}"): 
                     st.session_state.dados['lista_medicamentos'].pop(i); st.rerun()
-
-    with st.expander("📎 Anexar Laudo (PDF)"):
-        up = st.file_uploader("Upload", type="pdf", label_visibility="collapsed")
-        if up: st.session_state.pdf_text = ler_pdf(up)
 
 with tab2: # EVIDÊNCIAS
     render_progresso()
