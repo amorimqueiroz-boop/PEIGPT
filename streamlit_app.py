@@ -736,7 +736,7 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
              hf_emoji = get_hiperfoco_emoji(hf)
              st.markdown(f"""<div class="metric-card"><div style="font-size:2.5rem;">{hf_emoji}</div><div style="font-weight:800; font-size:1.1rem; color:#2D3748; margin:10px 0;">{hf}</div><div class="d-lbl">Hiperfoco</div></div>""", unsafe_allow_html=True)
         with c_kpi4:
-             # NÍVEL DE ATENÇÃO
+             # NÍVEL DE ATENÇÃO (LÓGICA BLINDADA)
              txt_comp, bg_c, txt_c = calcular_complexidade_pei(st.session_state.dados)
              st.markdown(f"""<div class="metric-card" style="background-color:{bg_c}; border-color:{txt_c};"><div class="comp-icon-box"><i class="ri-error-warning-line" style="color:{txt_c}; font-size: 2rem;"></i></div><div style="font-weight:800; font-size:1.1rem; color:{txt_c}; margin:5px 0;">{txt_comp}</div><div class="d-lbl" style="color:{txt_c};">Nível de Atenção</div></div>""", unsafe_allow_html=True)
 
@@ -745,7 +745,7 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
         # GRID DOS CARDS DE DETALHE
         c_r1, c_r2 = st.columns(2)
         with c_r1:
-            # CARD 1: MEDICAÇÃO
+            # CARD 1: MEDICAÇÃO (ANALISE IA + LISTA)
             analise_farma = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "ANALISE_FARMA") or "Aguardando análise da IA..."
             lista_meds = []
             for m in st.session_state.dados['lista_medicamentos']:
@@ -761,13 +761,13 @@ with tab8: # DASHBOARD FINAL (ESTÁVEL)
             
             st.write("")
             
-            # CARD 3: ESTRATÉGIA
+            # CARD 3: ESTRATÉGIA (ASSERTIVA)
             estrategia = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "ESTRATEGIA_MASTER")
             if not estrategia: estrategia = "Gere o plano na aba IA."
             st.markdown(f"""<div class="soft-card sc-yellow"><div class="sc-head"><i class="ri-lightbulb-flash-fill" style="color:#D69E2E;"></i> Estratégia Principal</div><div class="sc-body" style="font-style:italic;">"{estrategia}"</div><div class="bg-icon">💡</div></div>""", unsafe_allow_html=True)
 
         with c_r2:
-            # CARD 2: BNCC
+            # CARD 2: BNCC (LISTA LIMPA)
             raw_bncc = extrair_tag_ia(st.session_state.dados['ia_sugestao'], "MATRIZ_BNCC")
             if raw_bncc:
                 linhas = [l.strip() for l in raw_bncc.split('\n') if l.strip()]
